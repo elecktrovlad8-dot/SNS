@@ -3,20 +3,21 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>Изумрудный Архипелаг: Три Покровителя</title>
+  <title>Багровый Полис: Три Кошачьих Ордена</title>
   <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
   <style>
     :root {
-      --bg-deep: #071316;
-      --bg-teal: #0d262b;
-      --mint-glow: #64ffc8;
-      --mint-soft: rgba(100, 255, 200, 0.2);
-      --gold: #ffd166;
-      --sonya-color: #a3e635;
-      --natasha-color: #38bdf8;
-      --stepan-color: #fb923c;
-      --text-main: #ecfdf5;
-      --text-muted: #86efac;
+      --bg-abyss: #110205;
+      --bg-crimson: #26050c;
+      --ruby-glow: #ff3355;
+      --ruby-soft: rgba(255, 51, 85, 0.32);
+      --gold: #ffcf56;
+      --gold-bright: #ffe89e;
+      --sonya-color: #f472b6;
+      --natasha-color: #fb923c;
+      --stepan-color: #ff2a4b;
+      --text-main: #fff1f2;
+      --text-muted: #fda4af;
     }
 
     * {
@@ -32,29 +33,27 @@
       width: 100%;
       height: 100%;
       overflow: hidden;
-      background-color: var(--bg-deep);
+      background-color: var(--bg-abyss);
       color: var(--text-main);
     }
 
-    /* Программный фон Canvas */
-    #iso-canvas {
+    #city-canvas {
       position: fixed;
       top: 0;
       left: 0;
       width: 100vw;
       height: 100vh;
       z-index: 0;
-      pointer-events: none;
     }
 
-    /* Готический Глассморфизм по спецификации */
+    /* Багровый Готический Глассморфизм */
     .glass-panel {
-      background: rgba(15, 25, 30, 0.75);
+      background: rgba(28, 6, 11, 0.78);
       backdrop-filter: blur(16px);
       -webkit-backdrop-filter: blur(16px);
-      border: 1px solid rgba(100, 255, 200, 0.2);
+      border: 1px solid rgba(255, 70, 100, 0.28);
       border-radius: 16px;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+      box-shadow: 0 12px 35px rgba(0, 0, 0, 0.65), inset 0 0 20px rgba(255, 40, 70, 0.06);
       color: var(--text-main);
     }
 
@@ -63,356 +62,607 @@
       z-index: 10;
       width: 100vw;
       height: 100vh;
-      display: flex;
-      flex-direction: column;
+      pointer-events: none;
     }
 
-    /* Кнопки и элементы управления */
+    .interactive {
+      pointer-events: auto;
+    }
+
     .btn {
-      background: linear-gradient(135deg, rgba(16, 185, 129, 0.25), rgba(6, 95, 70, 0.6));
-      border: 1px solid rgba(100, 255, 200, 0.45);
+      background: linear-gradient(135deg, rgba(225, 29, 72, 0.45), rgba(136, 19, 55, 0.85));
+      border: 1px solid rgba(255, 100, 130, 0.55);
       color: var(--text-main);
       padding: 12px 22px;
       border-radius: 12px;
       font-size: 1rem;
-      font-weight: 600;
+      font-weight: 700;
       cursor: pointer;
       transition: all 0.2s ease;
-      text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.6);
+      pointer-events: auto;
     }
 
     .btn:hover:not(:disabled) {
-      background: linear-gradient(135deg, rgba(16, 185, 129, 0.45), rgba(6, 95, 70, 0.85));
-      border-color: var(--mint-glow);
-      box-shadow: 0 0 15px rgba(100, 255, 200, 0.35);
+      background: linear-gradient(135deg, rgba(244, 63, 94, 0.7), rgba(159, 18, 57, 0.95));
+      border-color: var(--gold);
+      box-shadow: 0 0 20px rgba(255, 51, 85, 0.5);
       transform: translateY(-1px);
     }
 
     .btn:disabled {
-      opacity: 0.45;
+      opacity: 0.4;
       cursor: not-allowed;
     }
 
     .btn-gold {
-      background: linear-gradient(135deg, rgba(245, 158, 11, 0.35), rgba(180, 83, 9, 0.65));
-      border-color: var(--gold);
+      background: linear-gradient(135deg, rgba(245, 158, 11, 0.55), rgba(180, 35, 24, 0.88));
+      border: 1px solid var(--gold);
       color: #fffbeb;
+      box-shadow: 0 0 22px rgba(255, 207, 86, 0.25);
     }
 
     input[type="text"] {
-      background: rgba(8, 15, 18, 0.85);
-      border: 1px solid rgba(100, 255, 200, 0.35);
+      background: rgba(18, 3, 7, 0.9);
+      border: 1px solid rgba(255, 80, 110, 0.45);
       color: var(--text-main);
-      padding: 12px 16px;
-      border-radius: 10px;
+      padding: 13px 16px;
+      border-radius: 12px;
       font-size: 1.1rem;
       outline: none;
       width: 100%;
       text-align: center;
+      pointer-events: auto;
     }
 
     input[type="text"]:focus {
-      border-color: var(--mint-glow);
-      box-shadow: 0 0 12px rgba(100, 255, 200, 0.25);
+      border-color: var(--gold);
+      box-shadow: 0 0 15px rgba(255, 51, 85, 0.4);
     }
 
-    /* Стартовый экран выбора режима */
-    .center-screen {
-      margin: auto;
-      padding: 36px;
-      max-width: 540px;
+    .center-modal {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      padding: 34px;
+      max-width: 560px;
       width: 92%;
       text-align: center;
       display: flex;
       flex-direction: column;
-      gap: 20px;
+      gap: 18px;
+      pointer-events: auto;
     }
 
-    .title-glow {
-      font-size: 2rem;
-      font-weight: 800;
-      letter-spacing: 1px;
-      background: linear-gradient(90deg, #a7f3d0, #64ffc8, #ffd166);
+    .title-imperial {
+      font-size: 2.2rem;
+      font-weight: 900;
+      letter-spacing: 1.5px;
+      background: linear-gradient(90deg, #fda4af, #ffcf56, #ff3355);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
-      margin-bottom: 4px;
+      text-transform: uppercase;
     }
 
     .subtitle {
-      font-size: 0.95rem;
-      color: rgba(236, 253, 245, 0.75);
+      font-size: 0.96rem;
+      color: rgba(255, 241, 242, 0.82);
       line-height: 1.5;
     }
 
-    /* Сетка экрана ХОСТА */
-    .host-layout {
-      display: grid;
-      grid-template-columns: 330px 1fr 340px;
-      grid-template-rows: 74px 1fr 235px;
-      gap: 16px;
-      padding: 16px;
+    /* Сетка Главного Экрана (ТВ) — Центр полностью открыт для 3D-города! */
+    .tv-hud {
       width: 100vw;
       height: 100vh;
+      display: grid;
+      grid-template-columns: 320px 1fr 330px;
+      grid-template-rows: 70px 1fr 185px;
+      gap: 14px;
+      padding: 14px;
     }
 
-    .host-header {
+    .tv-top {
       grid-column: 1 / 4;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 0 24px;
+      padding: 0 22px;
     }
 
-    .pin-badge {
-      background: rgba(100, 255, 200, 0.12);
-      border: 1px solid var(--mint-glow);
-      padding: 6px 16px;
-      border-radius: 10px;
-      font-size: 1.35rem;
-      font-weight: 800;
+    .pin-pill {
+      background: rgba(255, 51, 85, 0.18);
+      border: 2px solid var(--gold);
+      padding: 5px 16px;
+      border-radius: 12px;
+      font-size: 1.4rem;
+      font-weight: 900;
       letter-spacing: 3px;
-      color: var(--mint-glow);
+      color: var(--gold);
+      box-shadow: 0 0 16px rgba(255, 207, 86, 0.3);
     }
 
-    .host-left {
+    .tv-left {
       grid-column: 1 / 2;
       grid-row: 2 / 4;
-      padding: 16px;
+      padding: 14px;
       display: flex;
       flex-direction: column;
       gap: 10px;
       overflow-y: auto;
     }
 
-    .host-center {
+    .tv-center-banner {
       grid-column: 2 / 3;
       grid-row: 2 / 3;
-      padding: 20px;
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: center;
-      position: relative;
-      text-align: center;
+      justify-content: space-between;
+      padding: 12px;
+      pointer-events: none;
     }
 
-    .host-right {
+    .tv-right {
       grid-column: 3 / 4;
       grid-row: 2 / 4;
-      padding: 16px;
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-      overflow: hidden;
-    }
-
-    .host-bottom {
-      grid-column: 2 / 3;
-      grid-row: 3 / 4;
-      padding: 14px 18px;
+      padding: 14px;
       display: flex;
       flex-direction: column;
       gap: 10px;
+      overflow: hidden;
     }
 
-    /* Карточка игрока в левой панели */
-    .player-card {
-      background: rgba(10, 18, 22, 0.65);
-      border: 1px solid rgba(100, 255, 200, 0.15);
+    .tv-bottom {
+      grid-column: 2 / 3;
+      grid-row: 3 / 4;
+      padding: 12px 16px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    /* Карточки игроков на ТВ */
+    .p-card {
+      background: rgba(20, 4, 8, 0.72);
+      border: 1px solid rgba(255, 70, 100, 0.2);
       border-radius: 12px;
       padding: 10px 12px;
       display: flex;
       flex-direction: column;
       gap: 6px;
-      transition: all 0.25s ease;
+      transition: all 0.3s ease;
     }
 
-    .player-card.ready {
-      border-color: var(--mint-glow);
-      box-shadow: inset 0 0 12px rgba(100, 255, 200, 0.12);
+    .p-card.active-turn {
+      border: 2px solid var(--gold);
+      background: linear-gradient(135deg, rgba(95, 15, 32, 0.85), rgba(35, 6, 12, 0.9));
+      box-shadow: 0 0 22px rgba(255, 207, 86, 0.35);
+      transform: translateX(4px);
     }
 
-    .player-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      font-weight: 700;
-    }
-
-    .gold-pill {
+    .gold-badge {
       color: var(--gold);
-      font-weight: 800;
-      font-size: 0.95rem;
-      background: rgba(255, 209, 102, 0.12);
-      border: 1px solid rgba(255, 209, 102, 0.35);
-      padding: 2px 8px;
+      font-weight: 900;
+      font-size: 1rem;
+      background: rgba(255, 207, 86, 0.14);
+      border: 1px solid rgba(255, 207, 86, 0.45);
+      padding: 2px 9px;
       border-radius: 999px;
     }
 
-    .mini-buildings {
+    .wonders-bar {
       display: flex;
-      flex-wrap: wrap;
-      gap: 4px;
+      gap: 5px;
     }
 
-    .b-tag {
-      font-size: 0.72rem;
-      padding: 2px 6px;
+    .wonder-pip {
+      flex: 1;
+      text-align: center;
+      font-size: 0.7rem;
+      padding: 3px 4px;
       border-radius: 6px;
-      background: rgba(255,255,255,0.08);
-      border: 1px solid rgba(255,255,255,0.15);
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      color: rgba(255, 255, 255, 0.4);
     }
 
-    .b-tag.monument {
-      background: rgba(255, 209, 102, 0.2);
+    .wonder-pip.built {
+      background: linear-gradient(135deg, rgba(245, 158, 11, 0.35), rgba(225, 29, 72, 0.45));
       border-color: var(--gold);
-      color: var(--gold);
-      font-weight: 700;
+      color: var(--gold-bright);
+      font-weight: 800;
     }
 
-    /* Рынок зданий внизу */
-    .market-grid {
+    /* Витрина рынка внизу экрана ТВ */
+    .market-strip {
       display: grid;
       grid-template-columns: repeat(6, 1fr);
-      gap: 10px;
+      gap: 8px;
       height: 100%;
+      align-items: stretch;
     }
 
-    .market-item {
-      background: rgba(8, 16, 20, 0.8);
-      border: 1px solid rgba(100, 255, 200, 0.22);
+    .m-card {
+      background: rgba(16, 3, 7, 0.85);
+      border: 1px solid rgba(255, 80, 110, 0.25);
       border-radius: 10px;
-      padding: 8px 10px;
+      padding: 7px 9px;
       display: flex;
       flex-direction: column;
       justify-content: space-between;
-      font-size: 0.8rem;
+      font-size: 0.74rem;
+      transition: all 0.25s ease;
     }
 
-    .market-item.monument-card {
-      border-color: rgba(255, 209, 102, 0.55);
-      background: linear-gradient(180deg, rgba(45, 35, 15, 0.8), rgba(15, 20, 25, 0.85));
+    .m-card.preview-focus {
+      border: 2px solid var(--gold);
+      transform: translateY(-6px) scale(1.03);
+      box-shadow: 0 8px 24px rgba(255, 207, 86, 0.4);
+      background: rgba(65, 10, 22, 0.95);
     }
 
-    /* Лог событий справа */
-    .event-log {
+    .event-feed {
       flex: 1;
       overflow-y: auto;
       display: flex;
       flex-direction: column;
-      gap: 8px;
+      gap: 7px;
+      font-size: 0.83rem;
       padding-right: 4px;
-      font-size: 0.86rem;
     }
 
-    .log-entry {
-      background: rgba(0, 0, 0, 0.3);
-      border-left: 3px solid var(--mint-glow);
+    .feed-item {
+      background: rgba(0, 0, 0, 0.38);
+      border-left: 3px solid var(--ruby-glow);
       padding: 7px 10px;
       border-radius: 0 8px 8px 0;
       line-height: 1.35;
     }
 
-    /* Визуализация кубика и Покровителей */
-    .dice-box {
-      width: 88px;
-      height: 88px;
-      border-radius: 20px;
-      background: linear-gradient(135deg, #10b981, #047857);
-      border: 2px solid var(--mint-glow);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 2.8rem;
-      font-weight: 900;
-      color: #fff;
-      box-shadow: 0 0 30px rgba(100, 255, 200, 0.45);
-      margin: 14px auto;
+    .feed-item.gold-event {
+      border-left-color: var(--gold);
     }
 
-    .patron-cards-row {
-      display: flex;
-      gap: 14px;
-      justify-content: center;
-      width: 100%;
-      margin-top: 12px;
-      flex-wrap: wrap;
+    /* Плашка текущего действия сверху по центру */
+    .turn-spotlight-banner {
+      background: linear-gradient(90deg, rgba(28, 5, 10, 0.9), rgba(85, 12, 28, 0.92), rgba(28, 5, 10, 0.9));
+      border: 1px solid var(--gold);
+      border-radius: 999px;
+      padding: 10px 28px;
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.75), 0 0 20px rgba(255, 51, 85, 0.35);
+      text-align: center;
     }
 
-    .patron-card {
-      flex: 1;
-      min-width: 175px;
-      max-width: 240px;
-      background: rgba(12, 22, 27, 0.85);
-      border: 1px solid rgba(100, 255, 200, 0.25);
-      border-radius: 14px;
-      padding: 12px;
-      text-align: left;
-    }
-
-    /* Мобильный клиент */
-    .client-layout {
+    /* Мобильный контроллер игрока */
+    .phone-wrap {
       width: 100%;
       max-width: 480px;
       height: 100vh;
       margin: 0 auto;
-      padding: 14px;
+      padding: 12px;
       display: flex;
       flex-direction: column;
-      gap: 12px;
+      gap: 10px;
       overflow-y: auto;
+      pointer-events: auto;
     }
 
-    .client-choice-btn {
+    .phone-card-btn {
       width: 100%;
       text-align: left;
-      padding: 14px;
+      padding: 12px 14px;
       border-radius: 12px;
-      background: rgba(15, 28, 34, 0.85);
-      border: 1px solid rgba(100, 255, 200, 0.28);
+      background: rgba(28, 6, 12, 0.9);
+      border: 1px solid rgba(255, 80, 110, 0.35);
       color: var(--text-main);
       cursor: pointer;
       display: flex;
       flex-direction: column;
       gap: 4px;
-      transition: transform 0.15s ease, border-color 0.15s ease;
+      transition: all 0.15s ease;
     }
 
-    .client-choice-btn:active:not(:disabled) {
+    .phone-card-btn:active:not(:disabled) {
       transform: scale(0.98);
     }
 
-    .client-choice-btn.selected {
-      border: 2px solid var(--mint-glow);
-      background: rgba(16, 185, 129, 0.22);
+    .phone-card-btn:disabled {
+      opacity: 0.38;
+      cursor: not-allowed;
+    }
+
+    .phone-card-btn.wonder-btn {
+      border-color: var(--gold);
+      background: linear-gradient(135deg, rgba(60, 18, 10, 0.92), rgba(30, 6, 12, 0.95));
     }
   </style>
 </head>
 <body>
 
-  <!-- Изометрический процедурный фон -->
-  <canvas id="iso-canvas"></canvas>
+  <!-- Изометрический 3D-город и система спецэффектов -->
+  <canvas id="city-canvas"></canvas>
 
-  <!-- Контейнер приложения -->
+  <!-- Слой интерфейса -->
   <div id="app"></div>
 
   <script>
-    /*************************************************************************
-     * 1. ПРОЦЕДУРНЫЙ ИЗОМЕТРИЧЕСКИЙ ФОН (HTML5 CANVAS)
-     * Парящие острова, сосны, извилистые тропы, мятные сферы и лучи света
-     *************************************************************************/
-    const canvas = document.getElementById('iso-canvas');
-    const ctx = canvas.getContext('2d');
-    let cw, ch;
+    /***************************************************************************
+     * 1. ПРОЦЕДУРНЫЙ ЗВУКОВОЙ ДВИЖОК (Web Audio API — без внешних файлов)
+     ***************************************************************************/
+    const SoundFX = {
+      ctx: null,
+      init() {
+        if (!this.ctx) {
+          const AudioCtx = window.AudioContext || window.webkitAudioContext;
+          if (AudioCtx) this.ctx = new AudioCtx();
+        }
+        if (this.ctx && this.ctx.state === 'suspended') {
+          this.ctx.resume();
+        }
+      },
+      playTone(freq, type = 'sine', duration = 0.18, vol = 0.12, slideFreq = null) {
+        if (!this.ctx) return;
+        try {
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.type = type;
+          osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
+          if (slideFreq) {
+            osc.frequency.exponentialRampToValueAtTime(slideFreq, this.ctx.currentTime + duration);
+          }
+          gain.gain.setValueAtTime(vol, this.ctx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + duration);
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+          osc.start();
+          osc.stop(this.ctx.currentTime + duration);
+        } catch (e) {}
+      },
+      coin() {
+        this.playTone(987.77, 'sine', 0.12, 0.1);
+        setTimeout(() => this.playTone(1318.51, 'triangle', 0.22, 0.12), 70);
+      },
+      diceRoll() {
+        for (let i = 0; i < 6; i++) {
+          setTimeout(() => this.playTone(220 + i * 65, 'triangle', 0.08, 0.08), i * 75);
+        }
+      },
+      build() {
+        this.playTone(261.63, 'triangle', 0.2, 0.14);
+        setTimeout(() => this.playTone(329.63, 'triangle', 0.2, 0.14), 110);
+        setTimeout(() => this.playTone(392.00, 'triangle', 0.25, 0.15), 220);
+        setTimeout(() => this.playTone(523.25, 'sine', 0.4, 0.18), 330);
+      },
+      steal() {
+        this.playTone(440, 'sawtooth', 0.22, 0.09, 180);
+      }
+    };
 
-    const orbs = [];
-    const islands = [
-      { xRatio: 0.22, yRatio: 0.35, w: 180, h: 90, phase: 0.0, trees: [[-45, -10], [35, -18], [5, 12]] },
-      { xRatio: 0.50, yRatio: 0.48, w: 280, h: 140, phase: 1.5, trees: [[-80, -15], [-30, -35], [65, -20], [85, 10], [-15, 25]] },
-      { xRatio: 0.78, yRatio: 0.33, w: 190, h: 95, phase: 3.1, trees: [[-40, -12], [25, -20], [45, 8]] },
-      { xRatio: 0.33, yRatio: 0.72, w: 150, h: 75, phase: 4.4, trees: [[-20, -10], [30, 5]] },
-      { xRatio: 0.70, yRatio: 0.68, w: 165, h: 82, phase: 2.2, trees: [[-30, -8], [15, -18], [35, 10]] }
+    /***************************************************************************
+     * 2. КАТАЛОГ ПОКРОВИТЕЛЕЙ БРОСКА, ЗДАНИЙ И ВЕЛИКИХ ЧУДЕС (НА РУССКОМ)
+     ***************************************************************************/
+    const DICE_STYLES = {
+      sonya: {
+        id: 'sonya',
+        patron: 'Соня',
+        title: 'Тихий Бросок Сони (Числа 1–3)',
+        color: '#f472b6',
+        desc: 'Соня не любит резких движений. На костях гарантированно выпадет 1, 2 или 3. Вы сразу получаете +1 🪙 за тишину и активируете защиту казны.'
+      },
+      natasha: {
+        id: 'natasha',
+        patron: 'Наташа',
+        title: 'Бурный Поток Наташи (Два кубика!)',
+        color: '#fb923c',
+        desc: 'Водная стихия и жадный аппетит! Бросаются СРАЗУ ДВА независимых кубика (1–6). Срабатывают здания обоих выпавших чисел!'
+      },
+      stepan: {
+        id: 'stepan',
+        patron: 'Степан',
+        title: 'Дерзкий Бросок Степана (Числа 4–6)',
+        color: '#ff2a4b',
+        desc: 'Степан всегда в центре внимания! На костях гарантированно выпадет 4, 5 или 6. Все сборы Степана в этот ход приносят вам +1 🪙 сверху.'
+      }
+    };
+
+    // 9 Городских Зданий + 3 Великих Чуда (Итого 12 уникальных архитектурных объектов)
+    const BUILDINGS = [
+      // --- ОРДЕН СОНИ (Числа 1–3, работает в ход любого игрока + защита) ---
+      {
+        id: 'tea_house',
+        name: 'Чайный Павильон Сони',
+        patron: 'Соня',
+        patronId: 'sonya',
+        cost: 2,
+        dice: [1],
+        triggerMode: 'ALL', // Срабатывает в ход ЛЮБОГО игрока
+        income: 2,
+        shield: false,
+        archType: 'pagoda',
+        desc: 'Кубик [1]: Приносит +2 🪙 в ход любого игрока.'
+      },
+      {
+        id: 'velvet_garden',
+        name: 'Бархатный Сад Дрёмы',
+        patron: 'Соня',
+        patronId: 'sonya',
+        cost: 3,
+        dice: [2],
+        triggerMode: 'ALL',
+        income: 2,
+        shield: true,
+        archType: 'conservatory',
+        desc: 'Кубик [2]: +2 🪙 в чей угодно ход. Защищает казну от набегов Степана!'
+      },
+      {
+        id: 'silent_bank',
+        name: 'Теневой Банк Сони',
+        patron: 'Соня',
+        patronId: 'sonya',
+        cost: 4,
+        dice: [3],
+        triggerMode: 'ALL',
+        income: 3,
+        shield: false,
+        archType: 'vault',
+        desc: 'Кубик [3]: Приносит +3 🪙 в ход любого игрока.'
+      },
+
+      // --- ОРДЕН НАТАШИ (Числа 2–5, каскадный множитель за каждое водное здание!) ---
+      {
+        id: 'water_mill',
+        name: 'Рубиновая Мельница',
+        patron: 'Наташа',
+        patronId: 'natasha',
+        cost: 3,
+        dice: [2, 3],
+        triggerMode: 'ALL',
+        income: 1,
+        cascade: true,
+        archType: 'mill',
+        desc: 'Кубик [2, 3]: Даёт +1 🪙 за КАЖДОЕ ваше здание Наташи (в чей угодно ход)!'
+      },
+      {
+        id: 'fish_bazaar',
+        name: 'Королевский Рыбный Ряд',
+        patron: 'Наташа',
+        patronId: 'natasha',
+        cost: 4,
+        dice: [4],
+        triggerMode: 'OWNER', // Только в свой ход, но мощно
+        income: 4,
+        cascade: true,
+        archType: 'harbor',
+        desc: 'Кубик [4] в ваш ход: +4 🪙 + ещё по 1 🪙 за каждое ваше здание Наташи!'
+      },
+      {
+        id: 'steam_winery',
+        name: 'Алый Виноградник Потока',
+        patron: 'Наташа',
+        patronId: 'natasha',
+        cost: 5,
+        dice: [5],
+        triggerMode: 'ALL',
+        income: 3,
+        cascade: false,
+        archType: 'winery',
+        desc: 'Кубик [5]: Приносит +3 🪙 в ход любого игрока.'
+      },
+
+      // --- ОРДЕН СТЕПАНА (Числа 4–6, крупные куши и сборы с соперников) ---
+      {
+        id: 'crimson_tavern',
+        name: 'Громкая Таверна Степана',
+        patron: 'Степан',
+        patronId: 'stepan',
+        cost: 3,
+        dice: [4],
+        triggerMode: 'STEAL',
+        income: 2,
+        stealAmount: 1,
+        archType: 'tavern',
+        desc: 'Кубик [4] в ваш ход: +2 🪙 из казны и забирает по 1 🪙 у игроков без защиты Сони!'
+      },
+      {
+        id: 'imperial_mint',
+        name: 'Золотой Монетный Двор',
+        patron: 'Степан',
+        patronId: 'stepan',
+        cost: 5,
+        dice: [5],
+        triggerMode: 'OWNER',
+        income: 5,
+        archType: 'spire',
+        desc: 'Кубик [5] в ваш ход: Взрывной доход +5 🪙 из имперской казны!'
+      },
+      {
+        id: 'grand_opera',
+        name: 'Багровый Гранд-Театр',
+        patron: 'Степан',
+        patronId: 'stepan',
+        cost: 6,
+        dice: [6],
+        triggerMode: 'STEAL',
+        income: 4,
+        stealAmount: 2,
+        archType: 'cathedral',
+        desc: 'Кубик [6] в ваш ход: +4 🪙 из казны и взимает по 2 🪙 за билет с соперников!'
+      }
     ];
+
+    const WONDERS = [
+      {
+        id: 'wonder_sonya',
+        name: 'Храм Вечной Дрёмы Сони',
+        shortName: 'Храм Сони',
+        patron: 'Соня',
+        cost: 10,
+        archType: 'wonder_sonya',
+        desc: 'ЧУДО 1/3: Даёт вечный иммунитет от поборов Степана и +2 🪙 в конце каждого вашего хода.'
+      },
+      {
+        id: 'wonder_natasha',
+        name: 'Гранд-Акведук Наташи',
+        shortName: 'Акведук Наташи',
+        patron: 'Наташа',
+        cost: 12,
+        archType: 'wonder_natasha',
+        desc: 'ЧУДО 2/3: Все ваши здания приносят на +1 🪙 больше при каждом срабатывании!'
+      },
+      {
+        id: 'wonder_stepan',
+        name: 'Триумфальный Колизей Степана',
+        shortName: 'Колизей Степана',
+        patron: 'Степан',
+        cost: 14,
+        archType: 'wonder_stepan',
+        desc: 'ЧУДО 3/3: В начале каждого вашего хода все соперники платят вам по 1 🪙 за величие!'
+      }
+    ];
+
+    const ALL_CONSTRUCTIONS = [...BUILDINGS, ...WONDERS];
+    const ROOM_PREFIX = 'crimson-polis-';
+    const appEl = document.getElementById('app');
+
+    let mode = 'MENU'; // MENU | HOST | CLIENT
+    let peer = null;
+
+    /***************************************************************************
+     * 3. СОСТОЯНИЕ ИГРЫ И КИНЕМАТОГРАФИЧЕСКОЙ КАМЕРЫ
+     ***************************************************************************/
+    const hostState = {
+      pin: '',
+      phase: 'LOBBY', // LOBBY | TURN_ROLL | ANIMATING_ROLL | TURN_BUILD | ANIMATING_BUILD | GAME_OVER
+      round: 1,
+      activeIndex: 0,
+      rolledDice: [],
+      chosenDiceStyle: null,
+      previewCardId: null,
+      bannerTitle: 'ОЖИДАНИЕ ИГРОКОВ',
+      bannerSubtitle: 'Подключитесь со смартфонов по PIN-коду',
+      winner: null,
+      players: [],
+      logs: []
+    };
+
+    // Визуальные спецэффекты на Canvas
+    const vfx = {
+      embers: [],
+      flyingCoins: [],     // { x0, y0, x1, y1, progress, amount, color }
+      floatingTexts: [],   // { x, y, text, color, life, maxLife }
+      shockwaves: [],      // { x, y, r, maxR, color, alpha }
+      diceAnim: { active: false, timer: 0, values: [1], style: 'sonya' },
+      buildBeam: { active: false, x: 0, y: 0, alpha: 0, color: '#ffcf56' }
+    };
+
+    /***************************************************************************
+     * 4. ИЗОМЕТРИЧЕСКИЙ 3D-АРХИТЕКТУРНЫЙ РЕНДЕРЕР НА CANVAS
+     ***************************************************************************/
+    const canvas = document.getElementById('city-canvas');
+    const ctx = canvas.getContext('2d');
+    let cw = window.innerWidth;
+    let ch = window.innerHeight;
 
     function resizeCanvas() {
       cw = canvas.width = window.innerWidth;
@@ -421,298 +671,501 @@
     window.addEventListener('resize', resizeCanvas);
     resizeCanvas();
 
-    for (let i = 0; i < 42; i++) {
-      orbs.push({
-        x: Math.random() * window.innerWidth,
-        y: Math.random() * window.innerHeight,
-        r: 1.8 + Math.random() * 4.5,
-        vy: 0.25 + Math.random() * 0.65,
-        alpha: 0.2 + Math.random() * 0.6,
-        drift: Math.random() * Math.PI * 2
+    for (let i = 0; i < 55; i++) {
+      vfx.embers.push({
+        x: Math.random() * cw,
+        y: Math.random() * ch,
+        r: 1.5 + Math.random() * 3.5,
+        vy: 0.35 + Math.random() * 0.85,
+        drift: Math.random() * Math.PI * 2,
+        isGold: Math.random() > 0.45
       });
     }
 
-    function drawIsoIsland(cx, cy, w, h) {
-      // Нижний каменный конус острова
-      ctx.beginPath();
-      ctx.moveTo(cx - w / 2, cy);
-      ctx.lineTo(cx, cy + h * 0.95);
-      ctx.lineTo(cx + w / 2, cy);
-      ctx.closePath();
-      const rockGrad = ctx.createLinearGradient(cx, cy, cx, cy + h);
-      rockGrad.addColorStop(0, '#0f3538');
-      rockGrad.addColorStop(1, '#041012');
-      ctx.fillStyle = rockGrad;
-      ctx.fill();
+    // Координаты Бастионов игроков вокруг Центральной Имперской Астролябии
+    function getPlayerBastionPos(index, total) {
+      const count = Math.max(2, total);
+      const angle = (index / count) * Math.PI * 2 - Math.PI / 2;
+      const rx = Math.min(cw * 0.24, 310);
+      const ry = Math.min(ch * 0.22, 185);
+      const cx = cw * 0.5;
+      const cy = ch * 0.44;
+      return {
+        x: cx + Math.cos(angle) * rx,
+        y: cy + Math.sin(angle) * ry
+      };
+    }
 
-      // Верхняя изометрическая грань (изумрудная плашка)
+    // Базовый изометрический 3D-блок (параллелепипед)
+    function drawIsoBlock(x, y, w, d, h, topCol, leftCol, rightCol, strokeCol = 'rgba(255,207,86,0.28)') {
+      const hw = w / 2;
+      const hd = d / 2;
+
+      // Левая грань
       ctx.beginPath();
-      ctx.moveTo(cx, cy - h / 2);
-      ctx.lineTo(cx + w / 2, cy);
-      ctx.lineTo(cx, cy + h / 2);
-      ctx.lineTo(cx - w / 2, cy);
+      ctx.moveTo(x - hw, y);
+      ctx.lineTo(x, y + hd);
+      ctx.lineTo(x, y + hd - h);
+      ctx.lineTo(x - hw, y - h);
       ctx.closePath();
-      const topGrad = ctx.createLinearGradient(cx - w / 2, cy - h / 2, cx + w / 2, cy + h / 2);
-      topGrad.addColorStop(0, '#134e4a');
-      topGrad.addColorStop(0.5, '#0f3d39');
-      topGrad.addColorStop(1, '#062421');
-      ctx.fillStyle = topGrad;
+      ctx.fillStyle = leftCol;
       ctx.fill();
-      ctx.strokeStyle = 'rgba(100, 255, 200, 0.28)';
-      ctx.lineWidth = 1.5;
+      ctx.strokeStyle = strokeCol;
+      ctx.lineWidth = 1;
       ctx.stroke();
 
-      // Извилистая светящаяся тропа на острове
+      // Правая грань
       ctx.beginPath();
-      ctx.moveTo(cx - w * 0.25, cy - h * 0.12);
-      ctx.quadraticCurveTo(cx, cy + h * 0.08, cx + w * 0.25, cy - h * 0.08);
-      ctx.strokeStyle = 'rgba(100, 255, 200, 0.45)';
-      ctx.lineWidth = 3;
+      ctx.moveTo(x + hw, y);
+      ctx.lineTo(x, y + hd);
+      ctx.lineTo(x, y + hd - h);
+      ctx.lineTo(x + hw, y - h);
+      ctx.closePath();
+      ctx.fillStyle = rightCol;
+      ctx.fill();
+      ctx.stroke();
+
+      // Верхняя крыша/площадка
+      ctx.beginPath();
+      ctx.moveTo(x, y - hd - h);
+      ctx.lineTo(x + hw, y - h);
+      ctx.lineTo(x, y + hd - h);
+      ctx.lineTo(x - hw, y - h);
+      ctx.closePath();
+      ctx.fillStyle = topCol;
+      ctx.fill();
       ctx.stroke();
     }
 
-    function drawPineTree(tx, ty) {
-      // Ствол
-      ctx.fillStyle = '#051b18';
-      ctx.fillRect(tx - 2, ty - 6, 4, 8);
-      // 3 яруса хвои
-      for (let tier = 0; tier < 3; tier++) {
-        const yOff = ty - 6 - tier * 9;
-        const width = 12 - tier * 2.5;
-        ctx.beginPath();
-        ctx.moveTo(tx, yOff - 14);
-        ctx.lineTo(tx + width, yOff);
-        ctx.lineTo(tx - width, yOff);
-        ctx.closePath();
-        ctx.fillStyle = tier === 2 ? '#34d399' : tier === 1 ? '#10b981' : '#059669';
-        ctx.fill();
+    // Детализированная отрисовка настоящих зданий по их архитектурному типу
+    function drawArchitecturalBuilding(bx, by, archType, time) {
+      switch (archType) {
+        case 'pagoda': // Чайный павильон Сони (многоярусная пагода с фонариками)
+          drawIsoBlock(bx, by, 26, 14, 12, '#be185d', '#831843', '#500724');
+          drawIsoBlock(bx, by - 12, 32, 18, 4, '#f472b6', '#db2777', '#9d174d');
+          drawIsoBlock(bx, by - 16, 18, 10, 9, '#9d174d', '#831843', '#500724');
+          drawIsoBlock(bx, by - 25, 24, 14, 4, '#fbcfe8', '#f472b6', '#db2777');
+          break;
+
+        case 'conservatory': // Бархатный сад (стеклянная рубиновая оранжерея с куполом)
+          drawIsoBlock(bx, by, 28, 16, 10, '#9f1239', '#881337', '#4c0519');
+          ctx.beginPath();
+          ctx.arc(bx, by - 12, 10, Math.PI, 0);
+          ctx.fillStyle = 'rgba(244, 114, 182, 0.75)';
+          ctx.fill();
+          ctx.strokeStyle = '#ffcf56';
+          ctx.stroke();
+          break;
+
+        case 'vault': // Теневой банк (монолитный золотой казначейский бастион)
+          drawIsoBlock(bx, by, 30, 18, 18, '#fbbf24', '#b45309', '#78350f');
+          drawIsoBlock(bx, by - 18, 22, 12, 6, '#fef08a', '#d97706', '#92400e');
+          break;
+
+        case 'mill': // Рубиновая мельница с вращающимся водяным колесом
+          drawIsoBlock(bx, by, 26, 15, 16, '#ea580c', '#9a3412', '#431407');
+          ctx.save();
+          ctx.translate(bx + 10, by - 6);
+          ctx.rotate(time * 2.2);
+          ctx.strokeStyle = '#ffcf56';
+          ctx.lineWidth = 2;
+          ctx.beginPath();
+          ctx.arc(0, 0, 7, 0, Math.PI * 2);
+          ctx.stroke();
+          for (let i = 0; i < 4; i++) {
+            ctx.rotate(Math.PI / 2);
+            ctx.beginPath();
+            ctx.moveTo(-7, 0);
+            ctx.lineTo(7, 0);
+            ctx.stroke();
+          }
+          ctx.restore();
+          break;
+
+        case 'harbor': // Рыбный ряд с маяком
+          drawIsoBlock(bx, by, 30, 16, 10, '#c2410c', '#7c2d12', '#431407');
+          drawIsoBlock(bx - 6, by - 10, 10, 6, 18, '#fb923c', '#ea580c', '#9a3412');
+          ctx.beginPath();
+          ctx.arc(bx - 6, by - 30, 4, 0, Math.PI * 2);
+          ctx.fillStyle = '#fde047';
+          ctx.fill();
+          break;
+
+        case 'winery': // Виноградник потока
+          drawIsoBlock(bx, by, 30, 18, 13, '#e11d48', '#9f1239', '#4c0519');
+          drawIsoBlock(bx + 5, by - 13, 14, 8, 9, '#fb7185', '#be123c', '#881337');
+          break;
+
+        case 'tavern': // Громкая таверна Степана со светящимися окнами
+          drawIsoBlock(bx, by, 30, 18, 15, '#dc2626', '#991b1b', '#450a0a');
+          drawIsoBlock(bx, by - 15, 34, 20, 5, '#fbbf24', '#b91c1c', '#7f1d1d');
+          ctx.fillStyle = '#fef08a';
+          ctx.fillRect(bx - 6, by - 9, 4, 5);
+          ctx.fillRect(bx + 2, by - 9, 4, 5);
+          break;
+
+        case 'spire': // Золотой Монетный Двор (высокая имперская башня со шпилем)
+          drawIsoBlock(bx, by, 24, 14, 24, '#f59e0b', '#b45309', '#78350f');
+          ctx.beginPath();
+          ctx.moveTo(bx, by - 42);
+          ctx.lineTo(bx + 9, by - 24);
+          ctx.lineTo(bx - 9, by - 24);
+          ctx.closePath();
+          ctx.fillStyle = '#fde047';
+          ctx.fill();
+          break;
+
+        case 'cathedral': // Багровый Гранд-Театр
+          drawIsoBlock(bx, by, 34, 20, 16, '#e11d48', '#9f1239', '#4c0519');
+          ctx.beginPath();
+          ctx.arc(bx, by - 16, 11, Math.PI, 0);
+          ctx.fillStyle = '#ffcf56';
+          ctx.fill();
+          break;
+
+        case 'wonder_sonya': // ВЕЛИКОЕ ЧУДО: Храм Сони
+          drawIsoBlock(bx, by, 38, 22, 16, '#f472b6', '#be185d', '#831843', '#ffcf56');
+          drawIsoBlock(bx, by - 16, 26, 15, 14, '#fbcfe8', '#db2777', '#9d174d', '#ffcf56');
+          ctx.beginPath();
+          ctx.arc(bx, by - 36, 7, 0, Math.PI * 2);
+          ctx.fillStyle = '#ffcf56';
+          ctx.shadowColor = '#ffcf56';
+          ctx.shadowBlur = 15;
+          ctx.fill();
+          ctx.shadowBlur = 0;
+          break;
+
+        case 'wonder_natasha': // ВЕЛИКОЕ ЧУДО: Гранд-Акведук Наташи
+          drawIsoBlock(bx, by, 42, 20, 22, '#fb923c', '#c2410c', '#7c2d12', '#ffcf56');
+          drawIsoBlock(bx, by - 22, 46, 22, 6, '#38bdf8', '#0284c7', '#0369a1', '#ffcf56');
+          break;
+
+        case 'wonder_stepan': // ВЕЛИКОЕ ЧУДО: Триумфальный Колизей Степана
+          drawIsoBlock(bx, by, 44, 26, 20, '#ff2a4b', '#b91c1c', '#7f1d1d', '#ffcf56');
+          drawIsoBlock(bx, by - 20, 34, 20, 10, '#ffcf56', '#d97706', '#92400e', '#fff');
+          break;
+
+        default:
+          drawIsoBlock(bx, by, 24, 14, 14, '#e11d48', '#9f1239', '#4c0519');
       }
     }
 
-    function animateBackground(time) {
-      const t = time * 0.001;
-      // Глубокий градиент неба архипелага
-      const bgGrad = ctx.createRadialGradient(cw * 0.5, ch * 0.3, 50, cw * 0.5, ch * 0.5, Math.max(cw, ch));
-      bgGrad.addColorStop(0, '#11383d');
-      bgGrad.addColorStop(0.55, '#091f24');
-      bgGrad.addColorStop(1, '#040c0e');
-      ctx.fillStyle = bgGrad;
+    function renderCityCanvas(timestamp) {
+      const t = timestamp * 0.001;
+
+      // 1. Королевский багрово-рубиновый фон
+      const skyGrad = ctx.createRadialGradient(cw * 0.5, ch * 0.42, 40, cw * 0.5, ch * 0.5, Math.max(cw, ch) * 0.85);
+      skyGrad.addColorStop(0, '#4c0817');
+      skyGrad.addColorStop(0.48, '#23040a');
+      skyGrad.addColorStop(1, '#0b0103');
+      ctx.fillStyle = skyGrad;
       ctx.fillRect(0, 0, cw, ch);
 
-      // Мягкие диагональные лучи света
+      // 2. Имперские золотые кольца Астролябии в центре
+      const centerX = cw * 0.5;
+      const centerY = ch * 0.44;
+
       ctx.save();
-      for (let i = 0; i < 4; i++) {
-        const rayX = (cw * 0.2) + i * (cw * 0.22) + Math.sin(t * 0.4 + i) * 30;
-        const rayGrad = ctx.createLinearGradient(rayX, 0, rayX + 180, ch);
-        rayGrad.addColorStop(0, 'rgba(100, 255, 200, 0.06)');
-        rayGrad.addColorStop(1, 'rgba(100, 255, 200, 0)');
-        ctx.fillStyle = rayGrad;
+      ctx.translate(centerX, centerY);
+      ctx.scale(1, 0.58); // Изометрическая проекция кругов
+      for (let r = 90; r <= 340; r += 80) {
         ctx.beginPath();
-        ctx.moveTo(rayX - 60, 0);
-        ctx.lineTo(rayX + 80, 0);
-        ctx.lineTo(rayX + 340, ch);
-        ctx.lineTo(rayX + 120, ch);
-        ctx.closePath();
-        ctx.fill();
+        ctx.arc(0, 0, r, 0, Math.PI * 2);
+        ctx.strokeStyle = r === 170 ? 'rgba(255, 207, 86, 0.26)' : 'rgba(255, 51, 85, 0.16)';
+        ctx.lineWidth = 2;
+        ctx.stroke();
       }
       ctx.restore();
 
-      // Астральные мосты между парящими островами
-      ctx.beginPath();
-      islands.forEach((isl, idx) => {
-        const ix = cw * isl.xRatio;
-        const iy = ch * isl.yRatio + Math.sin(t * 1.4 + isl.phase) * 8;
-        if (idx === 0) ctx.moveTo(ix, iy);
-        else ctx.lineTo(ix, iy);
-      });
-      ctx.strokeStyle = 'rgba(100, 255, 200, 0.14)';
-      ctx.setLineDash([6, 8]);
-      ctx.lineWidth = 2;
-      ctx.stroke();
-      ctx.setLineDash([]);
+      // 3. Отрисовка Центральной Цитадели / Астролябии
+      drawIsoBlock(centerX, centerY + 12, 120, 68, 22, '#5e0b1d', '#3b0611', '#210208', 'rgba(255,207,86,0.45)');
+      drawIsoBlock(centerX, centerY - 10, 86, 48, 12, '#881337', '#4c0519', '#2b030d', 'rgba(255,207,86,0.6)');
 
-      // Рисуем парящие острова и сосны
-      islands.forEach(isl => {
-        const ix = cw * isl.xRatio;
-        const iy = ch * isl.yRatio + Math.sin(t * 1.4 + isl.phase) * 8;
-        drawIsoIsland(ix, iy, isl.w, isl.h);
-        isl.trees.forEach(([ox, oy]) => drawPineTree(ix + ox, iy + oy));
-      });
-
-      // Плавающие светящиеся мятные сферы
-      orbs.forEach(o => {
-        o.y -= o.vy;
-        o.x += Math.sin(t + o.drift) * 0.35;
-        if (o.y < -20) {
-          o.y = ch + 20;
-          o.x = Math.random() * cw;
-        }
+      // Парящий рубиновый кристалл над центром (если сейчас не крутятся кости)
+      if (!vfx.diceAnim.active) {
+        const floatY = centerY - 46 + Math.sin(t * 2.5) * 6;
         ctx.beginPath();
-        ctx.arc(o.x, o.y, o.r, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(100, 255, 200, ${o.alpha})`;
-        ctx.shadowColor = '#64ffc8';
-        ctx.shadowBlur = 12;
+        ctx.moveTo(centerX, floatY - 22);
+        ctx.lineTo(centerX + 16, floatY);
+        ctx.lineTo(centerX, floatY + 22);
+        ctx.lineTo(centerX - 16, floatY);
+        ctx.closePath();
+        ctx.fillStyle = '#ff2a4b';
+        ctx.shadowColor = '#ff2a4b';
+        ctx.shadowBlur = 22;
         ctx.fill();
         ctx.shadowBlur = 0;
+        ctx.strokeStyle = '#ffcf56';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+      }
+
+      // 4. Отрисовка Бастионов Игроков и их Построенных Зданий
+      const players = hostState.players;
+      players.forEach((p, idx) => {
+        const pos = getPlayerBastionPos(idx, players.length);
+        const isTurn = (hostState.phase !== 'LOBBY' && hostState.activeIndex === idx);
+
+        // Светящийся мост к центру
+        ctx.beginPath();
+        ctx.moveTo(centerX, centerY);
+        ctx.lineTo(pos.x, pos.y);
+        ctx.strokeStyle = isTurn ? 'rgba(255, 207, 86, 0.65)' : 'rgba(255, 51, 85, 0.22)';
+        ctx.lineWidth = isTurn ? 4 : 2;
+        ctx.stroke();
+
+        // Подсветка активного острова
+        if (isTurn) {
+          ctx.save();
+          ctx.translate(pos.x, pos.y);
+          ctx.scale(1, 0.55);
+          ctx.beginPath();
+          ctx.arc(0, 0, 108 + Math.sin(t * 4) * 6, 0, Math.PI * 2);
+          ctx.strokeStyle = '#ffcf56';
+          ctx.lineWidth = 3;
+          ctx.shadowColor = '#ffcf56';
+          ctx.shadowBlur = 20;
+          ctx.stroke();
+          ctx.restore();
+        }
+
+        // Платформа Бастиона игрока
+        drawIsoBlock(
+          pos.x,
+          pos.y + 18,
+          156,
+          88,
+          20,
+          isTurn ? '#6b0f24' : '#3d0814',
+          '#29040c',
+          '#170206',
+          isTurn ? '#ffcf56' : 'rgba(255, 70, 100, 0.4)'
+        );
+
+        // Слоты под реальные здания на острове игрока
+        const buildingOffsets = [
+          [-42, -8], [-14, -18], [16, -18], [44, -8],
+          [-32, 10], [0, 4], [32, 10],
+          [-18, -32], [18, -32]
+        ];
+
+        // Сначала рисуем обычные здания, затем Великие Чудеса на переднем/верхнем плане
+        const allPlayerItems = [...p.buildings, ...p.wonders];
+        allPlayerItems.slice(0, 9).forEach((bId, bIdx) => {
+          const item = ALL_CONSTRUCTIONS.find(x => x.id === bId);
+          if (!item) return;
+          const [ox, oy] = buildingOffsets[bIdx % buildingOffsets.length];
+          drawArchitecturalBuilding(pos.x + ox, pos.y + oy, item.archType, t);
+        });
+
+        // Подпись владельца Бастиона прямо в 3D-мире
+        ctx.font = 'bold 13px "Segoe UI", sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillStyle = isTurn ? '#ffcf56' : '#fda4af';
+        ctx.fillText(`${p.name} (${p.gold} 🪙)`, pos.x, pos.y + 52);
       });
 
-      requestAnimationFrame(animateBackground);
+      // 5. Анимация гигантских Кубиков Судьбы в центре экрана
+      if (vfx.diceAnim.active) {
+        vfx.diceAnim.timer += 0.05;
+        const vals = vfx.diceAnim.values;
+        const count = vals.length;
+        vals.forEach((val, i) => {
+          const dx = centerX + (i - (count - 1) / 2) * 90;
+          const dy = centerY - 52 + Math.sin(t * 14 + i) * 6;
+          ctx.save();
+          ctx.translate(dx, dy);
+          ctx.fillStyle = '#7f1d1d';
+          ctx.strokeStyle = '#ffcf56';
+          ctx.lineWidth = 4;
+          ctx.shadowColor = '#ff3355';
+          ctx.shadowBlur = 25;
+          ctx.beginPath();
+          ctx.roundRect(-36, -36, 72, 72, 16);
+          ctx.fill();
+          ctx.stroke();
+          ctx.shadowBlur = 0;
+
+          ctx.fillStyle = '#fff';
+          ctx.font = '900 38px "Segoe UI", sans-serif';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText(String(val), 0, 2);
+          ctx.restore();
+        });
+      }
+
+      // 6. Ударные волны (Shockwaves) при срабатывании зданий
+      for (let i = vfx.shockwaves.length - 1; i >= 0; i--) {
+        const sw = vfx.shockwaves[i];
+        sw.r += 3.2;
+        sw.alpha -= 0.022;
+        if (sw.alpha <= 0) {
+          vfx.shockwaves.splice(i, 1);
+          continue;
+        }
+        ctx.save();
+        ctx.translate(sw.x, sw.y);
+        ctx.scale(1, 0.55);
+        ctx.beginPath();
+        ctx.arc(0, 0, sw.r, 0, Math.PI * 2);
+        ctx.strokeStyle = sw.color;
+        ctx.globalAlpha = Math.max(0, sw.alpha);
+        ctx.lineWidth = 4;
+        ctx.stroke();
+        ctx.restore();
+      }
+
+      // 7. Летящие по параболе золотые монеты между островами
+      for (let i = vfx.flyingCoins.length - 1; i >= 0; i--) {
+        const c = vfx.flyingCoins[i];
+        c.progress += 0.028;
+        if (c.progress >= 1) {
+          vfx.flyingCoins.splice(i, 1);
+          continue;
+        }
+        const p = c.progress;
+        const curX = c.x0 + (c.x1 - c.x0) * p;
+        const arcHeight = -110 * Math.sin(p * Math.PI);
+        const curY = c.y0 + (c.y1 - c.y0) * p + arcHeight;
+
+        ctx.beginPath();
+        ctx.arc(curX, curY, 9, 0, Math.PI * 2);
+        ctx.fillStyle = c.color || '#ffcf56';
+        ctx.shadowColor = '#ffcf56';
+        ctx.shadowBlur = 14;
+        ctx.fill();
+        ctx.shadowBlur = 0;
+        ctx.strokeStyle = '#78350f';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+      }
+
+      // 8. Луч строительства нового здания
+      if (vfx.buildBeam.active) {
+        vfx.buildBeam.alpha -= 0.02;
+        if (vfx.buildBeam.alpha <= 0) {
+          vfx.buildBeam.active = false;
+        } else {
+          const grad = ctx.createLinearGradient(vfx.buildBeam.x, 0, vfx.buildBeam.x, vfx.buildBeam.y);
+          grad.addColorStop(0, 'rgba(255, 207, 86, 0)');
+          grad.addColorStop(1, `rgba(255, 207, 86, ${vfx.buildBeam.alpha})`);
+          ctx.fillStyle = grad;
+          ctx.fillRect(vfx.buildBeam.x - 36, 0, 72, vfx.buildBeam.y);
+        }
+      }
+
+      // 9. Всплывающие надписи доходов (+3 🪙 и т.д.)
+      for (let i = vfx.floatingTexts.length - 1; i >= 0; i--) {
+        const ft = vfx.floatingTexts[i];
+        ft.y -= 0.9;
+        ft.life -= 1;
+        if (ft.life <= 0) {
+          vfx.floatingTexts.splice(i, 1);
+          continue;
+        }
+        ctx.save();
+        ctx.font = '900 18px "Segoe UI", sans-serif';
+        ctx.textAlign = 'center';
+        ctx.globalAlpha = Math.min(1, ft.life / 25);
+        ctx.fillStyle = ft.color;
+        ctx.shadowColor = '#000';
+        ctx.shadowBlur = 6;
+        ctx.fillText(ft.text, ft.x, ft.y);
+        ctx.restore();
+      }
+
+      // 10. Фоновые багровые искры и золотая пыльца
+      vfx.embers.forEach(e => {
+        e.y -= e.vy;
+        e.x += Math.sin(t + e.drift) * 0.4;
+        if (e.y < -15) {
+          e.y = ch + 15;
+          e.x = Math.random() * cw;
+        }
+        ctx.beginPath();
+        ctx.arc(e.x, e.y, e.r, 0, Math.PI * 2);
+        ctx.fillStyle = e.isGold ? 'rgba(255, 207, 86, 0.55)' : 'rgba(255, 51, 85, 0.5)';
+        ctx.fill();
+      });
+
+      requestAnimationFrame(renderCityCanvas);
     }
-    requestAnimationFrame(animateBackground);
+    requestAnimationFrame(renderCityCanvas);
 
-    /*************************************************************************
-     * 2. ДАННЫЕ ИГРЫ: ПОКРОВИТЕЛИ И ЗДАНИЯ (СТРОГО НА РУССКОМ ЯЗЫКЕ)
-     *************************************************************************/
-    const PATRONS = {
-      sonya: {
-        id: 'sonya',
-        name: 'Соня',
-        title: 'Хранительница Тишины',
-        color: '#a3e635',
-        desc: 'Не выносит резких звуков и толпы. Защищает ваше Золото от Степана. Даёт +3 Золота, если её выбрали ТОЛЬКО ВЫ (иначе лишь +1 Золото). На кубике 1–2 приносит ещё +2 Золота.'
-      },
-      natasha: {
-        id: 'natasha',
-        name: 'Наташа',
-        title: 'Повелительница Потока',
-        color: '#38bdf8',
-        desc: 'Неутолимый аппетит и водная стихия. Мгновенно даёт +2 Золота + по 1 Золоту за каждое ваше Водное здание. Даёт скидку 1 Золото на постройку в этом раунде.'
-      },
-      stepan: {
-        id: 'stepan',
-        name: 'Степан',
-        title: 'Душа Компании и Авантюрист',
-        color: '#fb923c',
-        desc: 'Обожает быть в центре событий! Забирает по 1 Золоту у каждого игрока с Наташей (Соня защищает). Если на кубике выпадает 4, 5 или 6 — получает +3 Золота из казны.'
+    // Вспомогательные функции запуска 3D-анимаций на карте
+    function spawnCoinStream(fromX, fromY, toX, toY, count = 4, color = '#ffcf56') {
+      for (let i = 0; i < count; i++) {
+        setTimeout(() => {
+          vfx.flyingCoins.push({
+            x0: fromX + (Math.random() - 0.5) * 20,
+            y0: fromY + (Math.random() - 0.5) * 15,
+            x1: toX,
+            y1: toY,
+            progress: 0,
+            color
+          });
+        }, i * 90);
       }
-    };
+    }
 
-    const BUILDINGS = [
-      {
-        id: 'moss_garden',
-        name: 'Мшистый Сад Сони',
-        cost: 2,
-        dice: [1, 2],
-        type: 'quiet',
-        monument: false,
-        income: 2,
-        desc: 'Кубик [1–2]: +2 Золота владельцу.'
-      },
-      {
-        id: 'fountain_stream',
-        name: 'Бурлящий Источник',
-        cost: 3,
-        dice: [2, 3],
-        type: 'water',
-        monument: false,
-        income: 2,
-        desc: 'Кубик [2–3]: +2 Золота (Водное здание Наташи).'
-      },
-      {
-        id: 'fish_pier',
-        name: 'Рыбный Причал Наташи',
-        cost: 4,
-        dice: [3, 4],
-        type: 'water',
-        monument: false,
-        income: 3,
-        desc: 'Кубик [3–4]: +3 Золота (Водное здание Наташи).'
-      },
-      {
-        id: 'stepan_tavern',
-        name: 'Шумная Площадь Степана',
-        cost: 4,
-        dice: [4, 5],
-        type: 'adventure',
-        monument: false,
-        income: 3,
-        desc: 'Кубик [4–5]: +3 Золота владельцу.'
-      },
-      {
-        id: 'emerald_observatory',
-        name: 'Астральный Маяк',
-        cost: 5,
-        dice: [5, 6],
-        type: 'quiet',
-        monument: false,
-        income: 4,
-        desc: 'Кубик [5–6]: +4 Золота владельцу.'
-      },
-      {
-        id: 'grand_monument',
-        name: 'Великий Монумент Трёх',
-        cost: 8,
-        dice: [6],
-        type: 'monument',
-        monument: true,
-        income: 2,
-        desc: 'Кубик [6]: +2 Золота. Постройте 3 Монумента для ПОБЕДЫ!'
-      }
-    ];
+    function spawnFloatingText(x, y, text, color = '#ffcf56') {
+      vfx.floatingTexts.push({ x, y, text, color, life: 85 });
+    }
 
-    const ROOM_PREFIX = 'aurental-room-';
-    const appEl = document.getElementById('app');
+    function spawnShockwave(x, y, color = '#ffcf56') {
+      vfx.shockwaves.push({ x, y, r: 15, alpha: 0.95, color });
+    }
 
-    // Состояние приложения
-    let mode = 'MENU'; // MENU | HOST | CLIENT
-    let peer = null;
-
-    /*************************************************************************
-     * 3. НАЧАЛЬНОЕ МЕНЮ ВЫБОРА РЕЖИМА
-     *************************************************************************/
+    /***************************************************************************
+     * 5. НАЧАЛЬНОЕ МЕНЮ (ВЫБОР ЭКРАНА ТВ ИЛИ МОБИЛЬНОГО ИГРОКА)
+     ***************************************************************************/
     function renderMenu() {
       appEl.innerHTML = `
-        <div class="glass-panel center-screen">
+        <div class="glass-panel center-modal">
           <div>
-            <div class="title-glow">ИЗУМРУДНЫЙ АРХИПЕЛАГ</div>
-            <div style="font-weight:700; color:var(--mint-glow); margin-bottom:8px;">Хроники Трёх Покровителей: Соня, Наташа, Степан</div>
+            <div class="title-imperial">БАГРОВЫЙ ПОЛИС</div>
+            <div style="font-weight:800; color:var(--gold); margin:4px 0 8px;">
+              Три Кошачьих Ордена: Соня • Наташа • Степан
+            </div>
             <p class="subtitle">
-              Экономическая настольная стратегия для 2–8 игроков.
-              Запустите <b>Главный экран</b> на ТВ или мониторе, а со смартфонов подключитесь по 4-значному коду комнаты!
+              Градостроительная настольная игра для компании (2–8 человек).
+              Откройте <b>Главный экран</b> на телевизоре/мониторе (нажимается всего дважды!),
+              а со смартфонов управляйте бросками и постройкой чудес!
             </p>
           </div>
 
-          <button class="btn btn-gold" id="btn-start-host" style="font-size:1.15rem; padding:16px;">
-            Создать комнату (Главный Экран / ТВ)
+          <button class="btn btn-gold" id="btn-launch-tv" style="font-size:1.15rem; padding:16px;">
+            1. Открыть Главный Экран (ТВ / Монитор)
           </button>
 
-          <div style="border-top: 1px solid rgba(100,255,200,0.2); padding-top: 16px; display:flex; flex-direction:column; gap:10px;">
-            <div style="font-weight:600; font-size:0.95rem;">Подключиться как Игрок (Смартфон)</div>
-            <input type="text" id="input-pin" maxlength="4" placeholder="Код комнаты (4 цифры)" />
-            <input type="text" id="input-name" maxlength="14" placeholder="Ваше имя" />
-            <button class="btn" id="btn-join-client">Войти в игру</button>
-            <div id="menu-error" style="color:#f87171; font-size:0.85rem; min-height:1.2em;"></div>
+          <div style="border-top: 1px solid rgba(255,80,110,0.3); padding-top: 14px; display:flex; flex-direction:column; gap:10px;">
+            <div style="font-weight:700; color:var(--text-muted);">Подключение со смартфона (Контроллер Игрока)</div>
+            <input type="text" id="inp-pin" maxlength="4" placeholder="4-значный PIN-код с экрана ТВ" />
+            <input type="text" id="inp-name" maxlength="14" placeholder="Ваше Имя или Титул" />
+            <button class="btn" id="btn-join-phone">Войти в Багровый Полис</button>
+            <div id="err-box" style="color:#fda4af; font-size:0.85rem; min-height:1.2em;"></div>
           </div>
         </div>
       `;
 
-      document.getElementById('btn-start-host').onclick = initHostMode;
-      document.getElementById('btn-join-client').onclick = () => {
-        const pin = document.getElementById('input-pin').value.trim();
-        const name = document.getElementById('input-name').value.trim() || 'Путник';
+      document.getElementById('btn-launch-tv').onclick = initHostMode;
+      document.getElementById('btn-join-phone').onclick = () => {
+        const pin = document.getElementById('inp-pin').value.trim();
+        const name = document.getElementById('inp-name').value.trim() || 'Архитектор';
         if (!/^\d{4}$/.test(pin)) {
-          document.getElementById('menu-error').textContent = 'Введите корректный 4-значный PIN-код!';
+          document.getElementById('err-box').textContent = 'Введите 4 цифры PIN-кода с экрана ТВ!';
           return;
         }
         initClientMode(pin, name);
       };
     }
 
-    /*************************************************************************
-     * 4. ЛОГИКА ХОСТА (ГЛАВНЫЙ ЭКРАН И ИГРОВОЙ СЕРВЕР)
-     *************************************************************************/
-    const hostState = {
-      pin: '',
-      phase: 'LOBBY', // LOBBY | ROLE_SELECT | REVEAL | BUILD | GAME_OVER
-      round: 1,
-      lastDice: null,
-      winner: null,
-      players: [], // { id, name, gold, buildings:[], chosenRole, chosenBuild, ready, isBot, conn }
-      logs: []
-    };
-
-    function addHostLog(msg) {
-      hostState.logs.unshift(msg);
+    /***************************************************************************
+     * 6. СЕРВЕРНАЯ ЛОГИКА ГЛАВНОГО ЭКРАНА (ТВ) — ПОЛНЫЙ АВТОПИЛОТ ПОСЛЕ СТАРТА
+     ***************************************************************************/
+    function addHostLog(msg, isGold = false) {
+      hostState.logs.unshift({ msg, isGold });
       if (hostState.logs.length > 35) hostState.logs.pop();
     }
 
@@ -721,479 +1174,557 @@
       hostState.pin = String(Math.floor(1000 + Math.random() * 9000));
       const peerId = ROOM_PREFIX + hostState.pin;
 
-      addHostLog(`Создаётся астральная комната #${hostState.pin}...`);
-      renderHostScreen();
+      addHostLog(`Открыта Имперская Сессия. Код подключения: ${hostState.pin}`);
+      renderHostHUD();
 
       peer = new Peer(peerId);
-
-      peer.on('open', () => {
-        addHostLog(`Комната открыта! Введите PIN ${hostState.pin} на смартфонах.`);
-        renderHostScreen();
-      });
-
+      peer.on('open', () => renderHostHUD());
       peer.on('error', (err) => {
         if (err.type === 'unavailable-id') {
-          hostState.pin = String(Math.floor(1000 + Math.random() * 9000));
           initHostMode();
-        } else {
-          addHostLog(`Сетевое уведомление: ${err.message}`);
-          renderHostScreen();
         }
       });
 
       peer.on('connection', (conn) => {
-        conn.on('data', (data) => handleHostReceiveData(conn, data));
-        conn.on('close', () => {
-          const p = hostState.players.find(pl => pl.id === conn.peer);
-          if (p) addHostLog(`Игрок ${p.name} потерял связь.`);
-        });
+        conn.on('data', (data) => handleHostPacket(conn, data));
       });
     }
 
-    function handleHostReceiveData(conn, data) {
+    function createPlayerObject(id, name, isBot = false, conn = null) {
+      return {
+        id,
+        name: name.slice(0, 14),
+        gold: 5,
+        buildings: ['tea_house', 'water_mill'], // Стартовый капитал и 2 здания
+        wonders: [],
+        isBot,
+        conn
+      };
+    }
+
+    function handleHostPacket(conn, data) {
       if (data.type === 'JOIN') {
-        if (hostState.players.length >= 8 && !hostState.players.find(p => p.name === data.name)) {
-          conn.send({ type: 'ERROR', message: 'Комната уже заполнена (макс. 8 игроков).' });
-          return;
+        let p = hostState.players.find(x => x.id === conn.peer);
+        if (!p && hostState.players.length < 8) {
+          p = createPlayerObject(conn.peer, data.name, false, conn);
+          hostState.players.push(p);
+          SoundFX.coin();
+          addHostLog(`✨ К Полису присоединился архитектор «${p.name}»!`);
         }
-        let player = hostState.players.find(p => p.id === conn.peer);
-        if (!player) {
-          player = {
-            id: conn.peer,
-            name: data.name.slice(0, 14),
-            gold: 4,
-            buildings: ['moss_garden'], // Стартовое здание у каждого игрока
-            chosenRole: null,
-            chosenBuild: null,
-            ready: false,
-            isBot: false,
-            conn: conn
-          };
-          hostState.players.push(player);
-          addHostLog(`Игрок «${player.name}» присоединился к Архипелагу!`);
-        }
-        syncAllClients();
-        renderHostScreen();
+        syncAllPhones();
+        renderHostHUD();
       }
 
-      if (data.type === 'SELECT_ROLE' && hostState.phase === 'ROLE_SELECT') {
-        const player = hostState.players.find(p => p.id === conn.peer);
-        if (player && PATRONS[data.role]) {
-          player.chosenRole = data.role;
-          player.ready = true;
-          syncAllClients();
-          renderHostScreen();
-          checkPhaseCompletion();
+      const activePlayer = hostState.players[hostState.activeIndex];
+      if (!activePlayer || activePlayer.id !== conn.peer) return;
+
+      // Живой предпросмотр карточки на экране ТВ, пока игрок выбирает на телефоне!
+      if (data.type === 'PREVIEW_CARD') {
+        hostState.previewCardId = data.cardId;
+        const card = ALL_CONSTRUCTIONS.find(c => c.id === data.cardId);
+        if (card) {
+          hostState.bannerSubtitle = `👀 ${activePlayer.name} рассматривает чертежи: «${card.name}» (${card.cost} 🪙)`;
         }
+        renderHostHUD();
       }
 
-      if (data.type === 'SELECT_BUILD' && hostState.phase === 'BUILD') {
-        const player = hostState.players.find(p => p.id === conn.peer);
-        if (player) {
-          player.chosenBuild = data.buildingId; // или 'PASS'
-          player.ready = true;
-          syncAllClients();
-          renderHostScreen();
-          checkPhaseCompletion();
-        }
+      // Шаг 1 хода: Активный игрок выбрал покровителя броска (Соня / Наташа / Степан)
+      if (data.type === 'ROLL_DICE' && hostState.phase === 'TURN_ROLL') {
+        executeAnimatedRollSequence(data.style);
+      }
+
+      // Шаг 2 хода: Активный игрок покупает здание/Чудо или делает вклад в Банк Сони
+      if (data.type === 'BUILD_ACTION' && hostState.phase === 'TURN_BUILD') {
+        executeAnimatedBuildSequence(data.cardId);
       }
     }
 
-    function addBotPlayer() {
+    function addBotOnHost() {
       if (hostState.players.length >= 8) return;
-      const botNames = ['Хранитель Мха', 'Лорд Ручья', 'Капитан Когтей', 'Тень Папоротника', 'Искатель Росы', 'Барон Янтаря'];
+      const names = ['Герцог Когтей', 'Леди Мур', 'Барон Рубин', 'Графиня Роса', 'Маркиз Бархат', 'Князь Янтарь'];
       const used = hostState.players.map(p => p.name);
-      const available = botNames.filter(n => !used.includes(n));
-      const name = available[0] || `Автоматон-${hostState.players.length + 1}`;
-
-      hostState.players.push({
-        id: 'bot-' + Math.random().toString(36).substring(2, 7),
-        name,
-        gold: 4,
-        buildings: ['moss_garden'],
-        chosenRole: null,
-        chosenBuild: null,
-        ready: false,
-        isBot: true,
-        conn: null
-      });
-      addHostLog(`Добавлен ИИ-соперник «${name}».`);
-      renderHostScreen();
+      const name = names.find(n => !used.includes(n)) || `Автоматон-${hostState.players.length + 1}`;
+      hostState.players.push(createPlayerObject('bot-' + Math.random().toString(36).slice(2, 7), name, true, null));
+      addHostLog(`🤖 Добавлен ИИ-архитектор «${name}».`);
+      renderHostHUD();
     }
 
-    function runBotsDecisions() {
-      const roles = ['sonya', 'natasha', 'stepan'];
-      hostState.players.forEach(p => {
-        if (!p.isBot) return;
-        if (hostState.phase === 'ROLE_SELECT' && !p.ready) {
-          p.chosenRole = roles[Math.floor(Math.random() * roles.length)];
-          p.ready = true;
-        }
-        if (hostState.phase === 'BUILD' && !p.ready) {
-          const discount = p.chosenRole === 'natasha' ? 1 : 0;
-          const affordable = BUILDINGS.filter(b => Math.max(1, b.cost - discount) <= p.gold);
-          if (affordable.length > 0) {
-            // Приоритет на Монумент, если хватает золота
-            const mon = affordable.find(b => b.monument);
-            const pick = mon || affordable[Math.floor(Math.random() * affordable.length)];
-            p.chosenBuild = pick.id;
-          } else {
-            p.chosenBuild = 'PASS';
-          }
-          p.ready = true;
-        }
-      });
-    }
-
-    function startGameFromLobby() {
-      if (hostState.players.length < 2) {
-        addHostLog('Для начала партии нужно минимум 2 участника (добавьте ИИ-бота или подключитесь с телефона).');
-        renderHostScreen();
-        return;
+    // ВТОРОЙ (И ПОСЛЕДНИЙ!) КЛИК НА ТВ — ЗАПУСК ПАРТИИ
+    function startImperialGame() {
+      SoundFX.init();
+      // Если подключился только 1 человек, автоматически добавим ему ИИ-соперника для интересной дуэли
+      while (hostState.players.length < 2) {
+        addBotOnHost();
       }
       hostState.round = 1;
-      startRoleSelectionPhase();
+      hostState.activeIndex = 0;
+      beginPlayerTurn();
     }
 
-    function startRoleSelectionPhase() {
-      hostState.phase = 'ROLE_SELECT';
-      hostState.players.forEach(p => {
-        p.chosenRole = null;
-        p.chosenBuild = null;
-        p.ready = false;
-      });
-      addHostLog(`--- Раунд ${hostState.round}: Фаза Тайного Выбора Покровителя ---`);
-      runBotsDecisions();
-      syncAllClients();
-      renderHostScreen();
-      checkPhaseCompletion();
-    }
+    function beginPlayerTurn() {
+      const active = hostState.players[hostState.activeIndex];
+      hostState.phase = 'TURN_ROLL';
+      hostState.previewCardId = null;
+      hostState.rolledDice = [];
 
-    function checkPhaseCompletion() {
-      const allReady = hostState.players.length > 0 && hostState.players.every(p => p.ready);
-      if (!allReady) return;
-
-      if (hostState.phase === 'ROLE_SELECT') {
-        resolveRolesAndRollDice();
-      } else if (hostState.phase === 'BUILD') {
-        resolveBuilds();
-      }
-    }
-
-    function resolveRolesAndRollDice() {
-      hostState.phase = 'REVEAL';
-      const dice = Math.floor(1 + Math.random() * 6);
-      hostState.lastDice = dice;
-
-      const sonyaPlayers = hostState.players.filter(p => p.chosenRole === 'sonya');
-      const natashaPlayers = hostState.players.filter(p => p.chosenRole === 'natasha');
-      const stepanPlayers = hostState.players.filter(p => p.chosenRole === 'stepan');
-
-      // 1. Эффекты Сони
-      if (sonyaPlayers.length === 1) {
-        sonyaPlayers[0].gold += 3;
-        addHostLog(`🐾 Соня довольна уединением! ${sonyaPlayers[0].name} получает +3 Золота.`);
-      } else if (sonyaPlayers.length > 1) {
-        sonyaPlayers.forEach(p => p.gold += 1);
-        addHostLog(`🐾 Соню потревожили (${sonyaPlayers.length} игр.): каждый получает лишь +1 Золото.`);
-      }
-      if (dice <= 2 && sonyaPlayers.length > 0) {
-        sonyaPlayers.forEach(p => p.gold += 2);
-        addHostLog(`🌙 Тихий час (кубик ${dice}): покровители Сони получают ещё по +2 Золота!`);
-      }
-
-      // 2. Эффекты Наташи
-      natashaPlayers.forEach(p => {
-        const waterCount = p.buildings.filter(bId => {
-          const b = BUILDINGS.find(x => x.id === bId);
-          return b && b.type === 'water';
-        }).length;
-        const gain = 2 + waterCount;
-        p.gold += gain;
-        addHostLog(`💧 Наташа приносит потоки для ${p.name}: +${gain} Золота.`);
-      });
-
-      // 3. Эффекты Степана
-      stepanPlayers.forEach(stepanP => {
-        let stolen = 0;
-        natashaPlayers.forEach(victim => {
-          if (victim.gold > 0) {
-            victim.gold -= 1;
-            stepanP.gold += 1;
-            stolen += 1;
+      // Проверка пассивного эффекта Чуда Степана (Колизей) в начале хода
+      if (active.wonders.includes('wonder_stepan')) {
+        const activePos = getPlayerBastionPos(hostState.activeIndex, hostState.players.length);
+        let tribute = 0;
+        hostState.players.forEach((other, idx) => {
+          if (idx !== hostState.activeIndex && other.gold > 0) {
+            other.gold -= 1;
+            active.gold += 1;
+            tribute += 1;
+            const otherPos = getPlayerBastionPos(idx, hostState.players.length);
+            spawnCoinStream(otherPos.x, otherPos.y, activePos.x, activePos.y, 2, '#ff2a4b');
           }
         });
-        if (stolen > 0) {
-          addHostLog(`🔥 Степан (${stepanP.name}) перехватил ${stolen} Золота у поклонников Наташи!`);
+        if (tribute > 0) {
+          addHostLog(`🏟️ Колизей Степана собирает триумфальную дань: +${tribute} 🪙 для ${active.name}!`, true);
         }
-        if (dice >= 4) {
-          stepanP.gold += 3;
-          addHostLog(`🎲 Авантюра Степана удалась (кубик ${dice}): ${stepanP.name} получает +3 Золота!`);
-        }
-      });
+      }
 
-      // 4. Доход от зданий по броску кубика
-      hostState.players.forEach(p => {
-        let bGain = 0;
-        p.buildings.forEach(bId => {
-          const b = BUILDINGS.find(x => x.id === bId);
-          if (b && b.dice.includes(dice)) {
-            bGain += b.income;
-          }
-        });
-        if (bGain > 0) {
-          p.gold += bGain;
-          addHostLog(`🏛️ Кварталы ${p.name} принесли +${bGain} Золота на броске [${dice}].`);
-        }
-      });
+      hostState.bannerTitle = `ХОД АРХИТЕКТОРА: ${active.name.toUpperCase()}`;
+      hostState.bannerSubtitle = `Выберите на смартфоне Покровителя Броска (Соня, Наташа или Степан)`;
+      addHostLog(`▶ Начинается ход игрока «${active.name}» (Раунд ${hostState.round}).`);
 
-      syncAllClients();
-      renderHostScreen();
+      syncAllPhones();
+      renderHostHUD();
+
+      // Если ходит ИИ-бот — он сам принимает решение с красивой паузой
+      if (active.isBot) {
+        setTimeout(() => {
+          const styles = ['sonya', 'natasha', 'stepan'];
+          const chosen = styles[Math.floor(Math.random() * styles.length)];
+          executeAnimatedRollSequence(chosen);
+        }, 1600);
+      }
     }
 
-    function startBuildPhase() {
-      hostState.phase = 'BUILD';
-      hostState.players.forEach(p => {
-        p.chosenBuild = null;
-        p.ready = false;
-      });
-      addHostLog(`🔨 Фаза Строительства: выберите квартал или Монумент на смартфонах.`);
-      runBotsDecisions();
-      syncAllClients();
-      renderHostScreen();
-      checkPhaseCompletion();
-    }
+    // ДРАМАТИЧЕСКАЯ АНИМАЦИЯ БРОСКА И СРАБАТЫВАНИЯ ЗДАНИЙ НА ЭКРАНЕ ТВ
+    function executeAnimatedRollSequence(styleKey) {
+      const style = DICE_STYLES[styleKey] || DICE_STYLES.sonya;
+      const active = hostState.players[hostState.activeIndex];
+      hostState.phase = 'ANIMATING_ROLL';
+      hostState.chosenDiceStyle = style.id;
 
-    function resolveBuilds() {
-      hostState.players.forEach(p => {
-        if (!p.chosenBuild || p.chosenBuild === 'PASS') {
-          addHostLog(`${p.name} копит Золото и пропускает строительство.`);
-          return;
-        }
-        const b = BUILDINGS.find(x => x.id === p.chosenBuild);
-        if (!b) return;
-        const discount = p.chosenRole === 'natasha' ? 1 : 0;
-        const finalCost = Math.max(1, b.cost - discount);
-
-        if (p.gold >= finalCost) {
-          p.gold -= finalCost;
-          p.buildings.push(b.id);
-          addHostLog(`🏗️ ${p.name} возводит «${b.name}» за ${finalCost} Золота!`);
-        }
-      });
-
-      // Проверка условия победы (3 Великих Монумента)
-      const winners = hostState.players.filter(p => {
-        const monCount = p.buildings.filter(id => id === 'grand_monument').length;
-        return monCount >= 3;
-      });
-
-      if (winners.length > 0) {
-        winners.sort((a, b) => b.gold - a.gold);
-        hostState.winner = winners[0];
-        hostState.phase = 'GAME_OVER';
-        addHostLog(`👑 ПОБЕДА! ${hostState.winner.name} возвёл 3 Великих Монумента!`);
-        syncAllClients();
-        renderHostScreen();
+      // Вычисление результата по выбранному Покровителю
+      let finalDice = [];
+      if (style.id === 'sonya') {
+        finalDice = [Math.floor(1 + Math.random() * 3)]; // 1, 2 или 3
+      } else if (style.id === 'natasha') {
+        finalDice = [Math.floor(1 + Math.random() * 6), Math.floor(1 + Math.random() * 6)]; // 2 кубика!
       } else {
-        hostState.round += 1;
-        startRoleSelectionPhase();
+        finalDice = [Math.floor(4 + Math.random() * 3)]; // 4, 5 или 6
+      }
+
+      hostState.bannerTitle = `${active.name} ПРИЗЫВАЕТ ОРДЕН: ${style.patron.toUpperCase()}!`;
+      hostState.bannerSubtitle = `Кости Судьбы вращаются над Центральной Астролябией...`;
+      SoundFX.diceRoll();
+
+      // Запускаем вращение 3D-кубиков в центре экрана
+      vfx.diceAnim.active = true;
+      vfx.diceAnim.values = finalDice.map(() => 1);
+      const spinInterval = setInterval(() => {
+        vfx.diceAnim.values = finalDice.map(() => Math.floor(1 + Math.random() * 6));
+      }, 95);
+
+      syncAllPhones();
+      renderHostHUD();
+
+      // Через 1.6 секунды фиксируем бросок и запускаем каскад доходов!
+      setTimeout(() => {
+        clearInterval(spinInterval);
+        vfx.diceAnim.values = finalDice;
+        hostState.rolledDice = finalDice;
+
+        const centerPos = { x: cw * 0.5, y: ch * 0.44 };
+        spawnShockwave(centerPos.x, centerPos.y, style.color);
+
+        const activePos = getPlayerBastionPos(hostState.activeIndex, hostState.players.length);
+
+        // Бонус тишины Сони
+        if (style.id === 'sonya') {
+          active.gold += 1;
+          spawnCoinStream(centerPos.x, centerPos.y, activePos.x, activePos.y, 2, '#f472b6');
+          spawnFloatingText(activePos.x, activePos.y - 35, '+1 🪙 Тишина Сони', '#f472b6');
+          addHostLog(`🐾 Соня дарит ${active.name} +1 🪙 за тихий бросок [${finalDice.join(', ')}].`, true);
+        } else {
+          addHostLog(`🎲 На костях ${style.patron} выпало: [${finalDice.join(' и ')}]!`);
+        }
+
+        // Проверяем все здания всех игроков на совпадение с выпавшими числами
+        const uniqueNums = [...new Set(finalDice)];
+        hostState.players.forEach((p, pIdx) => {
+          const pPos = getPlayerBastionPos(pIdx, hostState.players.length);
+          const isOwnerTurn = (pIdx === hostState.activeIndex);
+          const natashaCount = p.buildings.filter(id => {
+            const b = BUILDINGS.find(x => x.id === id);
+            return b && b.patronId === 'natasha';
+          }).length;
+          const hasAqueduct = p.wonders.includes('wonder_natasha');
+
+          p.buildings.forEach((bId) => {
+            const b = BUILDINGS.find(x => x.id === bId);
+            if (!b) return;
+            const matched = b.dice.some(d => uniqueNums.includes(d));
+            if (!matched) return;
+
+            // Здания ALL работают в чей угодно ход; OWNER и STEAL — только в ход владельца
+            if (b.triggerMode === 'ALL' || isOwnerTurn) {
+              let gain = b.income;
+              if (b.cascade) {
+                gain = b.id === 'water_mill' ? natashaCount : (b.income + natashaCount);
+              }
+              if (hasAqueduct) gain += 1;
+              if (isOwnerTurn && style.id === 'stepan' && b.patronId === 'stepan') {
+                gain += 1; // Бонус Дерзкого Броска Степана
+              }
+
+              p.gold += gain;
+              SoundFX.coin();
+              spawnShockwave(pPos.x, pPos.y, '#ffcf56');
+              spawnCoinStream(centerPos.x, centerPos.y, pPos.x, pPos.y, Math.min(5, gain), '#ffcf56');
+              spawnFloatingText(pPos.x + (Math.random() - 0.5) * 40, pPos.y - 25, `+${gain} 🪙 (${b.name})`, '#ffcf56');
+              addHostLog(`🏛️ «${b.name}» приносит ${p.name} +${gain} 🪙!`, true);
+
+              // Если здание типа STEAL (Степан) — перехватывает монеты у незащищённых соперников
+              if (b.triggerMode === 'STEAL' && isOwnerTurn) {
+                let totalStolen = 0;
+                hostState.players.forEach((victim, vIdx) => {
+                  if (vIdx === pIdx) return;
+                  const hasSonyaShield = victim.buildings.includes('velvet_garden') ||
+                                         victim.wonders.includes('wonder_sonya') ||
+                                         (style.id === 'sonya' && vIdx === hostState.activeIndex);
+                  if (hasSonyaShield) {
+                    spawnFloatingText(
+                      getPlayerBastionPos(vIdx, hostState.players.length).x,
+                      getPlayerBastionPos(vIdx, hostState.players.length).y - 20,
+                      '🛡️ Щит Сони!',
+                      '#f472b6'
+                    );
+                    return;
+                  }
+                  const take = Math.min(victim.gold, b.stealAmount || 1);
+                  if (take > 0) {
+                    victim.gold -= take;
+                    p.gold += take;
+                    totalStolen += take;
+                    const vPos = getPlayerBastionPos(vIdx, hostState.players.length);
+                    SoundFX.steal();
+                    spawnCoinStream(vPos.x, vPos.y, pPos.x, pPos.y, take + 1, '#ff2a4b');
+                  }
+                });
+                if (totalStolen > 0) {
+                  addHostLog(`🔥 Степан (${p.name}) собрал с гостей ещё +${totalStolen} 🪙!`, true);
+                }
+              }
+            }
+          });
+        });
+
+        hostState.bannerTitle = `РЕЗОНАНС ГОРОДА НА ЧИСЛАХ [${finalDice.join(', ')}]`;
+        hostState.bannerSubtitle = `Все сработавшие кварталы отправили золото в казну архитекторов!`;
+        syncAllPhones();
+        renderHostHUD();
+
+        // Через 2.4 секунды автоматически переходим к фазе строительства активного игрока
+        setTimeout(() => {
+          vfx.diceAnim.active = false;
+          startTurnBuildPhase();
+        }, 2400);
+      }, 1600);
+    }
+
+    function startTurnBuildPhase() {
+      const active = hostState.players[hostState.activeIndex];
+      hostState.phase = 'TURN_BUILD';
+      hostState.bannerTitle = `СТРОИТЕЛЬСТВО: ${active.name.toUpperCase()} (${active.gold} 🪙)`;
+      hostState.bannerSubtitle = `Игрок выбирает новый квартал или Великое Чудо на смартфоне...`;
+      syncAllPhones();
+      renderHostHUD();
+
+      if (active.isBot) {
+        setTimeout(() => {
+          // ИИ сначала пытается построить Чудо, иначе самое дорогое доступное здание
+          const availableWonder = WONDERS.find(w => !active.wonders.includes(w.id) && active.gold >= w.cost);
+          if (availableWonder) {
+            executeAnimatedBuildSequence(availableWonder.id);
+            return;
+          }
+          const affordable = BUILDINGS.filter(b => active.gold >= b.cost);
+          if (affordable.length > 0 && (active.gold >= 4 || Math.random() > 0.3)) {
+            const pick = affordable[affordable.length - 1];
+            hostState.previewCardId = pick.id;
+            renderHostHUD();
+            setTimeout(() => executeAnimatedBuildSequence(pick.id), 900);
+          } else {
+            executeAnimatedBuildSequence('BANK_DEPOSIT');
+          }
+        }, 1500);
       }
     }
 
-    function syncAllClients() {
-      hostState.players.forEach(p => {
+    // ДРАМАТИЧЕСКАЯ АНИМАЦИЯ ВОЗВЕДЕНИЯ ЗДАНИЯ ИЛИ ВКЛАДА В БАНК СОНИ
+    function executeAnimatedBuildSequence(cardId) {
+      const active = hostState.players[hostState.activeIndex];
+      const activePos = getPlayerBastionPos(hostState.activeIndex, hostState.players.length);
+      hostState.phase = 'ANIMATING_BUILD';
+      hostState.previewCardId = cardId;
+
+      if (cardId === 'BANK_DEPOSIT') {
+        const bonus = active.wonders.includes('wonder_sonya') ? 4 : 2;
+        active.gold += bonus;
+        SoundFX.coin();
+        spawnShockwave(activePos.x, activePos.y, '#f472b6');
+        spawnFloatingText(activePos.x, activePos.y - 30, `+${bonus} 🪙 Вклад Сони!`, '#f472b6');
+        hostState.bannerTitle = `${active.name.toUpperCase()} УКРЕПЛЯЕТ КАЗНУ`;
+        hostState.bannerSubtitle = `Вклад в Тихий Банк Сони приносит +${bonus} 🪙`;
+        addHostLog(`🌙 ${active.name} сохраняет тишину и получает +${bonus} 🪙 из Банка Сони.`);
+      } else {
+        const wonder = WONDERS.find(w => w.id === cardId);
+        const building = BUILDINGS.find(b => b.id === cardId);
+
+        if (wonder && !active.wonders.includes(wonder.id) && active.gold >= wonder.cost) {
+          active.gold -= wonder.cost;
+          active.wonders.push(wonder.id);
+          SoundFX.build();
+          vfx.buildBeam = { active: true, x: activePos.x, y: activePos.y, alpha: 0.95, color: '#ffcf56' };
+          spawnShockwave(activePos.x, activePos.y, '#ffcf56');
+          spawnFloatingText(activePos.x, activePos.y - 40, `👑 ${wonder.shortName}!`, '#ffcf56');
+          hostState.bannerTitle = `ВОЗВЕДЕНО ВЕЛИКОЕ ЧУДО: ${wonder.name.toUpperCase()}!`;
+          hostState.bannerSubtitle = `На острове ${active.name} сияет монумент (${active.wonders.length}/3)!`;
+          addHostLog(`👑 ${active.name} возводит ВЕЛИКОЕ ЧУДО «${wonder.name}»! (${active.wonders.length}/3)`, true);
+        } else if (building && active.gold >= building.cost) {
+          active.gold -= building.cost;
+          active.buildings.push(building.id);
+          SoundFX.build();
+          vfx.buildBeam = { active: true, x: activePos.x, y: activePos.y, alpha: 0.85, color: '#ff3355' };
+          spawnShockwave(activePos.x, activePos.y, '#ff3355');
+          spawnFloatingText(activePos.x, activePos.y - 32, `🏗️ ${building.name}`, '#ffcf56');
+          hostState.bannerTitle = `НОВАЯ ПОСТРОЙКА: ${building.name.toUpperCase()}`;
+          hostState.bannerSubtitle = `На Бастионе ${active.name} выросло новое здание!`;
+          addHostLog(`🏗️ ${active.name} строит «${building.name}» за ${building.cost} 🪙.`);
+        }
+      }
+
+      // Бонус Чуда Сони в конце хода
+      if (active.wonders.includes('wonder_sonya')) {
+        active.gold += 2;
+        spawnFloatingText(activePos.x, activePos.y - 55, `+2 🪙 Храм Сони`, '#f472b6');
+      }
+
+      syncAllPhones();
+      renderHostHUD();
+
+      // Проверка победы (3 Великих Чуда построены)
+      if (active.wonders.length >= 3) {
+        setTimeout(() => {
+          hostState.winner = active;
+          hostState.phase = 'GAME_OVER';
+          hostState.bannerTitle = `👑 ИМПЕРСКИЙ ТРИУМФ: ${active.name.toUpperCase()} ПОБЕЖДАЕТ!`;
+          hostState.bannerSubtitle = `Все 3 Великих Чуда Трёх Кошачьих Орденов возведены!`;
+          SoundFX.build();
+          syncAllPhones();
+          renderHostHUD();
+        }, 2000);
+        return;
+      }
+
+      // Автоматический переход хода к следующему игроку через 2.1 секунды
+      setTimeout(() => {
+        hostState.activeIndex = (hostState.activeIndex + 1) % hostState.players.length;
+        if (hostState.activeIndex === 0) hostState.round += 1;
+        beginPlayerTurn();
+      }, 2100);
+    }
+
+    function syncAllPhones() {
+      const activePlayer = hostState.players[hostState.activeIndex];
+      hostState.players.forEach((p, idx) => {
         if (p.conn && p.conn.open) {
           p.conn.send({
-            type: 'STATE_UPDATE',
+            type: 'STATE_SYNC',
             phase: hostState.phase,
             round: hostState.round,
-            lastDice: hostState.lastDice,
+            isMyTurn: idx === hostState.activeIndex,
+            activePlayerName: activePlayer ? activePlayer.name : '',
+            rolledDice: hostState.rolledDice,
             winner: hostState.winner ? hostState.winner.name : null,
             me: {
               name: p.name,
               gold: p.gold,
               buildings: p.buildings,
-              chosenRole: p.chosenRole,
-              chosenBuild: p.chosenBuild,
-              ready: p.ready
+              wonders: p.wonders
             }
           });
         }
       });
     }
 
-    function renderHostScreen() {
+    /***************************************************************************
+     * 7. ОТРИСОВКА ИНТЕРФЕЙСА ГЛАВНОГО ЭКРАНА (ТВ)
+     ***************************************************************************/
+    function renderHostHUD() {
       if (mode !== 'HOST') return;
 
-      const playersHtml = hostState.players.map(p => {
-        const monumentsCount = p.buildings.filter(id => id === 'grand_monument').length;
-        const bTags = p.buildings.map(id => {
+      const playersHtml = hostState.players.map((p, idx) => {
+        const isTurn = (hostState.phase !== 'LOBBY' && idx === hostState.activeIndex);
+        const counts = {};
+        p.buildings.forEach(id => counts[id] = (counts[id] || 0) + 1);
+
+        const bSummary = Object.entries(counts).map(([id, cnt]) => {
           const b = BUILDINGS.find(x => x.id === id);
-          return `<span class="b-tag ${b.monument ? 'monument' : ''}">${b.name}</span>`;
+          return `<span style="font-size:0.72rem; background:rgba(255,255,255,0.08); padding:2px 6px; border-radius:5px;">
+            ${b ? b.name : id} ${cnt > 1 ? `×${cnt}` : ''}
+          </span>`;
+        }).join(' ');
+
+        const wondersHtml = WONDERS.map(w => {
+          const has = p.wonders.includes(w.id);
+          return `<div class="wonder-pip ${has ? 'built' : ''}">${has ? '👑 ' : ''}${w.shortName}</div>`;
         }).join('');
 
-        const roleBadge = (hostState.phase === 'REVEAL' || hostState.phase === 'BUILD') && p.chosenRole
-          ? `<span style="color:${PATRONS[p.chosenRole].color}; font-size:0.8rem;">● ${PATRONS[p.chosenRole].name}</span>`
-          : (p.ready ? `<span style="color:var(--mint-glow); font-size:0.8rem;">✔ Готов</span>` : `<span style="opacity:0.5; font-size:0.8rem;">Ожидание...</span>`);
-
         return `
-          <div class="player-card ${p.ready ? 'ready' : ''}">
-            <div class="player-header">
-              <span>${p.name} ${p.isBot ? '🤖' : ''}</span>
-              <span class="gold-pill">🪙 ${p.gold}</span>
-            </div>
+          <div class="p-card ${isTurn ? 'active-turn' : ''}">
             <div style="display:flex; justify-content:space-between; align-items:center;">
-              ${roleBadge}
-              <span style="font-size:0.78rem; color:var(--gold);">Монументы: ${monumentsCount}/3</span>
+              <span style="font-weight:800; font-size:0.98rem;">
+                ${isTurn ? '▶ ' : ''}${p.name} ${p.isBot ? '🤖' : ''}
+              </span>
+              <span class="gold-badge">🪙 ${p.gold}</span>
             </div>
-            <div class="mini-buildings">${bTags}</div>
+            <div class="wonders-bar">${wondersHtml}</div>
+            <div style="display:flex; flex-wrap:wrap; gap:4px; margin-top:2px;">${bSummary}</div>
           </div>
         `;
       }).join('');
 
-      let centerContent = '';
+      // Нижняя витрина лучших контрактов и 3 Великих Чудес (с подсветкой выбора игрока!)
+      const showcaseCards = [
+        BUILDINGS[0], BUILDINGS[1], BUILDINGS[3], BUILDINGS[6], BUILDINGS[8],
+        WONDERS[0]
+      ];
+      const marketHtml = showcaseCards.map(c => {
+        const isFocus = hostState.previewCardId === c.id;
+        const isWonder = WONDERS.some(w => w.id === c.id);
+        return `
+          <div class="m-card ${isFocus ? 'preview-focus' : ''}">
+            <div>
+              <div style="font-weight:800; color:${isWonder ? 'var(--gold)' : 'var(--text-muted)'};">${c.name}</div>
+              <div style="font-size:0.7rem; opacity:0.85; margin-top:3px;">${c.desc}</div>
+            </div>
+            <div style="display:flex; justify-content:space-between; margin-top:6px; border-top:1px solid rgba(255,255,255,0.1); padding-top:4px;">
+              <span>${c.dice ? `🎲 [${c.dice.join(',')}]` : '👑 ЧУДО'}</span>
+              <span style="color:var(--gold); font-weight:900;">🪙 ${c.cost}</span>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      const logsHtml = hostState.logs.map(l => `
+        <div class="feed-item ${l.isGold ? 'gold-event' : ''}">${l.msg}</div>
+      `).join('');
+
+      let centerControls = '';
       if (hostState.phase === 'LOBBY') {
-        centerContent = `
-          <div class="title-glow" style="font-size:1.75rem;">ОЖИДАНИЕ АРХИТЕКТОРОВ</div>
-          <p class="subtitle" style="max-width:480px; margin:8px 0 18px;">
-            Откройте эту страницу на смартфонах, введите код комнаты <b>${hostState.pin}</b> и выберите имя.
-          </p>
-          <div style="display:flex; gap:12px; flex-wrap:wrap; justify-content:center;">
-            <button class="btn" id="btn-add-bot">+ Добавить ИИ-Бота</button>
-            <button class="btn btn-gold" id="btn-start-game" ${hostState.players.length < 2 ? 'disabled' : ''}>
-              Начать Игру (${hostState.players.length}/8)
-            </button>
+        centerControls = `
+          <div class="glass-panel interactive" style="padding:24px 32px; text-align:center; max-width:520px; margin:auto;">
+            <div class="title-imperial" style="font-size:1.65rem;"> ЗАЛ СОВЕТА ОТКРЫТ </div>
+            <p class="subtitle" style="margin:8px 0 18px;">
+              Подключитесь со смартфонов по PIN-коду <b>${hostState.pin}</b> или нажмите кнопку ниже — и игра пойдёт полностью автоматически!
+            </p>
+            <div style="display:flex; gap:12px; justify-content:center; flex-wrap:wrap;">
+              <button class="btn" id="btn-tv-bot">+ Добавить ИИ-Бота</button>
+              <button class="btn btn-gold" id="btn-tv-start" style="font-size:1.1rem;">
+                2. Начать Имперскую Партию ▶
+              </button>
+            </div>
           </div>
-        `;
-      } else if (hostState.phase === 'ROLE_SELECT') {
-        centerContent = `
-          <div style="font-size:1.35rem; font-weight:800; color:var(--mint-glow);">РАУНД ${hostState.round}: ВЫБОР ПОКРОВИТЕЛЯ</div>
-          <p class="subtitle">Игроки на своих смартфонах тайно призывают Соню, Наташу или Степана...</p>
-          <div class="patron-cards-row">
-            ${Object.values(PATRONS).map(pt => `
-              <div class="patron-card" style="border-top: 3px solid ${pt.color};">
-                <div style="font-weight:800; color:${pt.color}; font-size:1.05rem;">${pt.name}</div>
-                <div style="font-size:0.75rem; opacity:0.8; margin-bottom:6px;">${pt.title}</div>
-                <div style="font-size:0.78rem; line-height:1.35;">${pt.desc}</div>
-              </div>
-            `).join('')}
-          </div>
-        `;
-      } else if (hostState.phase === 'REVEAL') {
-        centerContent = `
-          <div style="font-size:1.25rem; font-weight:800; color:var(--gold);">ОТКРЫТИЕ ПОКРОВИТЕЛЕЙ И АСТРАЛЬНЫЙ БРОСОК</div>
-          <div class="dice-box">${hostState.lastDice}</div>
-          <p class="subtitle" style="margin-bottom:14px;">
-            Выпало число <b>${hostState.lastDice}</b>! Все соответствующие кварталы и способности Покровителей принесли Золото.
-          </p>
-          <button class="btn btn-gold" id="btn-go-build">Перейти к Фазе Строительства →</button>
-        `;
-      } else if (hostState.phase === 'BUILD') {
-        centerContent = `
-          <div style="font-size:1.4rem; font-weight:800; color:var(--mint-glow);">ФАЗА СТРОИТЕЛЬСТВА</div>
-          <p class="subtitle" style="max-width:460px; margin-top:8px;">
-            Игроки выбирают новые кварталы или Великие Монументы на своих устройствах.
-            Поклонники <b>Наташи</b> получают скидку в 1 Золото!
-          </p>
         `;
       } else if (hostState.phase === 'GAME_OVER') {
-        centerContent = `
-          <div class="title-glow" style="font-size:2.2rem;">👑 ПОБЕДИТЕЛЬ: ${hostState.winner.name}!</div>
-          <p class="subtitle" style="margin:10px 0 20px;">
-            Три Великих Монумента возвышаются над Изумрудным Архипелагом!
-          </p>
-          <button class="btn btn-gold" id="btn-restart">Сыграть ещё раз</button>
+        centerControls = `
+          <div class="glass-panel interactive" style="padding:26px 36px; text-align:center; margin:auto;">
+            <div class="title-imperial" style="font-size:2rem;">👑 ТРИУМФ: ${hostState.winner.name}!</div>
+            <p class="subtitle" style="margin:10px 0 18px;">Все три Великих Чуда возвышаются над Багровым Полисом!</p>
+            <button class="btn btn-gold" onclick="location.reload()">Новая Партия</button>
+          </div>
         `;
       }
 
-      const marketHtml = BUILDINGS.map(b => `
-        <div class="market-item ${b.monument ? 'monument-card' : ''}">
-          <div>
-            <div style="font-weight:800; color:${b.monument ? 'var(--gold)' : 'var(--mint-glow)'};">${b.name}</div>
-            <div style="font-size:0.74rem; opacity:0.85; margin-top:4px;">${b.desc}</div>
-          </div>
-          <div style="display:flex; justify-content:space-between; align-items:center; margin-top:6px; border-top:1px solid rgba(255,255,255,0.1); padding-top:4px;">
-            <span>🎲 [${b.dice.join(', ')}]</span>
-            <span style="color:var(--gold); font-weight:800;">🪙 ${b.cost}</span>
-          </div>
-        </div>
-      `).join('');
-
-      const logsHtml = hostState.logs.map(l => `<div class="log-entry">${l}</div>`).join('');
-
       appEl.innerHTML = `
-        <div class="host-layout">
-          <div class="glass-panel host-header">
-            <div style="display:flex; align-items:center; gap:14px;">
-              <span style="font-weight:800; font-size:1.2rem; color:var(--mint-glow);">ИЗУМРУДНЫЙ АРХИПЕЛАГ</span>
-              <span style="font-size:0.88rem; opacity:0.8;">Раунд ${hostState.round} | Цель: 3 Монумента</span>
+        <div class="tv-hud">
+          <div class="glass-panel tv-top">
+            <div style="display:flex; align-items:center; gap:16px;">
+              <span style="font-weight:900; font-size:1.25rem; color:var(--gold); letter-spacing:1px;">
+                БАГРОВЫЙ ПОЛИС
+              </span>
+              <span style="font-size:0.9rem; color:var(--text-muted);">
+                Раунд ${hostState.round} • Цель: 3 Великих Чуда
+              </span>
             </div>
-            <div style="display:flex; align-items:center; gap:10px;">
-              <span style="font-size:0.85rem; opacity:0.85;">КОД КОМНАТЫ:</span>
-              <span class="pin-badge">${hostState.pin}</span>
+            <div style="display:flex; align-items:center; gap:12px;">
+              <span style="font-size:0.85rem; opacity:0.85;">PIN ДЛЯ СМАРТФОНОВ:</span>
+              <span class="pin-pill">${hostState.pin}</span>
             </div>
           </div>
 
-          <div class="glass-panel host-left">
-            <div style="font-weight:800; font-size:0.95rem; border-bottom:1px solid rgba(100,255,200,0.2); padding-bottom:6px;">
-              ИГРОКИ (${hostState.players.length}/8)
+          <div class="glass-panel tv-left">
+            <div style="font-weight:800; font-size:0.92rem; color:var(--gold); border-bottom:1px solid rgba(255,80,110,0.25); padding-bottom:6px;">
+              БАСТИОНЫ АРХИТЕКТОРОВ (${hostState.players.length}/8)
             </div>
-            ${playersHtml || '<div style="opacity:0.6; font-size:0.85rem;">Ожидание подключения игроков...</div>'}
+            ${playersHtml || '<div style="opacity:0.6; font-size:0.85rem;">Ожидание подключения со смартфонов...</div>'}
           </div>
 
-          <div class="glass-panel host-center">
-            ${centerContent}
+          <div class="tv-center-banner">
+            <div class="turn-spotlight-banner">
+              <div style="font-weight:900; font-size:1.15rem; color:var(--gold); letter-spacing:0.8px;">
+                ${hostState.bannerTitle}
+              </div>
+              <div style="font-size:0.86rem; color:var(--text-main); margin-top:3px;">
+                ${hostState.bannerSubtitle}
+              </div>
+            </div>
+            ${centerControls}
+            <div></div>
           </div>
 
-          <div class="glass-panel host-right">
-            <div style="font-weight:800; font-size:0.95rem; border-bottom:1px solid rgba(100,255,200,0.2); padding-bottom:6px;">
-              ЛЕТОПИСЬ СОБЫТИЙ
+          <div class="glass-panel tv-right">
+            <div style="font-weight:800; font-size:0.92rem; color:var(--gold); border-bottom:1px solid rgba(255,80,110,0.25); padding-bottom:6px;">
+              ИМПЕРСКАЯ ХРОНИКА
             </div>
-            <div class="event-log">${logsHtml}</div>
+            <div class="event-feed">${logsHtml}</div>
           </div>
 
-          <div class="glass-panel host-bottom">
-            <div style="font-weight:800; font-size:0.85rem; color:var(--text-muted);">
-              ДОСТУПНЫЕ ГОРОДСКИЕ КОНТРАКТЫ И МОНУМЕНТЫ
+          <div class="glass-panel tv-bottom">
+            <div style="display:flex; justify-content:space-between; font-size:0.78rem; color:var(--text-muted); font-weight:700; margin-bottom:4px;">
+              <span>КЛЮЧЕВЫЕ ЧЕРТЕЖИ ПОЛИСА (ПОЛНЫЙ СПИСОК НА СМАРТФОНАХ)</span>
+              <span>🐾 Соня [1–3] • 💧 Наташа [2–5] • 🔥 Степан [4–6]</span>
             </div>
-            <div class="market-grid">${marketHtml}</div>
+            <div class="market-strip">${marketHtml}</div>
           </div>
         </div>
       `;
 
-      const btnBot = document.getElementById('btn-add-bot');
-      if (btnBot) btnBot.onclick = addBotPlayer;
+      const btnBot = document.getElementById('btn-tv-bot');
+      if (btnBot) btnBot.onclick = addBotOnHost;
 
-      const btnStart = document.getElementById('btn-start-game');
-      if (btnStart) btnStart.onclick = startGameFromLobby;
-
-      const btnBuild = document.getElementById('btn-go-build');
-      if (btnBuild) btnBuild.onclick = startBuildPhase;
-
-      const btnRestart = document.getElementById('btn-restart');
-      if (btnRestart) btnRestart.onclick = () => {
-        hostState.players.forEach(p => {
-          p.gold = 4;
-          p.buildings = ['moss_garden'];
-          p.ready = false;
-        });
-        hostState.winner = null;
-        hostState.round = 1;
-        startRoleSelectionPhase();
-      };
+      const btnStart = document.getElementById('btn-tv-start');
+      if (btnStart) btnStart.onclick = startImperialGame;
     }
 
-    /*************************************************************************
-     * 5. ЛОГИКА МОБИЛЬНОГО КЛИЕНТА (КОНТРОЛЛЕР НА СМАРТФОНЕ)
-     *************************************************************************/
+    /***************************************************************************
+     * 8. МОБИЛЬНЫЙ КОНТРОЛЛЕР ИГРОКА (СМАРТФОН)
+     ***************************************************************************/
     const clientState = {
       pin: '',
       name: '',
       connected: false,
       phase: 'LOBBY',
       round: 1,
-      lastDice: null,
+      isMyTurn: false,
+      activePlayerName: '',
+      rolledDice: [],
       winner: null,
       me: null,
       conn: null
@@ -1203,7 +1734,7 @@
       mode = 'CLIENT';
       clientState.pin = pin;
       clientState.name = name;
-      renderClientScreen('Установка P2P-соединения с Архипелагом...');
+      renderClientPhone('Подключение к Багровому Полису...');
 
       peer = new Peer();
       peer.on('open', () => {
@@ -1213,173 +1744,193 @@
         conn.on('open', () => {
           clientState.connected = true;
           conn.send({ type: 'JOIN', name: clientState.name });
-          renderClientScreen();
+          renderClientPhone();
         });
 
         conn.on('data', (data) => {
-          if (data.type === 'STATE_UPDATE') {
-            clientState.phase = data.phase;
-            clientState.round = data.round;
-            clientState.lastDice = data.lastDice;
-            clientState.winner = data.winner;
-            clientState.me = data.me;
-            renderClientScreen();
-          }
-          if (data.type === 'ERROR') {
-            renderClientScreen(data.message);
+          if (data.type === 'STATE_SYNC') {
+            Object.assign(clientState, data);
+            renderClientPhone();
           }
         });
 
         conn.on('close', () => {
           clientState.connected = false;
-          renderClientScreen('Соединение с Главным экраном прервано.');
+          renderClientPhone('Связь с Главным экраном потеряна.');
         });
       });
 
       peer.on('error', () => {
-        renderClientScreen('Не удалось найти комнату с кодом ' + pin);
+        renderClientPhone('Комната с кодом ' + pin + ' не найдена.');
       });
     }
 
-    function renderClientScreen(statusMsg = '') {
+    function renderClientPhone(statusText = '') {
       if (mode !== 'CLIENT') return;
 
       if (!clientState.connected || !clientState.me) {
         appEl.innerHTML = `
-          <div class="glass-panel center-screen">
-            <div class="title-glow" style="font-size:1.5rem;">ПОДКЛЮЧЕНИЕ</div>
-            <p class="subtitle">${statusMsg || 'Ожидание ответа от ведущего экрана...'}</p>
-            <button class="btn" onclick="location.reload()">Вернуться в меню</button>
+          <div class="glass-panel center-modal">
+            <div class="title-imperial" style="font-size:1.5rem;">СВЯЗЬ С ПОЛИСОМ</div>
+            <p class="subtitle">${statusText || 'Синхронизация с Главным экраном...'}</p>
+            <button class="btn" onclick="location.reload()">Назад</button>
           </div>
         `;
         return;
       }
 
       const me = clientState.me;
-      const monCount = me.buildings.filter(id => id === 'grand_monument').length;
-
-      let actionPanelHtml = '';
+      let bodyHtml = '';
 
       if (clientState.phase === 'LOBBY') {
-        actionPanelHtml = `
-          <div style="text-align:center; padding:20px 10px;">
-            <div style="font-size:1.2rem; font-weight:700; color:var(--mint-glow);">Вы в игре!</div>
-            <p class="subtitle" style="margin-top:8px;">Посмотрите на Главный экран и дождитесь начала партии.</p>
+        bodyHtml = `
+          <div style="text-align:center; padding:24px 12px;">
+            <div style="font-size:1.3rem; font-weight:900; color:var(--gold);">Вы в Совете Архитекторов!</div>
+            <p class="subtitle" style="margin-top:8px;">
+              Ваш Бастион уже появился на Главном экране ТВ. Нажмите «Начать Имперскую Партию» на экране ТВ!
+            </p>
           </div>
         `;
-      } else if (clientState.phase === 'ROLE_SELECT') {
-        if (me.ready) {
-          actionPanelHtml = `
-            <div style="text-align:center; padding:20px;">
-              <div style="font-size:1.15rem; font-weight:700; color:var(--mint-glow);">
-                Покровитель выбран: ${PATRONS[me.chosenRole].name}
-              </div>
-              <p class="subtitle" style="margin-top:6px;">Ожидаем выбор остальных участников...</p>
-            </div>
-          `;
-        } else {
-          actionPanelHtml = `
-            <div style="font-weight:800; margin-bottom:8px; color:var(--mint-glow);">
-              ВЫБЕРИТЕ ПОКРОВИТЕЛЯ НА РАУНД ${clientState.round}:
+      } else if (clientState.phase === 'TURN_ROLL') {
+        if (clientState.isMyTurn) {
+          bodyHtml = `
+            <div style="font-weight:900; color:var(--gold); margin-bottom:10px; font-size:1.05rem;">
+              🎲 ВАШ ХОД! ВЫБЕРИТЕ ПОКРОВИТЕЛЯ БРОСКА:
             </div>
             <div style="display:flex; flex-direction:column; gap:10px;">
-              ${Object.values(PATRONS).map(pt => `
-                <button class="client-choice-btn" data-role="${pt.id}">
-                  <div style="font-weight:800; font-size:1.05rem; color:${pt.color};">${pt.name} —${pt.title}</div>
-                  <div style="font-size:0.82rem; opacity:0.88; line-height:1.35;">${pt.desc}</div>
+              ${Object.values(DICE_STYLES).map(st => `
+                <button class="phone-card-btn" data-roll="${st.id}" style="border-left: 4px solid ${st.color};">
+                  <div style="font-weight:900; font-size:1.05rem; color:${st.color};">${st.title}</div>
+                  <div style="font-size:0.82rem; opacity:0.9; line-height:1.35;">${st.desc}</div>
                 </button>
               `).join('')}
             </div>
           `;
+        } else {
+          bodyHtml = `
+            <div style="text-align:center; padding:22px 10px;">
+              <div style="font-size:1.15rem; font-weight:800; color:var(--text-muted);">
+                Сейчас бросает кости: <b style="color:var(--gold);">${clientState.activePlayerName}</b>
+              </div>
+              <p class="subtitle" style="margin-top:8px;">
+                Смотрите на экран ТВ! Ваши здания Сони и Наташи принесут вам доход даже в чужой ход!
+              </p>
+            </div>
+          `;
         }
-      } else if (clientState.phase === 'REVEAL') {
-        actionPanelHtml = `
-          <div style="text-align:center; padding:18px;">
-            <div style="font-size:1.1rem; font-weight:700; color:var(--gold);">Астральный кубик: [${clientState.lastDice}]</div>
-            <p class="subtitle" style="margin-top:6px;">Посмотрите результаты распределения Золота на Главном экране!</p>
+      } else if (clientState.phase === 'ANIMATING_ROLL' || clientState.phase === 'ANIMATING_BUILD') {
+        bodyHtml = `
+          <div style="text-align:center; padding:26px 12px;">
+            <div style="font-size:1.25rem; font-weight:900; color:var(--gold);">
+              ✨ СМОТРИТЕ НА ГЛАВНЫЙ ЭКРАН!
+            </div>
+            <p class="subtitle" style="margin-top:8px;">
+              В Багровом Полисе происходит распределение золота и возведение кварталов...
+            </p>
           </div>
         `;
-      } else if (clientState.phase === 'BUILD') {
-        if (me.ready) {
-          actionPanelHtml = `
-            <div style="text-align:center; padding:20px;">
-              <div style="font-size:1.15rem; font-weight:700; color:var(--mint-glow);">Приказ на строительство отправлен!</div>
-              <p class="subtitle" style="margin-top:6px;">Ожидаем остальных игроков...</p>
+      } else if (clientState.phase === 'TURN_BUILD') {
+        if (clientState.isMyTurn) {
+          const wondersHtml = WONDERS.map(w => {
+            const built = me.wonders.includes(w.id);
+            const canBuy = !built && me.gold >= w.cost;
+            return `
+              <button class="phone-card-btn wonder-btn" data-build="${w.id}" data-preview="${w.id}" ${!canBuy ? 'disabled' : ''}>
+                <div style="display:flex; justify-content:space-between; width:100%; font-weight:900;">
+                  <span style="color:var(--gold);">👑 ${w.name} ${built ? '(ПОСТРОЕНО)' : ''}</span>
+                  <span style="color:var(--gold);">🪙 ${w.cost}</span>
+                </div>
+                <div style="font-size:0.78rem; opacity:0.9;">${w.desc}</div>
+              </button>
+            `;
+          }).join('');
+
+          const buildingsHtml = BUILDINGS.map(b => {
+            const canBuy = me.gold >= b.cost;
+            return `
+              <button class="phone-card-btn" data-build="${b.id}" data-preview="${b.id}" ${!canBuy ? 'disabled' : ''}>
+                <div style="display:flex; justify-content:space-between; width:100%; font-weight:800;">
+                  <span style="color:var(--text-muted);">[${b.patron}] ${b.name}</span>
+                  <span style="color:var(--gold);">🪙 ${b.cost}</span>
+                </div>
+                <div style="font-size:0.78rem; opacity:0.88;">${b.desc}</div>
+              </button>
+            `;
+          }).join('');
+
+          bodyHtml = `
+            <div style="font-weight:900; color:var(--gold); margin-bottom:8px;">
+              🏗️ СТРОИТЕЛЬСТВО В ВАШЕМ БАСТИОНЕ:
+            </div>
+            <div style="display:flex; flex-direction:column; gap:8px;">
+              <button class="btn btn-gold" data-build="BANK_DEPOSIT" style="width:100%; text-align:center;">
+                🌙 Вклад в Тихий Банк Сони (+${me.wonders.includes('wonder_sonya') ? 4 : 2} 🪙 вместо постройки)
+              </button>
+              <div style="font-size:0.8rem; font-weight:800; color:var(--gold); margin-top:6px;">ВЕЛИКИЕ ЧУДЕСА (ДЛЯ ПОБЕДЫ):</div>
+              ${wondersHtml}
+              <div style="font-size:0.8rem; font-weight:800; color:var(--text-muted); margin-top:6px;">ГОРОДСКИЕ КВАРТАЛЫ:</div>
+              ${buildingsHtml}
             </div>
           `;
         } else {
-          const discount = me.chosenRole === 'natasha' ? 1 : 0;
-          actionPanelHtml = `
-            <div style="font-weight:800; margin-bottom:8px; color:var(--mint-glow);">
-              СТРОИТЕЛЬСТВО ${discount ? '(Скидка Наташи -1 🪙)' : ''}:
-            </div>
-            <div style="display:flex; flex-direction:column; gap:8px;">
-              ${BUILDINGS.map(b => {
-                const cost = Math.max(1, b.cost - discount);
-                const canAfford = me.gold >= cost;
-                return `
-                  <button class="client-choice-btn" data-build="${b.id}" ${!canAfford ? 'disabled' : ''}>
-                    <div style="display:flex; justify-content:space-between; width:100%; font-weight:800;">
-                      <span style="color:${b.monument ? 'var(--gold)' : 'var(--mint-glow)'};">${b.name}</span>
-                      <span style="color:var(--gold);">🪙 ${cost}</span>
-                    </div>
-                    <div style="font-size:0.78rem; opacity:0.85;">${b.desc}</div>
-                  </button>
-                `;
-              }).join('')}
-              <button class="btn" data-build="PASS" style="margin-top:4px;">Пропустить и сохранить Золото</button>
+          bodyHtml = `
+            <div style="text-align:center; padding:22px 10px;">
+              <div style="font-size:1.15rem; font-weight:800;">
+                Строит квартал: <b style="color:var(--gold);">${clientState.activePlayerName}</b>
+              </div>
+              <p class="subtitle" style="margin-top:8px;">
+                На главном экране подсвечиваются чертежи, которые сейчас выбирает активный игрок!
+              </p>
             </div>
           `;
         }
       } else if (clientState.phase === 'GAME_OVER') {
-        actionPanelHtml = `
-          <div style="text-align:center; padding:20px;">
-            <div class="title-glow" style="font-size:1.5rem;">Партия завершена!</div>
-            <p class="subtitle">Победитель: <b>${clientState.winner}</b></p>
+        bodyHtml = `
+          <div style="text-align:center; padding:24px;">
+            <div class="title-imperial" style="font-size:1.6rem;">👑 ПОБЕДИТЕЛЬ: ${clientState.winner}</div>
           </div>
         `;
       }
 
-      const myBuildingsList = me.buildings.map(id => {
-        const b = BUILDINGS.find(x => x.id === id);
-        return `<span class="b-tag ${b.monument ? 'monument' : ''}">${b.name}</span>`;
-      }).join('');
-
       appEl.innerHTML = `
-        <div class="client-layout">
-          <div class="glass-panel" style="padding:14px; display:flex; justify-content:space-between; align-items:center;">
+        <div class="phone-wrap">
+          <div class="glass-panel" style="padding:12px 16px; display:flex; justify-content:space-between; align-items:center;">
             <div>
-              <div style="font-weight:800; font-size:1.1rem;">${me.name}</div>
-              <div style="font-size:0.78rem; color:var(--gold);">Монументы: ${monCount}/3 | Комната #${clientState.pin}</div>
+              <div style="font-weight:900; font-size:1.1rem;">${me.name}</div>
+              <div style="font-size:0.76rem; color:var(--gold);">Чудеса: ${me.wonders.length}/3 • Построек: ${me.buildings.length}</div>
             </div>
-            <div class="gold-pill" style="font-size:1.15rem; padding:6px 14px;">🪙 ${me.gold}</div>
+            <div class="gold-badge" style="font-size:1.2rem; padding:6px 14px;">🪙 ${me.gold}</div>
           </div>
 
           <div class="glass-panel" style="padding:14px; flex:1; overflow-y:auto;">
-            ${actionPanelHtml}
-          </div>
-
-          <div class="glass-panel" style="padding:12px;">
-            <div style="font-size:0.78rem; font-weight:700; margin-bottom:6px; opacity:0.8;">ВАШ РАЙОН (${me.buildings.length} постр.):</div>
-            <div class="mini-buildings">${myBuildingsList}</div>
+            ${bodyHtml}
           </div>
         </div>
       `;
 
-      document.querySelectorAll('[data-role]').forEach(btn => {
+      document.querySelectorAll('[data-roll]').forEach(btn => {
         btn.onclick = () => {
-          clientState.conn.send({ type: 'SELECT_ROLE', role: btn.getAttribute('data-role') });
+          clientState.conn.send({ type: 'ROLL_DICE', style: btn.getAttribute('data-roll') });
         };
       });
 
       document.querySelectorAll('[data-build]').forEach(btn => {
+        const previewId = btn.getAttribute('data-preview');
+        if (previewId) {
+          btn.addEventListener('touchstart', () => {
+            clientState.conn.send({ type: 'PREVIEW_CARD', cardId: previewId });
+          }, { passive: true });
+          btn.addEventListener('mouseenter', () => {
+            clientState.conn.send({ type: 'PREVIEW_CARD', cardId: previewId });
+          });
+        }
         btn.onclick = () => {
-          clientState.conn.send({ type: 'SELECT_BUILD', buildingId: btn.getAttribute('data-build') });
+          clientState.conn.send({ type: 'BUILD_ACTION', cardId: btn.getAttribute('data-build') });
         };
       });
     }
 
-    // Запуск стартового экрана
+    // Старт главного меню
     renderMenu();
   </script>
 </body>
