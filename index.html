@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Ночной Дозор: Коты vs Шуршики</title>
+    <script src="https://unpkg.com/peerjs@1.5.1/dist/peerjs.min.js"></script>
+    <style>
+        :root {
+            --bg-color: #050510; /* Глубокий ночной синий */
+            --text-color: #e0e0e0;
+            --accent-stepan: #ff5722;
+            --accent-sonya: #9c27b0;
+            --accent-natasha: #03a9f4;
+            --accent-shurshik: #4caf50;
+            --card-bg: rgba(20, 20, 30, 0.8);
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+            text-align: center;
+            overflow-x: hidden;
+        }
+        h1, h2, h3 { margin-top: 0; }
+        .hidden { display: none !important; }
+        
+        .btn {
+            background-color: #333;
+            color: white;
+            border: none;
+            padding: 15px 25px;
+            font-size: 1.1rem;
+            margin: 10px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: 0.3s;
+            width: 90%;
+            max-width: 300px;
+            text-transform: uppercase;
+            font-weight: bold;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+        }
+        .btn:hover { background-color: #555; transform: scale(1.05); }
+        .btn-stepan { border: 2px solid var(--accent-stepan); }
+        .btn-sonya { border: 2px solid var(--accent-sonya); }
+        .btn-natasha { border: 2px solid var(--accent-natasha); }
+        .btn-shurshik { border: 2px solid var(--accent-shurshik); }
+        .selected { background-color: #555; box-shadow: 0 0 20px rgba(255,255,255,0.3); }
+
+        /* Экраны общие стили */
+        #main-menu, #lobby-screen, #host-screen, #player-screen {
+            max-width: 900px;
+            margin: 0 auto;
+            background: var(--card-bg);
+            padding: 30px;
+            border-radius: 16px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.8);
+            position: relative;
+            z-index: 10;
+            backdrop-filter: blur(10px);
+        }
+
+        /* --- ХОСТ: ЖИВОЙ ФОН (КАНВАС) --- */
+        #bg-canvas {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        /* --- ХОСТ: ИГРОВОЕ ПОЛЕ --- */
+        .host-header { 
+            display: flex; justify-content: space-between; align-items: center; 
+            margin-bottom: 20px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px; 
+        }
+        
+        .room-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+
+        /* Стили дышащих комнат */
+        .room-card {
+            background: linear-gradient(145deg, #1a1a24, #0d0d14);
+            padding: 50px 20px;
+            border-radius: 16px;
+            border: 1px solid rgba(255,255,255,0.05);
+            font-size: 2rem;
+            font-weight: bold;
+            position: relative;
+            overflow: hidden;
+            box-shadow: inset 0 0 20px rgba(0,0,0,0.8), 0 10px 20px rgba(0,0,0,0.5);
+            transition: all 0.5s ease;
+        }
+        
+        /* Сканирующий луч по комнатах (Радар) */
+        .room-card::before {
+            content: '';
+            position: absolute;
+            top: -150%; left: -150%; width: 300%; height: 300%;
+            background: linear-gradient(transparent, rgba(255,255,255,0.03), transparent);
+            transform: rotate(45deg);
+            animation: radar-scan 6s infinite linear;
+            pointer-events: none;
+        }
+        @keyframes radar-scan {
+            0% { top: -150%; left: -150%; }
+            100% { top: 150%; left: 150%; }
+        }
+
+        /* Индикатор готовности */
+        .status-container {
+            background: rgba(0,0,0,0.5);
+            border-radius: 12px;
+            padding: 20px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .progress-bar-bg {
+            width: 100%; height: 10px;
+            background: #222;
+            border-radius: 5px;
+            margin-top: 10px;
+            overflow: hidden;
+        }
+        .progress-bar-fill {
+            height: 100%; width: 0%;
+            background: linear-gradient(90deg, #2196f3, #4caf50);
+            transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 0 15px rgba(76, 175, 80, 0.5);
+        }
+
+        /* --- КИНЕМАТОГРАФИЧНЫЙ ОВЕРЛЕЙ --- */
+        #cinematic-overlay {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            border-radius: 16px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 20;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.5s;
+        }
+        #cinematic-overlay.active { opacity: 1; }
+        #cinematic-text {
+            font-size: 2.5rem;
+            font-weight: bold;
+            text-align: center;
+            text-shadow: 0 0 30px rgba(255,255,255,0.6);
+            padding: 30px;
+            transition: 0.3s;
+        }
+
+        /* Анимации Событий (Степан, Соня, Наташа) */
+        @keyframes shake {
+            0%, 100% { transform: translate(0, 0) rotate(0deg); }
+            25% { transform: translate(-3px, 3px) rotate(-1deg); }
+            50% { transform: translate(3px, -3px) rotate(1deg); }
+            75% { transform: translate(-3px, -3px) rotate(0deg); }
+        }
+        .anim-stepan {
+            animation: shake 0.4s infinite;
+            border-color: var(--accent-stepan);
+            box-shadow: inset 0 0 50px rgba(255, 87, 34, 0.6), 0 0 30px rgba(255, 87, 34, 0.4);
+            color: var(--accent-stepan);
+        }
+        .anim-natasha {
+            border-color: var(--accent-natasha);
+            background: linear-gradient(145deg, #1a1a24, #001f3f);
+            box-shadow: inset 0 -50px 50px rgba(3, 169, 244, 0.4);
+            color: var(--accent-natasha);
+        }
+        .anim-sonya {
+            border-color: var(--accent-sonya);
+            background: radial-gradient(circle, rgba(156, 39, 176, 0.3) 0%, #1a1a24 100%);
+            box-shadow: 0 0 60px rgba(156, 39, 176, 0.8);
+            color: #fff;
+        }
+
+        /* Экраны телефона */
+        input, select {
+            width: 90%;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 8px;
+            border: 1px solid #555;
+            background: #111;
+            color: white;
+            font-size: 1.2rem;
+            text-align: center;
+        }
+        .action-group { margin: 20px 0; padding: 20px; background: rgba(0,0,0,0.6); border-radius: 12px; }
+        
+    </style>
+</head>
+<body>
+
+    <!-- Живой фон (Канвас пылинок) -->
+    <canvas id="bg-canvas"></canvas>
+
+    <!-- ГЛАВНОЕ МЕНЮ -->
+    <div id="main-menu">
+        <h1>🐾 НОЧНОЙ ДОЗОР</h1>
+        <p>Выберите устройство для запуска:</p>
+        <button class="btn" style="background: #2196f3;" onclick="initHost()">📺 Создать игру (Планшет)</button>
+        <button class="btn" onclick="showLobby()">📱 Присоединиться (Телефон)</button>
+    </div>
+
+    <!-- ЛОББИ ИГРОКА (ТЕЛЕФОН) -->
+    <div id="lobby-screen" class="hidden">
+        <h2>Подключение</h2>
+        <input type="text" id="room-code-input" placeholder="Код игры (напр. CAT-1234)" style="text-transform: uppercase;">
+        <input type="text" id="player-name" placeholder="Как вас зовут?">
+        
+        <h3>Кто вы в этой ночи?</h3>
+        <button class="btn btn-shurshik" onclick="selectRole('Шуршик')">🐭 Шуршик</button>
+        <button class="btn btn-stepan" onclick="selectRole('Степан')">🐈 Степан</button>
+        <button class="btn btn-sonya" onclick="selectRole('Соня')">🐈 Соня</button>
+        <button class="btn btn-natasha" onclick="selectRole('Наташа')">🐈 Наташа</button>
+        <br><br>
+        <button class="btn" style="background: #4caf50;" onclick="joinGame()">🚀 Войти в дом</button>
+    </div>
+
+    <!-- ЭКРАН ХОСТА (ПЛАНШЕТ) -->
+    <div id="host-screen" class="hidden">
+        <div id="cinematic-overlay"><div id="cinematic-text"></div></div>
+
+        <div class="host-header">
+            <div>Код комнаты: <span id="display-room-code" style="color: #ffeb3b; font-size: 1.8rem; letter-spacing: 2px;">***</span></div>
+            <div>Раунд: <span id="round-counter" style="font-weight: bold; font-size: 1.8rem; color: #4caf50;">1</span></div>
+        </div>
+        
+        <div class="room-grid">
+            <div class="room-card" id="room-Кухня">🍽️ Кухня</div>
+            <div class="room-card" id="room-Зал">🛋️ Зал</div>
+            <div class="room-card" id="room-Спальня">🛏️ Спальня</div>
+            <div class="room-card" id="room-Коридор">🚪 Коридор</div>
+        </div>
+
+        <div class="status-container">
+            <div id="readiness-text" style="font-size: 1.3rem; color: #aaa;">Ожидание подключения игроков...</div>
+            <div class="progress-bar-bg">
+                <div class="progress-bar-fill" id="readiness-bar"></div>
+            </div>
+            <div style="margin-top: 10px; font-size: 1.1rem;">Подключено: <span id="player-count" style="color: #fff; font-weight: bold;">0</span></div>
+        </div>
+    </div>
+
+    <!-- ПУЛЬТ ИГРОКА (ТЕЛЕФОН) -->
+    <div id="player-screen" class="hidden">
+        <h2 style="margin-bottom: 5px;">Роль: <span id="my-role" style="color: #ffeb3b;"></span></h2>
+        <p id="player-status" style="color: #aaa; margin-top: 0;">Выберите действия в тайне от других</p>
+
+        <div class="action-group">
+            <h3>📍 Куда направляемся?</h3>
+            <select id="room-select">
+                <option value="Кухня">Кухня</option>
+                <option value="Зал">Зал</option>
+                <option value="Спальня">Спальня</option>
+                <option value="Коридор">Коридор</option>
+            </select>
+        </div>
+
+        <div class="action-group" id="actions-shurshik" class="hidden">
+            <h3>⚡ Что делаем?</h3>
+            <select id="action-select-shurshik">
+                <option value="Искать">💰 Искать быстро (Шумно!)</option>
+                <option value="Красться">🥷 Красться (Тихо, 1 монета)</option>
+                <option value="Спрятаться">📦 В коробку (Спасет от Степана)</option>
+            </select>
+        </div>
+
+        <button class="btn" id="btn-submit-action" style="background: #2196f3; width: 100%; padding: 20px; font-size: 1.3rem;" onclick="submitAction()">✅ Отправить ход</button>
+        
+        <div style="margin-top: 30px; font-size: 1.5rem; background: rgba(0,0,0,0.8); padding: 15px; border-radius: 8px; border: 1px solid #333;">
+            Ваши монеты: <span id="my-coins" style="color: #ffeb3b; font-weight: bold; font-size: 2rem;">0</span>
+        </div>
+    </div>
+
+    <script>
+        // --- АНИМАЦИЯ ФОНА (МАГИЧЕСКАЯ ПЫЛЬ) ---
+        const canvas = document.getElementById('bg-canvas');
+        const ctx = canvas.getContext('2d');
+        let particles = [];
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        class Particle {
+            constructor() {
+                this.x = Math.random() * canvas.width;
+                this.y = Math.random() * canvas.height;
+                this.size = Math.random() * 2 + 0.5;
+                this.speedX = Math.random() * 0.5 - 0.25;
+                this.speedY = Math.random() * 0.5 - 0.25;
+                this.opacity = Math.random() * 0.5;
+            }
+            update() {
+                this.x += this.speedX;
+                this.y += this.speedY;
+                if (this.x > canvas.width) this.x = 0;
+                if (this.x < 0) this.x = canvas.width;
+                if (this.y > canvas.height) this.y = 0;
+                if (this.y < 0) this.y = canvas.height;
+            }
+            draw() {
+                ctx.fillStyle = `rgba(150, 200, 255, ${this.opacity})`;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+        for (let i = 0; i < 100; i++) particles.push(new Particle());
+
+        function animateBg() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            particles.forEach(p => { p.update(); p.draw(); });
+            requestAnimationFrame(animateBg);
+        }
+        animateBg();
+
+        // --- ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ ИГРЫ ---
+        let peer = null;
+        let hostConnection = null;
+        let playerConnections = {};
+        let playersData = {};
+        let myRole = '';
+        let myCoins = 0;
+        const sleep = ms => new Promise(r => setTimeout(r, ms));
+
+        function show(id) {
+            document.getElementById('main-menu').classList.add('hidden');
+            document.getElementById('lobby-screen').classList.add('hidden');
+            document.getElementById('host-screen').classList.add('hidden');
+            document.getElementById('player-screen').classList.add('hidden');
+            document.getElementById(id).classList.remove('hidden');
+        }
+        function showLobby() { show('lobby-screen'); }
+
+        // --- ЛОГИКА ХОСТА (ПЛАНШЕТ) ---
+        function initHost() {
+            show('host-screen');
+            const roomCode = 'CAT-' + Math.floor(1000 + Math.random() * 9000);
+            document.getElementById('display-room-code').innerText = roomCode;
+
+            peer = new Peer(roomCode);
+            peer.on('connection', (conn) => {
+                conn.on('data', (data) => handleDataFromPlayer(conn.peer, data));
+                playerConnections[conn.peer] = conn;
+                updateHostUI();
+            });
+        }
+
+        function handleDataFromPlayer(peerId, data) {
+            if (data.type === 'JOIN') {
+                playersData[peerId] = { name: data.name, role: data.role, coins: 0, ready: false };
+                updateHostUI();
+            }
+            if (data.type === 'ACTION') {
+                playersData[peerId].room = data.room;
+                playersData[peerId].action = data.action;
+                playersData[peerId].ready = true;
+                updateHostUI();
+            }
+        }
+
+        function updateHostUI() {
+            const total = Object.keys(playersData).length;
+            const readyCount = Object.values(playersData).filter(p => p.ready).length;
+            
+            document.getElementById('player-count').innerText = total;
+            
+            const statusText = document.getElementById('readiness-text');
+            const progressBar = document.getElementById('readiness-bar');
+
+            if (total === 0) {
+                statusText.innerHTML = "Радар активен. Ждем участников...";
+                progressBar.style.width = "0%";
+                return;
+            }
+
+            // Красиво обновляем полоску готовности
+            const percentage = (readyCount / total) * 100;
+            progressBar.style.width = `${percentage}%`;
+
+            if (readyCount < total) {
+                statusText.innerHTML = `ПЛАНИРОВАНИЕ: <span style="color:#ffeb3b; font-weight:bold;">${readyCount} / ${total}</span> приняли решение`;
+            } else {
+                statusText.innerHTML = `<span style="color:#4caf50; font-weight:bold; font-size: 1.5rem;">ВСЕ ГОТОВЫ! НАЧИНАЕМ...</span>`;
+                setTimeout(startCinematicResolution, 1500); // Небольшая пауза перед началом шоу
+            }
+        }
+
+        // --- КИНЕМАТОГРАФИЧЕСКАЯ РАЗВЯЗКА ---
+        async function showCinematicText(text, color = "#fff", duration = 2500) {
+            const overlay = document.getElementById('cinematic-overlay');
+            const textBox = document.getElementById('cinematic-text');
+            textBox.innerHTML = text; // Используем innerHTML для эмодзи и переносов
+            textBox.style.color = color;
+            overlay.classList.add('active');
+            await sleep(duration);
+            overlay.classList.remove('active');
+            await sleep(600);
+        }
+
+        function clearRooms() {
+            document.querySelectorAll('.room-card').forEach(el => { el.className = 'room-card'; });
+        }
+
+        async function startCinematicResolution() {
+            Object.values(playersData).forEach(p => p.ready = false); 
+            clearRooms();
+
+            await showCinematicText("🌙<br>НОЧЬ ОПУСКАЕТСЯ НА ДОМ...", "#aaa", 2500);
+
+            let stepanRoom = null, sonyaRoom = null, natashaRoom = null;
+            Object.values(playersData).forEach(p => {
+                if(p.role === 'Степан') stepanRoom = p.room;
+                if(p.role === 'Соня') sonyaRoom = p.room;
+                if(p.role === 'Наташа') natashaRoom = p.room;
+            });
+
+            if (stepanRoom) {
+                document.getElementById(`room-${stepanRoom}`).classList.add('anim-stepan');
+                await showCinematicText(`💥 СТЕПАН С ГРОХОТОМ ВРЫВАЕТСЯ В ${stepanRoom.toUpperCase()}!`, "var(--accent-stepan)", 3000);
+            }
+            if (natashaRoom) {
+                document.getElementById(`room-${natashaRoom}`).classList.add('anim-natasha');
+                await showCinematicText(`💧 НАТАША ЗАЛИВАЕТ ВОДОЙ ${natashaRoom.toUpperCase()} И ВЫХОДИТ НА ОХОТУ!`, "var(--accent-natasha)", 3000);
+            }
+
+            const shurshiks = Object.values(playersData).filter(p => p.role === 'Шуршик');
+            if (shurshiks.length > 0) await showCinematicText("🐭 А ТЕПЕРЬ ХОДЫ ШУРШИКОВ...", "#4caf50", 2000);
+
+            for (let p of shurshiks) {
+                await showCinematicText(`🐾 ${p.name} пробирается в ${p.room}...`, "#ddd", 1500);
+
+                if (p.room === stepanRoom && p.action !== 'Спрятаться') {
+                    await showCinematicText(`😱 О НЕТ! ТАМ СТЕПАН!<br>${p.name} придавлен и теряет монеты!`, "var(--accent-stepan)");
+                    p.coins = Math.max(0, p.coins - 1);
+                } 
+                else if (p.room === stepanRoom && p.action === 'Спрятаться') {
+                    await showCinematicText(`📦 ФУХ!<br>${p.name} спрятался в коробку. Степан пробежал мимо!`, "#fff");
+                } 
+                else if (p.room === sonyaRoom && p.action === 'Искать') {
+                    document.getElementById(`room-${sonyaRoom}`).classList.add('anim-sonya');
+                    await showCinematicText(`⚡ ВНЕЗАПНО! ЗДЕСЬ ТАЙНО СПАЛА СОНЯ!`, "var(--accent-sonya)", 2000);
+                    await showCinematicText(`Шум пугает Соню!<br>${p.name} в панике роняет монеты!`, "var(--accent-sonya)");
+                    p.coins = Math.max(0, p.coins - 1);
+                } 
+                else if (p.room === natashaRoom) {
+                    await showCinematicText(`💦 ${p.name} поскользнулся в луже!<br>Наташа делает КУСЬ!`, "var(--accent-natasha)");
+                    p.coins = Math.max(0, p.coins - 1);
+                } 
+                else {
+                    if (p.action === 'Искать') { 
+                        p.coins += 2; 
+                        await showCinematicText(`💰 ${p.name} быстро находит 2 монеты!`, "#ffeb3b"); 
+                    }
+                    if (p.action === 'Красться') { 
+                        p.coins += 1; 
+                        await showCinematicText(`🥷 ${p.name} тихо стащил 1 монету.`, "#4caf50"); 
+                    }
+                    if (p.action === 'Спрятаться') {
+                        await showCinematicText(`📦 ${p.name} просидел в коробке.<br>Ничего не нашел, но цел.`, "#aaa"); 
+                    }
+                }
+            }
+
+            await showCinematicText("🌅 НАСТУПАЕТ УТРО...", "#fff", 2000);
+            
+            Object.keys(playerConnections).forEach(id => {
+                playerConnections[id].send({ type: 'ROUND_END', coins: playersData[id].coins });
+            });
+
+            document.getElementById('round-counter').innerText = parseInt(document.getElementById('round-counter').innerText) + 1;
+            
+            clearRooms();
+            updateHostUI();
+        }
+
+        // --- ЛОГИКА ТЕЛЕФОНА ---
+        let selectedRole = '';
+        function selectRole(role) {
+            selectedRole = role;
+            document.querySelectorAll('#lobby-screen .btn').forEach(b => b.classList.remove('selected'));
+            event.target.classList.add('selected');
+        }
+
+        function joinGame() {
+            const roomCode = document.getElementById('room-code-input').value.toUpperCase();
+            const playerName = document.getElementById('player-name').value;
+            if (!roomCode || !playerName || !selectedRole) { alert("Заполните всё!"); return; }
+
+            peer = new Peer(); 
+            peer.on('open', (id) => {
+                hostConnection = peer.connect(roomCode);
+                hostConnection.on('open', () => {
+                    hostConnection.send({ type: 'JOIN', name: playerName, role: selectedRole });
+                    myRole = selectedRole;
+                    document.getElementById('my-role').innerText = myRole;
+                    if (myRole === 'Шуршик') document.getElementById('actions-shurshik').classList.remove('hidden');
+                    show('player-screen');
+                });
+                hostConnection.on('data', (data) => {
+                    if (data.type === 'ROUND_END') {
+                        myCoins = data.coins;
+                        document.getElementById('my-coins').innerText = myCoins;
+                        document.getElementById('btn-submit-action').classList.remove('hidden');
+                        document.getElementById('player-status').innerText = "Планируйте новый ход!";
+                        document.getElementById('player-status').style.color = "#4caf50";
+                    }
+                });
+            });
+        }
+
+        function submitAction() {
+            const room = document.getElementById('room-select').value;
+            let action = myRole === 'Шуршик' ? document.getElementById('action-select-shurshik').value : 'Охота';
+
+            hostConnection.send({ type: 'ACTION', room: room, action: action });
+            document.getElementById('btn-submit-action').classList.add('hidden');
+            document.getElementById('player-status').innerText = "Ход отправлен! ВНИМАНИЕ НА ЭКРАН!";
+            document.getElementById('player-status').style.color = "#ffeb3b";
+        }
+    </script>
+</body>
+</html>
