@@ -3,21 +3,20 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>Шесть Островов: Корона Трёх Котов</title>
+  <title>Полуночный Особняк: Тайна Трёх Кошек</title>
   <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
   <style>
     :root {
-      --theme-hue: 348;
+      --theme-hue: 350;
       --theme-sat: 82%;
-      --bg-abyss: hsl(348, 78%, 5%);
-      --glass-bg: hsla(348, 65%, 9%, 0.80);
-      --glass-border: hsla(348, 90%, 65%, 0.32);
-      --accent-glow: hsl(348, 95%, 60%);
-      --accent-soft: hsla(348, 95%, 60%, 0.22);
+      --bg-dark: hsl(350, 75%, 5%);
+      --glass-bg: hsla(350, 65%, 9%, 0.82);
+      --glass-border: hsla(350, 90%, 65%, 0.35);
+      --accent: hsl(350, 95%, 60%);
+      --accent-soft: hsla(350, 95%, 60%, 0.25);
       --gold: #ffd15c;
-      --gold-bright: #fff0b3;
       --text-main: #fff8f9;
-      --text-muted: hsl(348, 85%, 82%);
+      --text-muted: hsl(350, 80%, 84%);
     }
 
     * {
@@ -33,11 +32,11 @@
       width: 100%;
       height: 100%;
       overflow: hidden;
-      background-color: var(--bg-abyss);
+      background-color: var(--bg-dark);
       color: var(--text-main);
     }
 
-    #world-canvas {
+    #mansion-canvas {
       position: fixed;
       top: 0;
       left: 0;
@@ -46,16 +45,15 @@
       z-index: 0;
     }
 
-    /* Стеклянные панели с динамическим оттенком темы */
     .glass-panel {
       background: var(--glass-bg);
       backdrop-filter: blur(16px);
       -webkit-backdrop-filter: blur(16px);
       border: 1px solid var(--glass-border);
       border-radius: 16px;
-      box-shadow: 0 12px 34px rgba(0, 0, 0, 0.65), inset 0 0 24px var(--accent-soft);
+      box-shadow: 0 12px 35px rgba(0, 0, 0, 0.7), inset 0 0 24px var(--accent-soft);
       color: var(--text-main);
-      transition: background 0.35s ease, border-color 0.35s ease;
+      transition: background 0.3s ease, border-color 0.3s ease;
     }
 
     #app {
@@ -70,9 +68,52 @@
       pointer-events: auto;
     }
 
-    /* Кнопки */
+    /* Верхняя полоса быстрого выбора цвета */
+    .top-color-bar {
+      position: fixed;
+      top: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 50;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 12px;
+      border-radius: 999px;
+      background: rgba(8, 4, 10, 0.85);
+      border: 1px solid var(--glass-border);
+      pointer-events: auto;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.6);
+    }
+
+    .c-dot {
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      border: 2px solid rgba(255,255,255,0.45);
+      cursor: pointer;
+      transition: transform 0.15s ease, border-color 0.15s ease;
+    }
+
+    .c-dot:hover {
+      transform: scale(1.18);
+      border-color: var(--gold);
+    }
+
+    .c-random-btn {
+      background: linear-gradient(90deg, #f43f5e, #8b5cf6, #06b6d4, #eab308);
+      border: 1px solid #fff;
+      color: #fff;
+      font-size: 0.72rem;
+      font-weight: 800;
+      padding: 4px 10px;
+      border-radius: 999px;
+      cursor: pointer;
+      text-shadow: 0 1px 3px rgba(0,0,0,0.8);
+    }
+
     .btn {
-      background: linear-gradient(135deg, hsla(var(--theme-hue), 85%, 45%, 0.65), hsla(var(--theme-hue), 85%, 22%, 0.92));
+      background: linear-gradient(135deg, hsla(var(--theme-hue), 85%, 44%, 0.72), hsla(var(--theme-hue), 85%, 20%, 0.94));
       border: 1px solid var(--glass-border);
       color: var(--text-main);
       padding: 12px 20px;
@@ -81,30 +122,29 @@
       font-weight: 700;
       cursor: pointer;
       transition: all 0.2s ease;
-      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.6);
       pointer-events: auto;
     }
 
     .btn:hover:not(:disabled) {
       border-color: var(--gold);
-      box-shadow: 0 0 20px var(--accent-soft);
+      box-shadow: 0 0 18px var(--accent-soft);
       transform: translateY(-1px);
     }
 
     .btn:disabled {
-      opacity: 0.38;
+      opacity: 0.35;
       cursor: not-allowed;
     }
 
     .btn-gold {
-      background: linear-gradient(135deg, rgba(245, 158, 11, 0.75), hsla(var(--theme-hue), 85%, 32%, 0.95));
+      background: linear-gradient(135deg, rgba(245, 158, 11, 0.8), hsla(var(--theme-hue), 85%, 30%, 0.95));
       border: 2px solid var(--gold);
       color: #fffbeb;
       box-shadow: 0 0 24px rgba(255, 209, 92, 0.3);
     }
 
     input[type="text"] {
-      background: rgba(8, 5, 10, 0.85);
+      background: rgba(8, 4, 10, 0.88);
       border: 1px solid var(--glass-border);
       color: var(--text-main);
       padding: 12px 16px;
@@ -118,17 +158,15 @@
 
     input[type="text"]:focus {
       border-color: var(--gold);
-      box-shadow: 0 0 15px var(--accent-soft);
     }
 
-    /* Модальное окно старта */
     .center-modal {
       position: absolute;
-      top: 50%;
+      top: 52%;
       left: 50%;
       transform: translate(-50%, -50%);
       padding: 28px 32px;
-      max-width: 600px;
+      max-width: 580px;
       width: 94%;
       text-align: center;
       display: flex;
@@ -137,58 +175,23 @@
       pointer-events: auto;
     }
 
-    .title-main {
-      font-size: 2.1rem;
+    .title-grand {
+      font-size: 2rem;
       font-weight: 900;
       letter-spacing: 1px;
-      background: linear-gradient(90deg, #ffffff, var(--gold), var(--accent-glow));
+      background: linear-gradient(90deg, #ffffff, var(--gold), var(--accent));
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       text-transform: uppercase;
     }
 
-    .subtitle {
-      font-size: 0.94rem;
-      color: rgba(255, 255, 255, 0.85);
-      line-height: 1.45;
-    }
-
-    /* Палитра выбора цвета дизайна */
-    .color-picker-row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      justify-content: center;
-      align-items: center;
-      padding: 10px;
-      background: rgba(0, 0, 0, 0.35);
-      border-radius: 12px;
-      border: 1px solid rgba(255, 255, 255, 0.1);
-    }
-
-    .color-swatch {
-      padding: 7px 12px;
-      border-radius: 999px;
-      font-size: 0.8rem;
-      font-weight: 800;
-      cursor: pointer;
-      border: 2px solid rgba(255, 255, 255, 0.25);
-      color: #fff;
-      transition: transform 0.15s ease, border-color 0.15s ease;
-    }
-
-    .color-swatch:hover {
-      transform: scale(1.06);
-      border-color: var(--gold);
-    }
-
     /* Сетка экрана ТВ */
-    .tv-grid {
+    .tv-layout {
       width: 100vw;
       height: 100vh;
       display: grid;
-      grid-template-columns: 310px 1fr 320px;
-      grid-template-rows: 72px 1fr 142px;
+      grid-template-columns: 300px 1fr 310px;
+      grid-template-rows: 66px 1fr 126px;
       gap: 12px;
       padding: 12px;
     }
@@ -198,37 +201,11 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 0 20px;
+      padding: 0 18px;
     }
 
-    /* Пошаговый индикатор фазы хода в шапке ТВ */
-    .phase-stepper {
-      display: flex;
-      gap: 8px;
-      align-items: center;
-    }
-
-    .step-pill {
-      padding: 6px 14px;
-      border-radius: 999px;
-      font-size: 0.82rem;
-      font-weight: 800;
-      background: rgba(255, 255, 255, 0.07);
-      border: 1px solid rgba(255, 255, 255, 0.15);
-      color: rgba(255, 255, 255, 0.5);
-      transition: all 0.25s ease;
-    }
-
-    .step-pill.active {
-      background: linear-gradient(135deg, hsla(var(--theme-hue), 90%, 45%, 0.85), rgba(245, 158, 11, 0.75));
-      border-color: var(--gold);
-      color: #fff;
-      box-shadow: 0 0 16px var(--accent-soft);
-      transform: scale(1.04);
-    }
-
-    .pin-box {
-      background: rgba(0, 0, 0, 0.45);
+    .pin-display {
+      background: rgba(0, 0, 0, 0.5);
       border: 2px solid var(--gold);
       padding: 4px 14px;
       border-radius: 10px;
@@ -255,7 +232,7 @@
       flex-direction: column;
       align-items: center;
       justify-content: space-between;
-      padding: 8px;
+      padding: 6px;
       pointer-events: none;
     }
 
@@ -278,129 +255,77 @@
       justify-content: space-between;
     }
 
-    /* Карточка игрока слева */
-    .p-item {
+    .p-row {
       background: rgba(0, 0, 0, 0.42);
       border: 1px solid rgba(255, 255, 255, 0.14);
       border-radius: 12px;
-      padding: 9px 11px;
+      padding: 8px 10px;
       display: flex;
       flex-direction: column;
-      gap: 6px;
+      gap: 4px;
       transition: all 0.25s ease;
     }
 
-    .p-item.active-turn {
+    .p-row.active-turn {
       border: 2px solid var(--gold);
-      background: linear-gradient(135deg, hsla(var(--theme-hue), 80%, 28%, 0.85), rgba(15, 10, 15, 0.9));
-      box-shadow: 0 0 20px rgba(255, 209, 92, 0.35);
+      background: linear-gradient(135deg, hsla(var(--theme-hue), 80%, 26%, 0.88), rgba(12, 8, 14, 0.92));
+      box-shadow: 0 0 18px rgba(255, 209, 92, 0.35);
       transform: translateX(4px);
     }
 
-    .p-color-dot {
-      width: 12px;
-      height: 12px;
-      border-radius: 50%;
-      display: inline-block;
-      border: 2px solid #fff;
-    }
-
-    .gold-counter {
-      color: var(--gold);
-      font-weight: 900;
-      font-size: 1.05rem;
-      background: rgba(255, 209, 92, 0.15);
-      border: 1px solid rgba(255, 209, 92, 0.45);
-      padding: 2px 9px;
-      border-radius: 999px;
-    }
-
-    .monument-slots {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 4px;
-    }
-
-    .m-slot {
-      font-size: 0.68rem;
-      text-align: center;
-      padding: 3px 2px;
-      border-radius: 6px;
-      background: rgba(255, 255, 255, 0.06);
-      color: rgba(255, 255, 255, 0.4);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-    }
-
-    .m-slot.owned {
-      background: rgba(255, 209, 92, 0.25);
-      border-color: var(--gold);
-      color: var(--gold-bright);
-      font-weight: 800;
-    }
-
-    /* Верхний телесуфлёр по центру (объясняет всё простыми словами) */
-    .action-banner {
-      background: rgba(10, 6, 12, 0.88);
+    .cinematic-banner {
+      background: rgba(8, 4, 10, 0.9);
       border: 2px solid var(--gold);
-      border-radius: 16px;
-      padding: 9px 24px;
+      border-radius: 14px;
+      padding: 8px 22px;
       text-align: center;
-      box-shadow: 0 10px 28px rgba(0, 0, 0, 0.75);
-      max-width: 92%;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+      max-width: 95%;
     }
 
-    /* 3 Коронных Чуда в нижней панели */
-    .wonders-row {
+    .cats-status-grid {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
       gap: 10px;
       height: 100%;
     }
 
-    .wonder-box {
-      background: rgba(0, 0, 0, 0.48);
-      border: 1px solid rgba(255, 209, 92, 0.38);
+    .cat-status-card {
+      background: rgba(0, 0, 0, 0.45);
+      border: 1px solid rgba(255, 255, 255, 0.16);
       border-radius: 10px;
-      padding: 7px 10px;
+      padding: 6px 10px;
       display: flex;
       flex-direction: column;
       justify-content: space-between;
-      font-size: 0.76rem;
-      transition: all 0.25s ease;
+      font-size: 0.74rem;
     }
 
-    .wonder-box.focused {
-      border: 2px solid var(--gold);
-      transform: translateY(-4px);
-      box-shadow: 0 0 20px rgba(255, 209, 92, 0.45);
-      background: hsla(var(--theme-hue), 75%, 24%, 0.9);
-    }
-
-    .log-list {
+    .log-feed {
       flex: 1;
       overflow-y: auto;
       display: flex;
       flex-direction: column;
       gap: 6px;
-      font-size: 0.8rem;
+      font-size: 0.79rem;
       padding-right: 4px;
     }
 
-    .log-line {
+    .log-item {
       background: rgba(0, 0, 0, 0.38);
-      border-left: 3px solid var(--accent-glow);
+      border-left: 3px solid var(--accent);
       padding: 6px 9px;
       border-radius: 0 8px 8px 0;
       line-height: 1.32;
     }
 
     /* Мобильный контроллер */
-    .phone-container {
+    .phone-wrap {
       width: 100%;
       max-width: 480px;
       height: 100vh;
       margin: 0 auto;
-      padding: 12px;
+      padding: 46px 12px 12px 12px;
       display: flex;
       flex-direction: column;
       gap: 10px;
@@ -408,103 +333,107 @@
       pointer-events: auto;
     }
 
-    .phone-option {
+    .action-btn-phone {
       width: 100%;
       text-align: left;
       padding: 12px 14px;
       border-radius: 12px;
-      background: rgba(12, 8, 14, 0.9);
+      background: rgba(14, 7, 15, 0.92);
       border: 1px solid var(--glass-border);
       color: var(--text-main);
       cursor: pointer;
       display: flex;
       flex-direction: column;
-      gap: 4px;
+      gap: 3px;
       transition: transform 0.12s ease, border-color 0.12s ease;
     }
 
-    .phone-option:active:not(:disabled) {
+    .action-btn-phone:active:not(:disabled) {
       transform: scale(0.98);
     }
 
-    .phone-option:disabled {
-      opacity: 0.36;
+    .action-btn-phone:disabled {
+      opacity: 0.35;
       cursor: not-allowed;
     }
   </style>
 </head>
 <body>
 
-  <!-- Изометрическая панорама 6 Островов на Canvas -->
-  <canvas id="world-canvas"></canvas>
+  <!-- Верхняя панель смены цвета (доступна на главном экране в любой момент) -->
+  <div class="top-color-bar" id="color-bar">
+    <span style="font-size:0.74rem; font-weight:800; color:var(--gold); margin-right:4px;">ЦВЕТ:</span>
+    <div class="c-dot" style="background:hsl(350, 82%, 45%);" data-hue="350" data-sat="82" title="Багровый"></div>
+    <div class="c-dot" style="background:hsl(160, 78%, 40%);" data-hue="160" data-sat="78" title="Изумрудный"></div>
+    <div class="c-dot" style="background:hsl(215, 84%, 48%);" data-hue="215" data-sat="84" title="Сапфировый"></div>
+    <div class="c-dot" style="background:hsl(275, 78%, 48%);" data-hue="275" data-sat="78" title="Аметистовый"></div>
+    <div class="c-dot" style="background:hsl(24, 88%, 46%);" data-hue="24" data-sat="88" title="Янтарный"></div>
+    <button class="c-random-btn" id="btn-top-random">🎲 Рандом</button>
+  </div>
 
-  <!-- UI Слой -->
+  <!-- Анимированная сцена Особняка, Персонажей и Трёх Кошек -->
+  <canvas id="mansion-canvas"></canvas>
+
+  <!-- Слой интерфейса -->
   <div id="app"></div>
 
   <script>
     /***************************************************************************
-     * 1. ДИНАМИЧЕСКАЯ СИСТЕМА ЦВЕТА И ТЕМ ДИЗАЙНА (КАСТОМНЫЙ ИЛИ РАНДОМНЫЙ ЦВЕТ)
+     * 1. УПРАВЛЕНИЕ ЦВЕТОМ И СИНХРОНИЗАЦИЯ СО ВСЕМИ ИГРОКАМИ
      ***************************************************************************/
     const themeState = {
-      hue: 348,       // По умолчанию — Королевский Багровый Рубин (348°)
-      sat: 82,
-      name: 'Багровый Рубин'
+      hue: 350,
+      sat: 82
     };
 
-    const PRESET_THEMES = [
-      { name: '🔴 Багровый Рубин', hue: 348, sat: 82 },
-      { name: '🟢 Изумрудный Лес', hue: 158, sat: 78 },
-      { name: '🔵 Сапфировая Бездна', hue: 215, sat: 84 },
-      { name: '🟣 Аметистовый Сумрак', hue: 278, sat: 76 },
-      { name: '🟠 Янтарное Пламя', hue: 22, sat: 88 }
-    ];
-
-    function applyThemeColor(hue, sat = 82, label = 'Особый Оттенок') {
+    function setGlobalTheme(hue, sat = 82) {
       themeState.hue = ((hue % 360) + 360) % 360;
       themeState.sat = sat;
-      themeState.name = label;
-
-      const root = document.documentElement;
       const h = themeState.hue;
       const s = themeState.sat;
+      const r = document.documentElement;
 
-      root.style.setProperty('--theme-hue', h);
-      root.style.setProperty('--theme-sat', `${s}%`);
-      root.style.setProperty('--bg-abyss', `hsl(${h}, 78%, 5%)`);
-      root.style.setProperty('--glass-bg', `hsla(${h}, 65%, 9%, 0.80)`);
-      root.style.setProperty('--glass-border', `hsla(${h}, 90%, 65%, 0.34)`);
-      root.style.setProperty('--accent-glow', `hsl(${h}, 95%, 62%)`);
-      root.style.setProperty('--accent-soft', `hsla(${h}, 95%, 60%, 0.24)`);
-      root.style.setProperty('--text-muted', `hsl(${h}, 85%, 84%)`);
+      r.style.setProperty('--theme-hue', h);
+      r.style.setProperty('--theme-sat', `${s}%`);
+      r.style.setProperty('--bg-dark', `hsl(${h}, 75%, 5%)`);
+      r.style.setProperty('--glass-bg', `hsla(${h}, 65%, 9%, 0.82)`);
+      r.style.setProperty('--glass-border', `hsla(${h}, 90%, 65%, 0.35)`);
+      r.style.setProperty('--accent', `hsl(${h}, 95%, 60%)`);
+      r.style.setProperty('--accent-soft', `hsla(${h}, 95%, 60%, 0.25)`);
+      r.style.setProperty('--text-muted', `hsl(${h}, 80%, 84%)`);
 
       if (mode === 'HOST') {
-        syncAllPhones();
-        renderHostHUD();
-      } else if (mode === 'MENU') {
-        renderMenu();
+        broadcastStateToPhones();
       }
     }
 
-    function applyRandomThemeColor() {
-      const randomHue = Math.floor(Math.random() * 360);
-      const randomSat = 70 + Math.floor(Math.random() * 25);
-      applyThemeColor(randomHue, randomSat, `Рандом #${randomHue}°`);
-      SoundFX.coin();
-    }
+    document.querySelectorAll('.c-dot').forEach(dot => {
+      dot.onclick = () => {
+        setGlobalTheme(Number(dot.getAttribute('data-hue')), Number(dot.getAttribute('data-sat')));
+        SFX.coin();
+      };
+    });
+
+    document.getElementById('btn-top-random').onclick = () => {
+      const rh = Math.floor(Math.random() * 360);
+      const rs = 70 + Math.floor(Math.random() * 25);
+      setGlobalTheme(rh, rs);
+      SFX.coin();
+    };
 
     /***************************************************************************
-     * 2. ПРОЦЕДУРНЫЙ ЗВУКОВОЙ СИНТЕЗАТОР (Web Audio API)
+     * 2. ЗВУКОВОЙ ДВИЖОК (ШАГИ, УДАР НОЖОМ, МЯУКАНЬЕ, ВОДА, ЗВОН МОНЕТ)
      ***************************************************************************/
-    const SoundFX = {
+    const SFX = {
       ctx: null,
       init() {
         if (!this.ctx) {
-          const AudioCtx = window.AudioContext || window.webkitAudioContext;
-          if (AudioCtx) this.ctx = new AudioCtx();
+          const AC = window.AudioContext || window.webkitAudioContext;
+          if (AC) this.ctx = new AC();
         }
         if (this.ctx && this.ctx.state === 'suspended') this.ctx.resume();
       },
-      tone(freq, type = 'sine', dur = 0.16, vol = 0.11, slide = null) {
+      play(freq, type = 'sine', dur = 0.15, vol = 0.12, slide = null) {
         if (!this.ctx) return;
         try {
           const o = this.ctx.createOscillator();
@@ -521,181 +450,94 @@
         } catch (e) {}
       },
       coin() {
-        this.tone(987, 'sine', 0.11, 0.1);
-        setTimeout(() => this.tone(1318, 'triangle', 0.2, 0.12), 65);
+        this.play(1046, 'sine', 0.1, 0.1);
+        setTimeout(() => this.play(1318, 'triangle', 0.18, 0.12), 65);
       },
-      roll() {
-        for (let i = 0; i < 6; i++) {
-          setTimeout(() => this.tone(240 + i * 70, 'triangle', 0.08, 0.08), i * 70);
+      knifeSlash() {
+        this.play(680, 'sawtooth', 0.16, 0.16, 120);
+        setTimeout(() => this.play(160, 'square', 0.22, 0.15, 65), 90);
+      },
+      shieldClang() {
+        this.play(520, 'square', 0.12, 0.14);
+        setTimeout(() => this.play(880, 'triangle', 0.25, 0.14), 60);
+      },
+      sneakStep() {
+        for (let i = 0; i < 4; i++) {
+          setTimeout(() => this.play(180 + (i % 2) * 40, 'sine', 0.06, 0.07), i * 130);
         }
       },
-      build() {
-        [261, 329, 392, 523].forEach((f, idx) => {
-          setTimeout(() => this.tone(f, 'triangle', 0.22, 0.14), idx * 95);
+      sonyaMeow() {
+        this.play(540, 'sine', 0.35, 0.14, 720);
+        setTimeout(() => this.play(720, 'sine', 0.4, 0.12, 480), 220);
+      },
+      waterSplash() {
+        for (let i = 0; i < 5; i++) {
+          setTimeout(() => this.play(400 + Math.random() * 500, 'sine', 0.09, 0.08), i * 65);
+        }
+      },
+      fanfare() {
+        [261, 329, 392, 523].forEach((f, i) => {
+          setTimeout(() => this.play(f, 'triangle', 0.24, 0.15), i * 95);
         });
       }
     };
 
     /***************************************************************************
-     * 3. ПРАВИЛА ИГРЫ: 3 КОТА, 6 НАГЛЯДНЫХ ОСТРОВОВ И 3 КОРОННЫХ ЧУДА
+     * 3. СОСТОЯНИЕ ОСОБНЯКА, ИГРОКОВ, ТРЁХ КОШЕК И АНИМАЦИОННОЙ СЦЕНЫ
      ***************************************************************************/
-    const PLAYER_COLORS = [
-      '#38bdf8', '#a3e635', '#f472b6', '#fb923c',
-      '#c084fc', '#2dd4bf', '#facc15', '#f87171'
+    const AVATAR_COLORS = [
+      '#ff3b5c', '#38bdf8', '#a3e635', '#fb923c',
+      '#c084fc', '#2dd4bf', '#facc15', '#f472b6'
     ];
 
-    // 3 Кошачьих Манёвра при броске
-    const CAT_ACTIONS = {
-      sonya: {
-        id: 'sonya',
-        name: 'Соня',
-        badge: '🐾 Тихая Поступь Сони',
-        color: '#f472b6',
-        shortRule: '1 кубик + Щит от Степана + Гарантия +3 🪙, если остров пуст',
-        desc: 'Бросает 1 кубик (1–6) и даёт вам Щит Сони. Если на выпавшем острове нет ваших башен — Соня тихо дарит вам +3 🪙 компенсации!'
-      },
-      natasha: {
-        id: 'natasha',
-        name: 'Наташа',
-        badge: '💧 Двойной Поток Наташи',
-        color: '#38bdf8',
-        shortRule: 'Бросает СРАЗУ 2 КУБИКА (активируются 2 острова!)',
-        desc: 'Неутолимый аппетит! На экране загораются сразу ДВА случайных острова, и все башни на них приносят золото!'
-      },
-      stepan: {
-        id: 'stepan',
-        name: 'Степан',
-        badge: '🔥 Выход Степана в Центр',
-        color: '#fb923c',
-        shortRule: '1 кубик + Сразу +2 🪙 + Налог 1 🪙 с чужих сработавших башен',
-        desc: 'Все смотрят на Степана! Вы сразу получаете +2 🪙, а каждый соперник без Щита Сони, получивший доход в этот ход, отдаёт вам 1 🪙!'
-      }
-    };
-
-    // 6 Наглядных Островов-Секторов (всегда видны в центре ТВ!)
-    const SECTORS = [
-      {
-        num: 1,
-        name: 'Сонный Сад',
-        patron: 'Соня 🐾',
-        cost: 2,
-        income: 2,
-        arch: 'pagoda',
-        shortRule: 'Приносит +2 🪙 за ярус + Даёт Щит Сони',
-        desc: 'Когда выпадает [1], даёт +2 🪙 за каждый ярус вашей башни и ставит вам Щит Сони.'
-      },
-      {
-        num: 2,
-        name: 'Тихий Архив',
-        patron: 'Соня 🐾',
-        cost: 3,
-        income: 3,
-        arch: 'sanctuary',
-        shortRule: 'Приносит +3 🪙 за ярус + Даёт Щит Сони',
-        desc: 'Когда выпадает [2], даёт +3 🪙 за ярус башни и защищает ваше золото от Степана.'
-      },
-      {
-        num: 3,
-        name: 'Водяная Мельница',
-        patron: 'Наташа 💧',
-        cost: 3,
-        income: 2,
-        arch: 'mill',
-        shortRule: 'Приносит +2 🪙 + Каскад (+1 🪙 за башни на Острове 4)',
-        desc: 'Когда выпадает [3], даёт +2 🪙 за ярус + ещё по +1 🪙, если у вас есть башня на Острове 4!'
-      },
-      {
-        num: 4,
-        name: 'Рыбный Причал',
-        patron: 'Наташа 💧',
-        cost: 4,
-        income: 3,
-        arch: 'harbor',
-        shortRule: 'Приносит +3 🪙 + Каскад (+1 🪙 за башни на Острове 3)',
-        desc: 'Когда выпадает [4], даёт +3 🪙 за ярус + ещё по +1 🪙, если у вас есть башня на Острове 3!'
-      },
-      {
-        num: 5,
-        name: 'Шумная Таверна',
-        patron: 'Степан 🔥',
-        cost: 4,
-        income: 4,
-        arch: 'tavern',
-        shortRule: 'Приносит +4 🪙 за ярус башни',
-        desc: 'Когда выпадает [5], приносит мощный доход +4 🪙 за каждый ярус вашей башни.'
-      },
-      {
-        num: 6,
-        name: 'Золотой Бастион',
-        patron: 'Степан 🔥',
-        cost: 5,
-        income: 5,
-        arch: 'citadel',
-        shortRule: 'Джекпот! Приносит +5 🪙 за ярус башни',
-        desc: 'Когда выпадает [6], осыпает владельцев золотом: +5 🪙 за каждый ярус башни!'
-      }
-    ];
-
-    // 3 Коронных Чуда для победы
-    const WONDERS = [
-      {
-        id: 'wonder_sonya',
-        name: 'Храм Дрёмы Сони',
-        short: 'Храм Сони',
-        cost: 9,
-        desc: 'ЧУДО 1/3: Вечный Щит от Степана и +2 🪙 в конце каждого вашего хода.'
-      },
-      {
-        id: 'wonder_natasha',
-        name: 'Акведук Наташи',
-        short: 'Акведук Наташи',
-        cost: 11,
-        desc: 'ЧУДО 2/3: Каждая ваша башня на всех островах приносит на +1 🪙 больше!'
-      },
-      {
-        id: 'wonder_stepan',
-        name: 'Колизей Степана',
-        short: 'Колизей Степана',
-        cost: 13,
-        desc: 'ЧУДО 3/3: В начале вашего хода все соперники платят вам по 1 🪙 за величие!'
-      }
-    ];
-
-    const ROOM_PREFIX = 'six-islands-';
+    const ROOM_PREFIX = 'midnight-mansion-';
     const appEl = document.getElementById('app');
     let mode = 'MENU'; // MENU | HOST | CLIENT
     let peer = null;
 
-    /***************************************************************************
-     * 4. СОСТОЯНИЕ ПАРТИИ И ВИЗУАЛЬНЫХ ЭФФЕКТОВ
-     ***************************************************************************/
     const hostState = {
       pin: '',
-      phase: 'LOBBY', // LOBBY | STEP1_ROLL | STEP2_INCOME | STEP3_BUILD | GAME_OVER
+      phase: 'LOBBY', // LOBBY | PLAYER_TURN | ANIMATING | GAME_OVER
       round: 1,
       activeIndex: 0,
-      activeSectors: [],       // Номера островов (1..6), которые сейчас горят
-      previewTarget: null,     // { type: 'SECTOR'|'WONDER', id } — что игрок смотрит на телефоне
-      chosenCat: null,
-      headline: 'ОЖИДАНИЕ ИГРОКОВ В ЛОББИ',
-      subline: 'Подключитесь со смартфонов по PIN-коду или нажмите Старт',
+      headline: 'ОЖИДАНИЕ ГОСТЕЙ В ОСОБНЯКЕ',
+      subline: 'Подключитесь со смартфонов по PIN-коду или нажмите Начать Игру',
       winner: null,
-      players: [],             // { id, name, color, gold, towers: {1:lvl..6:lvl}, wonders:[], shield:false, isBot, conn }
+      players: [], // { id, name, color, gold, rubies, hp, shield, stealth, isBot, conn }
+
+      // Состояние Трёх Кошек Особняка
+      cats: {
+        // Соня: спит у любимого хозяина, боится резких движений, мяукает максимум 2 раза за всю партию
+        sonyaOwnerId: null,
+        sonyaMeowsLeft: 2,
+
+        // Наташа: высунутый язычок, любит воду в ванной и каждые 2 раунда просит поесть
+        natashaWaterActive: false,
+        natashaTargetId: null,
+
+        // Степан: авантюрист, лежит у двери Сейфа или прямо на вещах выбранного игрока
+        stepanLocation: 'VAULT', // 'VAULT' или ID игрока, на чьих вещах он развалился
+      },
+
+      // Текущая буквальная анимация на экране
+      // type: 'ATTACK' | 'STEAL' | 'VAULT' | 'RUBY' | 'SONYA' | 'NATASHA_WATER' | 'NATASHA_FEED' | 'STEPAN'
+      scene: null,
       logs: []
     };
 
     const vfx = {
+      floatingTexts: [],
       particles: [],
-      flyingCoins: [],
-      floatingLabels: [],
-      rings: [],
-      rollingDice: { active: false, nums: [1] }
+      bloodDrops: [],
+      waterDrops: [],
+      hearts: [],
+      screenShake: 0
     };
 
     /***************************************************************************
-     * 5. НАГЛЯДНЫЙ 3D-РЕНДЕРЕР 6 ОСТРОВОВ НА CANVAS
+     * 4. КАРТА ОСОБНЯКА И БУКВАЛЬНАЯ АНИМАЦИЯ ПЕРСОНАЖЕЙ И КОШЕК НА CANVAS
      ***************************************************************************/
-    const canvas = document.getElementById('world-canvas');
+    const canvas = document.getElementById('mansion-canvas');
     const ctx = canvas.getContext('2d');
     let cw = window.innerWidth;
     let ch = window.innerHeight;
@@ -707,491 +549,611 @@
     window.addEventListener('resize', resizeCanvas);
     resizeCanvas();
 
-    for (let i = 0; i < 48; i++) {
-      vfx.particles.push({
-        x: Math.random() * cw,
-        y: Math.random() * ch,
-        r: 1.5 + Math.random() * 3,
-        vy: 0.3 + Math.random() * 0.7,
-        phase: Math.random() * Math.PI * 2
-      });
-    }
-
-    // Точные и просторные координаты каждого из 6 Островов-Секторов в центре экрана
-    function getSectorPos(sectorNum) {
-      const idx = sectorNum - 1;
-      const col = idx % 3;            // 0, 1, 2
-      const row = Math.floor(idx / 3); // 0 (верхний ряд 1-2-3), 1 (нижний ряд 4-5-6)
-
-      const stageCenterX = cw * 0.5;
-      const stageCenterY = ch * 0.47;
-      const colSpacing = Math.min(cw * 0.165, 235);
-      const rowSpacing = Math.min(ch * 0.23, 185);
-
+    // Координаты объектов в центре Зала Особняка
+    function getMansionLandmarks() {
+      const cx = cw * 0.5;
+      const cy = ch * 0.48;
       return {
-        x: stageCenterX + (col - 1) * colSpacing,
-        y: stageCenterY + (row - 0.5) * rowSpacing
+        center: { x: cx, y: cy },
+        vault: { x: cx, y: cy - 88 },          // Золотой Сейф и Рубиновый Пьедестал
+        bath: { x: cx - 125, y: cy + 18 },     // Мраморная Ванная и Поилка Наташи
+        cushion: { x: cx + 125, y: cy + 18 }   // Тихая Подушка Сони
       };
     }
 
-    // Координаты карточки игрока слева (куда физически прилетают монеты!)
-    function getPlayerCardAnchor(playerIdx) {
+    // Координаты каждого персонажа игрока вокруг центрального ковра
+    function getPlayerHomePos(index, total) {
+      const count = Math.max(2, total);
+      const angle = (index / count) * Math.PI * 2 - Math.PI / 2;
+      const rx = Math.min(cw * 0.25, 315);
+      const ry = Math.min(ch * 0.25, 195);
+      const cx = cw * 0.5;
+      const cy = ch * 0.48;
       return {
-        x: 160,
-        y: 135 + playerIdx * 92
+        x: cx + Math.cos(angle) * rx,
+        y: cy + Math.sin(angle) * ry
       };
     }
 
-    function drawIsoPrism(x, y, w, d, h, topC, leftC, rightC, strokeC = 'rgba(255,255,255,0.22)') {
-      const hw = w / 2;
-      const hd = d / 2;
+    // Отрисовка живой кошки с узнаваемыми деталями!
+    function drawCatSprite(x, y, type, time, labelText) {
+      ctx.save();
+      ctx.translate(x, y);
+      const bob = Math.sin(time * 3.5) * 2;
 
-      // Левая грань
-      ctx.beginPath();
-      ctx.moveTo(x - hw, y);
-      ctx.lineTo(x, y + hd);
-      ctx.lineTo(x, y + hd - h);
-      ctx.lineTo(x - hw, y - h);
-      ctx.closePath();
-      ctx.fillStyle = leftC;
-      ctx.fill();
-      ctx.strokeStyle = strokeC;
-      ctx.lineWidth = 1;
-      ctx.stroke();
-
-      // Правая грань
-      ctx.beginPath();
-      ctx.moveTo(x + hw, y);
-      ctx.lineTo(x, y + hd);
-      ctx.lineTo(x, y + hd - h);
-      ctx.lineTo(x + hw, y - h);
-      ctx.closePath();
-      ctx.fillStyle = rightC;
-      ctx.fill();
-      ctx.stroke();
-
-      // Верхняя грань
-      ctx.beginPath();
-      ctx.moveTo(x, y - hd - h);
-      ctx.lineTo(x + hw, y - h);
-      ctx.lineTo(x, y + hd - h);
-      ctx.lineTo(x - hw, y - h);
-      ctx.closePath();
-      ctx.fillStyle = topC;
-      ctx.fill();
-      ctx.stroke();
-    }
-
-    // Центральное здание каждого из 6 островов (чтобы острова отличались визуально!)
-    function drawSectorLandmark(x, y, arch, hue, time) {
-      const topC = `hsl(${hue}, 75%, 52%)`;
-      const leftC = `hsl(${hue}, 70%, 34%)`;
-      const rightC = `hsl(${hue}, 75%, 20%)`;
-
-      if (arch === 'pagoda') {
-        drawIsoPrism(x, y, 36, 20, 14, topC, leftC, rightC);
-        drawIsoPrism(x, y - 14, 44, 24, 4, '#f472b6', '#db2777', '#831843');
-        drawIsoPrism(x, y - 18, 24, 14, 10, topC, leftC, rightC);
-        drawIsoPrism(x, y - 28, 32, 18, 4, '#fbcfe8', '#f472b6', '#9d174d');
-      } else if (arch === 'sanctuary') {
-        drawIsoPrism(x, y, 38, 22, 14, topC, leftC, rightC);
+      if (type === 'sonya') {
+        // Соня: пушистая, тихая, свернулась калачиком и мирно спит
+        ctx.fillStyle = '#e2e8f0';
+        ctx.strokeStyle = '#475569';
+        ctx.lineWidth = 2;
         ctx.beginPath();
-        ctx.arc(x, y - 16, 13, Math.PI, 0);
-        ctx.fillStyle = 'rgba(244, 114, 182, 0.8)';
+        ctx.ellipse(0, 4, 16, 11, 0, 0, Math.PI * 2);
         ctx.fill();
-        ctx.strokeStyle = '#ffd15c';
         ctx.stroke();
-      } else if (arch === 'mill') {
-        drawIsoPrism(x, y, 34, 20, 18, '#0284c7', '#0369a1', '#0c4a6e');
-        ctx.save();
-        ctx.translate(x + 14, y - 8);
-        ctx.rotate(time * 2.2);
-        ctx.strokeStyle = '#ffd15c';
-        ctx.lineWidth = 2.5;
+
+        // Голова с закрытыми сонными глазками
         ctx.beginPath();
-        ctx.arc(0, 0, 9, 0, Math.PI * 2);
+        ctx.arc(-9, 1, 9, 0, Math.PI * 2);
+        ctx.fill();
         ctx.stroke();
-        for (let i = 0; i < 4; i++) {
-          ctx.rotate(Math.PI / 2);
-          ctx.beginPath();
-          ctx.moveTo(-9, 0);
-          ctx.lineTo(9, 0);
-          ctx.stroke();
-        }
-        ctx.restore();
-      } else if (arch === 'harbor') {
-        drawIsoPrism(x, y, 40, 22, 12, '#0ea5e9', '#0284c7', '#075985');
-        drawIsoPrism(x - 8, y - 12, 12, 8, 20, '#38bdf8', '#0284c7', '#0c4a6e');
+
+        // Ушки
+        ctx.fillStyle = '#f472b6';
         ctx.beginPath();
-        ctx.arc(x - 8, y - 34, 5, 0, Math.PI * 2);
+        ctx.moveTo(-15, -5); ctx.lineTo(-12, -13); ctx.lineTo(-7, -7);
+        ctx.moveTo(-6, -6); ctx.lineTo(-2, -13); ctx.lineTo(-1, -5);
+        ctx.fill();
+
+        // Сонные реснички
+        ctx.strokeStyle = '#1e293b';
+        ctx.lineWidth = 1.8;
+        ctx.beginPath();
+        ctx.arc(-12, 1, 2.5, 0, Math.PI);
+        ctx.moveTo(-6, 1);
+        ctx.arc(-6, 1, 2.5, 0, Math.PI);
+        ctx.stroke();
+      } else if (type === 'natasha') {
+        // Наташа: любопытная, сидит у воды, и ВСЕГДА торчит розовый кончик языка!
+        ctx.fillStyle = '#334155';
+        ctx.strokeStyle = '#94a3b8';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.ellipse(0, 5 + bob * 0.4, 14, 12, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+
+        // Голова
+        ctx.beginPath();
+        ctx.arc(0, -8 + bob, 10, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+
+        // Ушки
+        ctx.beginPath();
+        ctx.moveTo(-8, -14 + bob); ctx.lineTo(-10, -23 + bob); ctx.lineTo(-2, -17 + bob);
+        ctx.moveTo(8, -14 + bob); ctx.lineTo(10, -23 + bob); ctx.lineTo(2, -17 + bob);
+        ctx.fill();
+        ctx.stroke();
+
+        // Любопытные большие глаза
         ctx.fillStyle = '#fde047';
-        ctx.fill();
-      } else if (arch === 'tavern') {
-        drawIsoPrism(x, y, 40, 22, 16, '#ea580c', '#c2410c', '#7c2d12');
-        drawIsoPrism(x, y - 16, 46, 26, 5, '#ffd15c', '#d97706', '#92400e');
-      } else {
-        drawIsoPrism(x, y, 38, 22, 24, '#f59e0b', '#b45309', '#78350f');
         ctx.beginPath();
-        ctx.moveTo(x, y - 42);
-        ctx.lineTo(x + 11, y - 24);
-        ctx.lineTo(x - 11, y - 24);
-        ctx.closePath();
-        ctx.fillStyle = '#fef08a';
+        ctx.arc(-4, -9 + bob, 2.8, 0, Math.PI * 2);
+        ctx.arc(4, -9 + bob, 2.8, 0, Math.PI * 2);
+        ctx.fill();
+
+        // ТОТ САМЫЙ РОЗОВЫЙ ЯЗЫЧОК НАТАШИ, КОТОРЫЙ ВСЕГДА ТОРЧИТ!
+        ctx.fillStyle = '#ff4d79';
+        ctx.strokeStyle = '#9f1239';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.roundRect(-2.8, -3 + bob, 5.6, 6.5, 3);
+        ctx.fill();
+        ctx.stroke();
+      } else if (type === 'stepan') {
+        // Степан: рыжий/золотистый авантюрист, развалился в кайф прямо посреди событий!
+        ctx.fillStyle = '#fb923c';
+        ctx.strokeStyle = '#7c2d12';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.ellipse(0, 5, 19, 11, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+
+        // Довольная морда авантюриста
+        ctx.beginPath();
+        ctx.arc(11, -3 + bob, 10, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+
+        // Ушки
+        ctx.beginPath();
+        ctx.moveTo(5, -10 + bob); ctx.lineTo(4, -19 + bob); ctx.lineTo(10, -12 + bob);
+        ctx.moveTo(14, -11 + bob); ctx.lineTo(18, -19 + bob); ctx.lineTo(19, -9 + bob);
+        ctx.fill();
+        ctx.stroke();
+
+        // Яркие глаза
+        ctx.fillStyle = '#ffffff';
+        ctx.beginPath();
+        ctx.arc(8, -4 + bob, 2.4, 0, Math.PI * 2);
+        ctx.arc(14, -4 + bob, 2.4, 0, Math.PI * 2);
         ctx.fill();
       }
+
+      // Подпись имени кошки
+      if (labelText) {
+        ctx.font = '800 11px "Segoe UI", sans-serif';
+        ctx.textAlign = 'center';
+        const w = ctx.measureText(labelText).width + 10;
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.82)';
+        ctx.beginPath();
+        ctx.roundRect(-w / 2, 19, w, 16, 6);
+        ctx.fill();
+        ctx.fillStyle = '#ffd15c';
+        ctx.fillText(labelText, 0, 30);
+      }
+
+      ctx.restore();
     }
 
-    function renderWorldCanvas(timestamp) {
+    // Отрисовка живого персонажа игрока (с оружием, маской вора, щитом и эмоциями!)
+    function drawHumanCharacter(x, y, player, isTurn, pose, time) {
+      // pose: 'IDLE' | 'WALK' | 'STAB' | 'HURT' | 'SNEAK' | 'CELEBRATE'
+      ctx.save();
+      ctx.translate(x, y);
+
+      const walkCycle = pose === 'WALK' || pose === 'SNEAK' ? Math.sin(time * 18) * 6 : 0;
+      const bodyTilt = pose === 'HURT' ? 0.35 : (pose === 'SNEAK' ? -0.18 : 0);
+      ctx.rotate(bodyTilt);
+
+      // Тень под ногами
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.45)';
+      ctx.beginPath();
+      ctx.ellipse(0, 24, 20, 8, 0, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Золотой ореол под активным игроком
+      if (isTurn) {
+        ctx.strokeStyle = '#ffd15c';
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.ellipse(0, 24, 26 + Math.sin(time * 5) * 3, 11, 0, 0, Math.PI * 2);
+        ctx.stroke();
+      }
+
+      // Ноги в движении
+      ctx.strokeStyle = '#1e293b';
+      ctx.lineWidth = 5;
+      ctx.lineCap = 'round';
+      ctx.beginPath();
+      ctx.moveTo(-6, 10);
+      ctx.lineTo(-6 - walkCycle, 22);
+      ctx.moveTo(6, 10);
+      ctx.lineTo(6 + walkCycle, 22);
+      ctx.stroke();
+
+      // Плащ и торс персонажа в его цвете
+      ctx.fillStyle = player.color;
+      ctx.strokeStyle = '#ffffff';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(-14, 14);
+      ctx.lineTo(-10, -10);
+      ctx.lineTo(10, -10);
+      ctx.lineTo(14, 14);
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+
+      // Голова персонажа
+      ctx.fillStyle = '#fde68a';
+      ctx.strokeStyle = '#1e293b';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.arc(0, -19, 11, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.stroke();
+
+      // Если персонаж крадётся как вор — рисуем чёрную маску грабителя на глазах!
+      if (pose === 'SNEAK' || player.stealth) {
+        ctx.fillStyle = '#0f172a';
+        ctx.fillRect(-10, -23, 20, 6);
+      }
+
+      // Глаза
+      ctx.fillStyle = pose === 'HURT' ? '#ef4444' : '#0f172a';
+      ctx.beginPath();
+      ctx.arc(-4, -20, 1.8, 0, Math.PI * 2);
+      ctx.arc(4, -20, 1.8, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Щит, если игрок защищён
+      if (player.shield) {
+        ctx.fillStyle = '#38bdf8';
+        ctx.strokeStyle = '#ffd15c';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(-18, -8);
+        ctx.lineTo(-10, -8);
+        ctx.lineTo(-10, 4);
+        ctx.lineTo(-14, 10);
+        ctx.lineTo(-18, 4);
+        ctx.closePath();
+        ctx.fill();
+        ctx.stroke();
+      }
+
+      // Если поза STAB — рисуем в руке большой сверкающий КИНЖАЛ и кровавый росчерк!
+      if (pose === 'STAB') {
+        ctx.save();
+        ctx.translate(16, -4);
+        ctx.rotate(Math.sin(time * 25) * 0.5);
+        // Рукоять
+        ctx.fillStyle = '#78350f';
+        ctx.fillRect(-4, -2, 8, 4);
+        // Лезвие ножа с багровым кончиком
+        ctx.fillStyle = '#e2e8f0';
+        ctx.strokeStyle = '#ff2a4b';
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.moveTo(4, -4);
+        ctx.lineTo(28, 0);
+        ctx.lineTo(4, 4);
+        ctx.closePath();
+        ctx.fill();
+        ctx.stroke();
+        ctx.restore();
+      }
+
+      // Если поза CELEBRATE — персонаж держит над головой сияющий Рубин или мешок золота!
+      if (pose === 'CELEBRATE') {
+        ctx.fillStyle = '#ff2a4b';
+        ctx.strokeStyle = '#ffd15c';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(0, -48);
+        ctx.lineTo(10, -38);
+        ctx.lineTo(0, -28);
+        ctx.lineTo(-10, -38);
+        ctx.closePath();
+        ctx.fill();
+        ctx.stroke();
+      }
+
+      ctx.restore();
+
+      // Информационная плашка прямо над головой каждого персонажа: Имя, Сердца, Золото, Рубины
+      ctx.save();
+      const heartsStr = '❤️'.repeat(Math.max(0, player.hp));
+      const rubiesStr = '💎'.repeat(player.rubies);
+      const topLabel = `${player.name} ${rubiesStr}`;
+      const subLabel = `${heartsStr}  🪙 ${player.gold}`;
+
+      ctx.font = '900 12px "Segoe UI", sans-serif';
+      const w = Math.max(ctx.measureText(topLabel).width, ctx.measureText(subLabel).width) + 16;
+
+      ctx.fillStyle = 'rgba(8, 4, 12, 0.86)';
+      ctx.strokeStyle = isTurn ? '#ffd15c' : player.color;
+      ctx.lineWidth = isTurn ? 2.5 : 1.5;
+      ctx.beginPath();
+      ctx.roundRect(x - w / 2, y - 66, w, 32, 8);
+      ctx.fill();
+      ctx.stroke();
+
+      ctx.fillStyle = '#ffffff';
+      ctx.textAlign = 'center';
+      ctx.fillText(topLabel, x, y - 53);
+
+      ctx.font = '800 11px "Segoe UI", sans-serif';
+      ctx.fillStyle = '#ffd15c';
+      ctx.fillText(subLabel, x, y - 39);
+      ctx.restore();
+    }
+
+    function renderMansionCanvas(timestamp) {
       const t = timestamp * 0.001;
       const h = themeState.hue;
       const s = themeState.sat;
 
-      // 1. Глубокий атмосферный градиент в выбранном цвете дизайна
-      const bgGrad = ctx.createRadialGradient(cw * 0.5, ch * 0.45, 50, cw * 0.5, ch * 0.5, Math.max(cw, ch) * 0.85);
-      bgGrad.addColorStop(0, `hsl(${h}, ${s}%, 18%)`);
+      ctx.save();
+      if (vfx.screenShake > 0) {
+        const dx = (Math.random() - 0.5) * vfx.screenShake;
+        const dy = (Math.random() - 0.5) * vfx.screenShake;
+        ctx.translate(dx, dy);
+        vfx.screenShake *= 0.88;
+        if (vfx.screenShake < 0.5) vfx.screenShake = 0;
+      }
+
+      // 1. Фон Особняка
+      const bgGrad = ctx.createRadialGradient(cw * 0.5, ch * 0.48, 40, cw * 0.5, ch * 0.5, Math.max(cw, ch) * 0.85);
+      bgGrad.addColorStop(0, `hsl(${h}, ${s}%, 19%)`);
       bgGrad.addColorStop(0.55, `hsl(${h}, ${s}%, 9%)`);
       bgGrad.addColorStop(1, `hsl(${h}, 80%, 4%)`);
       ctx.fillStyle = bgGrad;
       ctx.fillRect(0, 0, cw, ch);
 
-      // 2. Светящиеся энергетические мосты между 6 Островами
+      const lm = getMansionLandmarks();
+
+      // 2. Королевский ковёр в центре зала
       ctx.save();
-      ctx.strokeStyle = `hsla(${h}, 90%, 70%, 0.22)`;
-      ctx.lineWidth = 3;
-      ctx.setLineDash([8, 8]);
-      const pairs = [[1,2], [2,3], [4,5], [5,6], [1,4], [2,5], [3,6]];
-      pairs.forEach(([a, b]) => {
-        const pA = getSectorPos(a);
-        const pB = getSectorPos(b);
-        ctx.beginPath();
-        ctx.moveTo(pA.x, pA.y);
-        ctx.lineTo(pB.x, pB.y);
-        ctx.stroke();
-      });
+      ctx.translate(lm.center.x, lm.center.y);
+      ctx.scale(1, 0.62);
+      ctx.beginPath();
+      ctx.arc(0, 0, 265, 0, Math.PI * 2);
+      ctx.fillStyle = `hsla(${h}, 75%, 15%, 0.85)`;
+      ctx.fill();
+      ctx.strokeStyle = '#ffd15c';
+      ctx.lineWidth = 4;
+      ctx.stroke();
+
+      ctx.beginPath();
+      ctx.arc(0, 0, 245, 0, Math.PI * 2);
+      ctx.strokeStyle = `hsla(${h}, 90%, 68%, 0.35)`;
+      ctx.lineWidth = 2;
+      ctx.stroke();
       ctx.restore();
 
-      // 3. Отрисовка всех 6 Островов-Секторов (максимально наглядно!)
-      SECTORS.forEach((sec) => {
-        const pos = getSectorPos(sec.num);
-        const floatY = pos.y + Math.sin(t * 1.6 + sec.num) * 4;
-        const isHit = hostState.activeSectors.includes(sec.num);
-        const isPreview = hostState.previewTarget &&
-                          hostState.previewTarget.type === 'SECTOR' &&
-                          Number(hostState.previewTarget.id) === sec.num;
+      // 3. Отрисовка 3 центральных интерактивных зон Особняка:
+      // 3.1. ЗОЛОТОЙ СЕЙФ И СОКРОВИЩНИЦА РУБИНОВ
+      ctx.save();
+      ctx.fillStyle = '#1e293b';
+      ctx.strokeStyle = '#ffd15c';
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.roundRect(lm.vault.x - 46, lm.vault.y - 32, 92, 54, 10);
+      ctx.fill();
+      ctx.stroke();
+      // Рубин на вершине сейфа
+      ctx.fillStyle = '#ff2a4b';
+      ctx.beginPath();
+      ctx.moveTo(lm.vault.x, lm.vault.y - 46);
+      ctx.lineTo(lm.vault.x + 10, lm.vault.y - 36);
+      ctx.lineTo(lm.vault.x, lm.vault.y - 26);
+      ctx.lineTo(lm.vault.x - 10, lm.vault.y - 36);
+      ctx.closePath();
+      ctx.fill();
+      ctx.fillStyle = '#ffd15c';
+      ctx.font = '800 11px "Segoe UI", sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('ЗОЛОТОЙ СЕЙФ И РУБИНЫ', lm.vault.x, lm.vault.y - 52);
+      ctx.restore();
 
-        // Если этот остров выпал на кубике или выбран на телефоне — рисуем столб света!
-        if (isHit || isPreview) {
-          const beamGrad = ctx.createLinearGradient(pos.x, floatY - 150, pos.x, floatY + 20);
-          beamGrad.addColorStop(0, 'rgba(255, 209, 92, 0)');
-          beamGrad.addColorStop(1, isHit ? 'rgba(255, 209, 92, 0.42)' : 'rgba(255, 255, 255, 0.22)');
-          ctx.fillStyle = beamGrad;
-          ctx.fillRect(pos.x - 75, floatY - 150, 150, 170);
+      // 3.2. МРАМОРНАЯ ВАННАЯ И ПОИЛКА НАТАШИ
+      ctx.save();
+      ctx.fillStyle = '#0f172a';
+      ctx.strokeStyle = '#38bdf8';
+      ctx.lineWidth = 2.5;
+      ctx.beginPath();
+      ctx.ellipse(lm.bath.x, lm.bath.y, 44, 24, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.stroke();
+      ctx.fillStyle = hostState.cats.natashaWaterActive ? '#38bdf8' : '#0284c7';
+      ctx.beginPath();
+      ctx.ellipse(lm.bath.x, lm.bath.y + 2, 36, 17, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = '#7dd3fc';
+      ctx.font = '800 11px "Segoe UI", sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('ВАННАЯ НАТАШИ', lm.bath.x, lm.bath.y - 30);
+      ctx.restore();
 
-          ctx.save();
-          ctx.translate(pos.x, floatY + 6);
-          ctx.scale(1, 0.55);
-          ctx.beginPath();
-          ctx.arc(0, 0, 108 + Math.sin(t * 6) * 5, 0, Math.PI * 2);
-          ctx.strokeStyle = isHit ? '#ffd15c' : '#ffffff';
-          ctx.lineWidth = isHit ? 4 : 2.5;
-          ctx.stroke();
-          ctx.restore();
+      // 3.3. БАРХАТНАЯ ПОДУШКА СОНИ
+      ctx.save();
+      ctx.fillStyle = '#831843';
+      ctx.strokeStyle = '#f472b6';
+      ctx.lineWidth = 2.5;
+      ctx.beginPath();
+      ctx.ellipse(lm.cushion.x, lm.cushion.y, 40, 22, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.stroke();
+      ctx.fillStyle = '#fbcfe8';
+      ctx.font = '800 11px "Segoe UI", sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('УГОЛОК ТИШИНЫ СОНИ', lm.cushion.x, lm.cushion.y - 28);
+      ctx.restore();
+
+      // 4. Вычисление текущих позиций всех игроков с учётом буквальной анимации (`hostState.scene`)
+      const sc = hostState.scene;
+      let scProgress = 0;
+      if (sc) {
+        scProgress = Math.min(1, (performance.now() - sc.startTime) / sc.duration);
+      }
+
+      hostState.players.forEach((p, idx) => {
+        const home = getPlayerHomePos(idx, hostState.players.length);
+        let drawX = home.x;
+        let drawY = home.y;
+        let pose = 'IDLE';
+
+        if (sc && sc.actorIdx === idx) {
+          // Сцена, где этот игрок идёт к цели, совершает действие и возвращается!
+          const target = sc.targetPos;
+          if (scProgress < 0.35) {
+            // Идёт к цели
+            const k = scProgress / 0.35;
+            drawX = home.x + (target.x - home.x) * k;
+            drawY = home.y + (target.y - home.y) * k;
+            pose = sc.type === 'STEAL' ? 'SNEAK' : 'WALK';
+          } else if (scProgress < 0.72) {
+            // Совершает действие у цели (режет ножом, крадёт, открывает сейф и т.д.)
+            drawX = target.x;
+            drawY = target.y;
+            if (sc.type === 'ATTACK') pose = 'STAB';
+            else if (sc.type === 'STEAL') pose = 'SNEAK';
+            else pose = 'CELEBRATE';
+          } else {
+            // Возвращается на своё место
+            const k = (scProgress - 0.72) / 0.28;
+            drawX = target.x + (home.x - target.x) * k;
+            drawY = target.y + (home.y - target.y) * k;
+            pose = 'WALK';
+          }
+        } else if (sc && sc.victimIdx === idx && scProgress >= 0.35 && scProgress <= 0.75) {
+          if (sc.type === 'ATTACK') pose = 'HURT';
         }
 
-        // Каменное основание острова
-        ctx.beginPath();
-        ctx.moveTo(pos.x - 86, floatY + 8);
-        ctx.lineTo(pos.x, floatY + 66);
-        ctx.lineTo(pos.x + 86, floatY + 8);
-        ctx.closePath();
-        ctx.fillStyle = `hsl(${h}, 60%, 10%)`;
-        ctx.fill();
+        drawHumanCharacter(drawX, drawY, p, idx === hostState.activeIndex && hostState.phase !== 'LOBBY', pose, t);
 
-        // Верхняя изометрическая платформа острова
-        drawIsoPrism(
-          pos.x,
-          floatY + 12,
-          172,
-          96,
-          16,
-          isHit ? `hsl(${h}, 85%, 36%)` : `hsl(${h}, 65%, 24%)`,
-          `hsl(${h}, 70%, 16%)`,
-          `hsl(${h}, 75%, 11%)`,
-          isHit ? '#ffd15c' : `hsla(${h}, 90%, 70%, 0.45)`
-        );
+        // Если Соня выбрала этого игрока своим хозяином — Соня спит прямо у его ног!
+        if (hostState.cats.sonyaOwnerId === p.id) {
+          drawCatSprite(drawX + 28, drawY + 14, 'sonya', t, 'Соня спит у хозяина');
+        }
 
-        // Центральное архитектурное строение острова
-        drawSectorLandmark(pos.x, floatY - 4, sec.arch, h, t);
-
-        // Отрисовка БАШЕН ИГРОКОВ, построенных на этом острове (с цветными флагами и доходом!)
-        const ownersHere = [];
-        hostState.players.forEach((pl, pIdx) => {
-          const lvl = (pl.towers && pl.towers[sec.num]) || 0;
-          if (lvl > 0) ownersHere.push({ pl, pIdx, lvl });
-        });
-
-        const towerSlots = [
-          [-54, 6], [54, 6], [-38, -22], [38, -22], [-58, -10], [58, -10]
-        ];
-
-        ownersHere.forEach((item, idx) => {
-          const [ox, oy] = towerSlots[idx % towerSlots.length];
-          const tx = pos.x + ox;
-          const ty = floatY + oy;
-          const towerH = 12 + item.lvl * 9;
-
-          // 3D-башня в цвете конкретного игрока
-          drawIsoPrism(tx, ty, 20, 12, towerH, item.pl.color, item.pl.color, '#1e293b', '#ffffff');
-
-          // Плашка над башней: Имя игрока и сколько золота она даёт!
-          const bonusPerHit = (sec.income * item.lvl) + (item.pl.wonders.includes('wonder_natasha') ? 1 : 0);
-          ctx.save();
-          ctx.font = 'bold 11px "Segoe UI", sans-serif';
-          const label = `${item.pl.name}: +${bonusPerHit}🪙`;
-          const tw = ctx.measureText(label).width + 10;
-          ctx.fillStyle = 'rgba(0, 0, 0, 0.82)';
-          ctx.strokeStyle = item.pl.color;
-          ctx.lineWidth = 1.5;
-          ctx.beginPath();
-          ctx.roundRect(tx - tw / 2, ty - towerH - 22, tw, 17, 6);
-          ctx.fill();
-          ctx.stroke();
-
-          ctx.fillStyle = '#ffffff';
-          ctx.textAlign = 'center';
-          ctx.textBaseline = 'middle';
-          ctx.fillText(label, tx, ty - towerH - 13);
-          ctx.restore();
-        });
-
-        // КРУПНЫЙ КРУГЛЫЙ НОМЕР ОСТРОВА [1..6] И ЕГО ПРАВИЛО (ЧТОБЫ ВСЕМ БЫЛО ПОНЯТНО СРАЗУ)
-        const badgeY = floatY + 38;
-        ctx.save();
-        ctx.fillStyle = isHit ? '#ffd15c' : 'rgba(10, 6, 14, 0.9)';
-        ctx.strokeStyle = '#ffd15c';
-        ctx.lineWidth = 2.5;
-        ctx.beginPath();
-        ctx.roundRect(pos.x - 78, badgeY - 14, 156, 40, 10);
-        ctx.fill();
-        ctx.stroke();
-
-        // Номер и название острова
-        ctx.fillStyle = isHit ? '#000000' : '#ffd15c';
-        ctx.font = '900 13px "Segoe UI", sans-serif';
-        ctx.textAlign = 'center';
-        ctx.fillText(`ОСТРОВ [${sec.num}] • ${sec.name.toUpperCase()}`, pos.x, badgeY - 1);
-
-        // Понятная подпись дохода и цены
-        ctx.fillStyle = isHit ? '#1e293b' : '#ffffff';
-        ctx.font = '700 11px "Segoe UI", sans-serif';
-        ctx.fillText(`Доход: +${sec.income}🪙 | Построить: ${sec.cost}🪙`, pos.x, badgeY + 15);
-        ctx.restore();
+        // Если Степан развалился прямо на вещах этого игрока
+        if (hostState.cats.stepanLocation === p.id) {
+          drawCatSprite(drawX - 28, drawY + 14, 'stepan', t, 'Степан лежит на вещах!');
+        }
       });
 
-      // 4. Вращающиеся 3D-кубики во время броска
-      if (vfx.rollingDice.active) {
-        const nums = vfx.rollingDice.nums;
-        nums.forEach((n, idx) => {
-          const dx = cw * 0.5 + (idx - (nums.length - 1) / 2) * 86;
-          const dy = ch * 0.46 + Math.sin(t * 16 + idx) * 7;
-          ctx.save();
-          ctx.translate(dx, dy);
-          ctx.fillStyle = `hsl(${h}, 85%, 28%)`;
-          ctx.strokeStyle = '#ffd15c';
-          ctx.lineWidth = 4;
-          ctx.shadowColor = '#ffd15c';
-          ctx.shadowBlur = 24;
-          ctx.beginPath();
-          ctx.roundRect(-34, -34, 68, 68, 16);
-          ctx.fill();
-          ctx.stroke();
-          ctx.shadowBlur = 0;
-
-          ctx.fillStyle = '#ffffff';
-          ctx.font = '900 36px "Segoe UI", sans-serif';
-          ctx.textAlign = 'center';
-          ctx.textBaseline = 'middle';
-          ctx.fillText(String(n), 0, 2);
-          ctx.restore();
-        });
+      // Отрисовка кошек на их центральных местах, если они не у игроков
+      if (!hostState.cats.sonyaOwnerId) {
+        drawCatSprite(lm.cushion.x, lm.cushion.y, 'sonya', t, 'Соня ждёт ласки');
       }
 
-      // 5. Ударные волны
-      for (let i = vfx.rings.length - 1; i >= 0; i--) {
-        const r = vfx.rings[i];
-        r.radius += 3.5;
-        r.alpha -= 0.024;
-        if (r.alpha <= 0) {
-          vfx.rings.splice(i, 1);
-          continue;
-        }
-        ctx.save();
-        ctx.translate(r.x, r.y);
-        ctx.scale(1, 0.55);
-        ctx.beginPath();
-        ctx.arc(0, 0, r.radius, 0, Math.PI * 2);
-        ctx.strokeStyle = r.color;
-        ctx.globalAlpha = Math.max(0, r.alpha);
-        ctx.lineWidth = 4;
-        ctx.stroke();
-        ctx.restore();
+      // Наташа: либо у ванной с высунутым языком, либо бежит будить/кусать игрока в раунде кормёжки!
+      let natashaPos = { x: lm.bath.x, y: lm.bath.y + 4 };
+      if (sc && sc.type === 'NATASHA_FEED' && sc.targetPos) {
+        const k = scProgress < 0.5 ? scProgress * 2 : (1 - scProgress) * 2;
+        natashaPos = {
+          x: lm.bath.x + (sc.targetPos.x - lm.bath.x) * k,
+          y: lm.bath.y + (sc.targetPos.y - lm.bath.y) * k
+        };
+      }
+      drawCatSprite(natashaPos.x, natashaPos.y, 'natasha', t, 'Наташа 👅');
+
+      // Степан у двери Сейфа
+      if (hostState.cats.stepanLocation === 'VAULT') {
+        drawCatSprite(lm.vault.x, lm.vault.y + 18, 'stepan', t, 'Степан у двери Сейфа');
       }
 
-      // 6. Золотые монеты, летящие с выпавшего Острова прямо в карточку игрока слева
-      for (let i = vfx.flyingCoins.length - 1; i >= 0; i--) {
-        const c = vfx.flyingCoins[i];
-        c.p += 0.026;
-        if (c.p >= 1) {
-          vfx.flyingCoins.splice(i, 1);
+      // 5. Спецэффекты: Брызги крови при ударе ножом, брызги воды в ванной Наташи, сердечки
+      for (let i = vfx.bloodDrops.length - 1; i >= 0; i--) {
+        const b = vfx.bloodDrops[i];
+        b.x += b.vx;
+        b.y += b.vy;
+        b.vy += 0.25;
+        b.life -= 1;
+        if (b.life <= 0) {
+          vfx.bloodDrops.splice(i, 1);
           continue;
         }
-        const curX = c.x0 + (c.x1 - c.x0) * c.p;
-        const arc = -100 * Math.sin(c.p * Math.PI);
-        const curY = c.y0 + (c.y1 - c.y0) * c.p + arc;
-
+        ctx.fillStyle = '#ff1e42';
         ctx.beginPath();
-        ctx.arc(curX, curY, 9, 0, Math.PI * 2);
-        ctx.fillStyle = '#ffd15c';
-        ctx.shadowColor = '#ffd15c';
-        ctx.shadowBlur = 12;
+        ctx.arc(b.x, b.y, b.r, 0, Math.PI * 2);
         ctx.fill();
-        ctx.shadowBlur = 0;
-        ctx.strokeStyle = '#78350f';
-        ctx.lineWidth = 2;
-        ctx.stroke();
       }
 
-      // 7. Крупные всплывающие подсказки (+X 🪙)
-      for (let i = vfx.floatingLabels.length - 1; i >= 0; i--) {
-        const fl = vfx.floatingLabels[i];
-        fl.y -= 0.85;
-        fl.life -= 1;
-        if (fl.life <= 0) {
-          vfx.floatingLabels.splice(i, 1);
+      for (let i = vfx.waterDrops.length - 1; i >= 0; i--) {
+        const w = vfx.waterDrops[i];
+        w.x += w.vx;
+        w.y += w.vy;
+        w.vy += 0.18;
+        w.life -= 1;
+        if (w.life <= 0) {
+          vfx.waterDrops.splice(i, 1);
+          continue;
+        }
+        ctx.fillStyle = '#38bdf8';
+        ctx.beginPath();
+        ctx.arc(w.x, w.y, 3.5, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      // 6. Крупные всплывающие тексты над персонажами
+      for (let i = vfx.floatingTexts.length - 1; i >= 0; i--) {
+        const ft = vfx.floatingTexts[i];
+        ft.y -= 0.9;
+        ft.life -= 1;
+        if (ft.life <= 0) {
+          vfx.floatingTexts.splice(i, 1);
           continue;
         }
         ctx.save();
         ctx.font = '900 18px "Segoe UI", sans-serif';
         ctx.textAlign = 'center';
-        ctx.globalAlpha = Math.min(1, fl.life / 25);
-        ctx.fillStyle = fl.color;
+        ctx.globalAlpha = Math.min(1, ft.life / 25);
+        ctx.fillStyle = ft.color;
         ctx.shadowColor = '#000';
-        ctx.shadowBlur = 6;
-        ctx.fillText(fl.text, fl.x, fl.y);
+        ctx.shadowBlur = 8;
+        ctx.fillText(ft.text, ft.x, ft.y);
         ctx.restore();
       }
 
-      // 8. Фоновые искры
-      vfx.particles.forEach(pt => {
-        pt.y -= pt.vy;
-        pt.x += Math.sin(t + pt.phase) * 0.35;
-        if (pt.y < -10) {
-          pt.y = ch + 10;
-          pt.x = Math.random() * cw;
-        }
-        ctx.beginPath();
-        ctx.arc(pt.x, pt.y, pt.r, 0, Math.PI * 2);
-        ctx.fillStyle = `hsla(${h}, 95%, 72%, 0.45)`;
-        ctx.fill();
-      });
-
-      requestAnimationFrame(renderWorldCanvas);
+      ctx.restore();
+      requestAnimationFrame(renderMansionCanvas);
     }
-    requestAnimationFrame(renderWorldCanvas);
+    requestAnimationFrame(renderMansionCanvas);
 
-    function triggerCoins(fromX, fromY, toX, toY, count = 4) {
-      for (let i = 0; i < count; i++) {
-        setTimeout(() => {
-          vfx.flyingCoins.push({
-            x0: fromX + (Math.random() - 0.5) * 20,
-            y0: fromY,
-            x1: toX,
-            y1: toY,
-            p: 0
-          });
-        }, i * 85);
+    function spawnBloodSplash(x, y) {
+      vfx.screenShake = 14;
+      for (let i = 0; i < 24; i++) {
+        vfx.bloodDrops.push({
+          x,
+          y,
+          vx: (Math.random() - 0.5) * 9,
+          vy: -Math.random() * 7 - 2,
+          r: 2.5 + Math.random() * 3.5,
+          life: 40 + Math.random() * 20
+        });
       }
     }
 
-    function triggerPopup(x, y, text, color = '#ffd15c') {
-      vfx.floatingLabels.push({ x, y, text, color, life: 85 });
+    function spawnWaterSplash(x, y) {
+      for (let i = 0; i < 22; i++) {
+        vfx.waterDrops.push({
+          x,
+          y,
+          vx: (Math.random() - 0.5) * 7,
+          vy: -Math.random() * 6 - 2,
+          life: 45 + Math.random() * 15
+        });
+      }
     }
 
-    function triggerRing(x, y, color = '#ffd15c') {
-      vfx.rings.push({ x, y, radius: 18, alpha: 0.95, color });
+    function spawnBannerPopup(x, y, text, color = '#ffd15c') {
+      vfx.floatingTexts.push({ x, y, text, color, life: 95 });
     }
 
     /***************************************************************************
-     * 6. СТАРТОВОЕ МЕНЮ С ВЫБОРОМ ЦВЕТА И КНОПКОЙ ПОЛНОГО РАНДОМА
+     * 5. СТАРТОВОЕ МЕНЮ
      ***************************************************************************/
     function renderMenu() {
-      const swatchesHtml = PRESET_THEMES.map(pt => `
-        <button class="color-swatch" data-hue="${pt.hue}" data-sat="${pt.sat}" data-name="${pt.name}"
-          style="background: hsl(${pt.hue}, ${pt.sat}%, 32%);">
-          ${pt.name}
-        </button>
-      `).join('');
-
       appEl.innerHTML = `
         <div class="glass-panel center-modal">
           <div>
-            <div class="title-main">ШЕСТЬ ОСТРОВОВ: ТРИ КОТА</div>
-            <div style="font-weight:800; color:var(--gold); margin:4px 0 6px;">
-              Наглядная стратегия с Соней, Наташей и Степаном (2–8 игроков)
+            <div class="title-grand">ПОЛУНОЧНЫЙ ОСОБНЯК</div>
+            <div style="font-weight:800; color:var(--gold); margin:4px 0 8px;">
+              Настольная игра интриг, грабежей и Трёх Кошек для 2–8 игроков
             </div>
-            <p class="subtitle">
-              Стройте башни на 6 парящих Островах, бросайте кубики силой Трёх Котов и возведите <b>3 Коронных Чуда</b> раньше соперников!
+            <p style="font-size:0.92rem; opacity:0.88; line-height:1.45;">
+              На главном экране оживают персонажи всех игроков и три кошки — <b>Соня, Наташа и Степан</b>.
+              Каждое нападение с ножом, кража из кармана или игра с кошками буквально разыгрывается перед вашими глазами!
             </p>
           </div>
 
-          <!-- Блок выбора цвета игры или полного рандома -->
-          <div>
-            <div style="font-size:0.82rem; font-weight:800; color:var(--gold); margin-bottom:6px;">
-              🎨 ВЫБЕРИТЕ ЦВЕТ ДИЗАЙНА ИГРЫ ИЛИ СЛУЧАЙНЫЙ ЦВЕТ (Сейчас: ${themeState.name}):
-            </div>
-            <div class="color-picker-row">
-              ${swatchesHtml}
-              <button class="color-swatch" id="btn-random-color"
-                style="background: linear-gradient(90deg, #ec4899, #8b5cf6, #10b981, #f59e0b); border-color:#fff;">
-                🎲 Случайный Цвет!
-              </button>
-            </div>
-          </div>
-
-          <button class="btn btn-gold" id="btn-open-tv" style="font-size:1.12rem; padding:15px;">
-            1. Открыть Главный Экран (Телевизор / Монитор)
+          <button class="btn btn-gold" id="btn-start-tv" style="font-size:1.12rem; padding:15px;">
+            1. Открыть Главный Экран на Телевизоре или Мониторе
           </button>
 
           <div style="border-top: 1px solid rgba(255,255,255,0.16); padding-top:12px; display:flex; flex-direction:column; gap:8px;">
             <div style="font-weight:700; font-size:0.9rem; color:var(--text-muted);">
-              Или подключитесь со смартфона как Игрок:
+              Подключение со смартфона как Игрок:
             </div>
             <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px;">
-              <input type="text" id="inp-pin" maxlength="4" placeholder="PIN (4 цифры)" />
+              <input type="text" id="inp-pin" maxlength="4" placeholder="PIN с экрана ТВ" />
               <input type="text" id="inp-name" maxlength="12" placeholder="Ваше Имя" />
             </div>
-            <button class="btn" id="btn-connect-phone">Войти в Игру со Смартфона</button>
+            <button class="btn" id="btn-join-phone">Войти в Особняк со Смартфона</button>
             <div id="menu-err" style="color:#fda4af; font-size:0.82rem; min-height:1.1em;"></div>
           </div>
         </div>
       `;
 
-      document.querySelectorAll('[data-hue]').forEach(btn => {
-        btn.onclick = () => {
-          applyThemeColor(
-            Number(btn.getAttribute('data-hue')),
-            Number(btn.getAttribute('data-sat')),
-            btn.getAttribute('data-name')
-          );
-          SoundFX.coin();
-        };
-      });
-
-      document.getElementById('btn-random-color').onclick = applyRandomThemeColor;
-      document.getElementById('btn-open-tv').onclick = initHostMode;
-      document.getElementById('btn-connect-phone').onclick = () => {
+      document.getElementById('btn-start-tv').onclick = initHostMode;
+      document.getElementById('btn-join-phone').onclick = () => {
         const pin = document.getElementById('inp-pin').value.trim();
-        const name = document.getElementById('inp-name').value.trim() || 'Игрок';
+        const name = document.getElementById('inp-name').value.trim() || 'Гость';
         if (!/^\d{4}$/.test(pin)) {
           document.getElementById('menu-err').textContent = 'Введите 4 цифры PIN-кода с экрана ТВ!';
           return;
@@ -1201,7 +1163,7 @@
     }
 
     /***************************************************************************
-     * 7. СЕРВЕРНАЯ ЛОГИКА ЭКРАНА ТВ (ПОЛНЫЙ АВТОПИЛОТ ПОСЛЕ СТАРТА)
+     * 6. ИГРОВОЙ СЕРВЕР НА ЭКРАНЕ ТВ И БУКВАЛЬНЫЕ СЦЕНЫ ДЕЙСТВИЙ
      ***************************************************************************/
     function addLog(text) {
       hostState.logs.unshift(text);
@@ -1210,19 +1172,15 @@
 
     function createPlayer(id, name, isBot = false, conn = null) {
       const idx = hostState.players.length;
-      // Каждый игрок со старта получает 1 башню на случайном острове (1..3), чтобы сразу шёл доход!
-      const startSector = (idx % 3) + 1;
-      const towers = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0 };
-      towers[startSector] = 1;
-
       return {
         id,
         name: name.slice(0, 12),
-        color: PLAYER_COLORS[idx % PLAYER_COLORS.length],
-        gold: 5,
-        towers,
-        wonders: [],
+        color: AVATAR_COLORS[idx % AVATAR_COLORS.length],
+        gold: 4,
+        rubies: 0,
+        hp: 3,
         shield: false,
+        stealth: false,
         isBot,
         conn
       };
@@ -1233,7 +1191,7 @@
       hostState.pin = String(Math.floor(1000 + Math.random() * 9000));
       const peerId = ROOM_PREFIX + hostState.pin;
 
-      addLog(`Комната открыта! PIN-код: ${hostState.pin}`);
+      addLog(`Особняк открыт! PIN-код для телефонов: ${hostState.pin}`);
       renderHostHUD();
 
       peer = new Peer(peerId);
@@ -1243,308 +1201,484 @@
       });
 
       peer.on('connection', (conn) => {
-        conn.on('data', (data) => handleHostData(conn, data));
+        conn.on('data', (data) => handleHostPacket(conn, data));
       });
     }
 
-    function handleHostData(conn, data) {
+    function handleHostPacket(conn, data) {
       if (data.type === 'JOIN') {
         let p = hostState.players.find(x => x.id === conn.peer);
         if (!p && hostState.players.length < 8) {
           p = createPlayer(conn.peer, data.name, false, conn);
           hostState.players.push(p);
-          SoundFX.coin();
-          addLog(`✨ Игрок «${p.name}» подключился и получил стартовую башню!`);
+          SFX.coin();
+          addLog(`✨ В Особняк вошёл игрок «${p.name}»!`);
         }
-        syncAllPhones();
+        broadcastStateToPhones();
         renderHostHUD();
       }
 
       const active = hostState.players[hostState.activeIndex];
       if (!active || active.id !== conn.peer) return;
 
-      if (data.type === 'PREVIEW') {
-        hostState.previewTarget = data.target;
-        renderHostHUD();
-      }
-
-      if (data.type === 'CHOOSE_CAT_ROLL' && hostState.phase === 'STEP1_ROLL') {
-        runStep2IncomeSequence(data.catId);
-      }
-
-      if (data.type === 'BUILD_DECISION' && hostState.phase === 'STEP3_BUILD') {
-        executeBuildAction(data.action);
+      if (data.type === 'PERFORM_ACTION' && hostState.phase === 'PLAYER_TURN') {
+        executeLiteralActionScene(data.actionType, data.targetId);
       }
     }
 
-    function addBotPlayer() {
+    function addBotOnHost() {
       if (hostState.players.length >= 8) return;
-      const botNames = ['Лорд Коготь', 'Леди Лапка', 'Барон Мур', 'Граф Хвост', 'Княжна Рысь'];
+      const botNames = ['Граф Ворон', 'Леди Тень', 'Барон Клинок', 'Маркиз Нуар', 'Доктор Вальс'];
       const used = hostState.players.map(p => p.name);
-      const name = botNames.find(n => !used.includes(n)) || `Бот-${hostState.players.length + 1}`;
+      const name = botNames.find(n => !used.includes(n)) || `Гость-${hostState.players.length + 1}`;
       hostState.players.push(createPlayer('bot-' + Math.random().toString(36).slice(2, 7), name, true, null));
-      addLog(`🤖 Добавлен ИИ-соперник «${name}».`);
+      addLog(`🤖 В зал вошёл ИИ-соперник «${name}».`);
       renderHostHUD();
     }
 
-    // ВТОРОЙ И ПОСЛЕДНИЙ КЛИК НА ТВ — ЗАПУСК ПАРТИИ
-    function startMatchOnTV() {
-      SoundFX.init();
+    // ВТОРОЙ КЛИК НА ТВ — ЗАПУСК ПАРТИИ
+    function startMansionGame() {
+      SFX.init();
       while (hostState.players.length < 2) {
-        addBotPlayer();
+        addBotOnHost();
       }
       hostState.round = 1;
       hostState.activeIndex = 0;
-      startStep1Roll();
+      startNextPlayerTurn();
     }
 
-    // ШАГ 1 ХОДА: ВЫБОР КОТА И БРОСОК
-    function startStep1Roll() {
+    function startNextPlayerTurn() {
       const active = hostState.players[hostState.activeIndex];
-      hostState.phase = 'STEP1_ROLL';
-      hostState.activeSectors = [];
-      hostState.previewTarget = null;
-      hostState.chosenCat = null;
+      hostState.phase = 'PLAYER_TURN';
+      hostState.scene = null;
 
-      // Пассивный эффект Колизея Степана в начале хода
-      if (active.wonders.includes('wonder_stepan')) {
-        const toCard = getPlayerCardAnchor(hostState.activeIndex);
-        let collected = 0;
-        hostState.players.forEach((other, idx) => {
-          if (idx !== hostState.activeIndex && other.gold > 0 && !other.shield && !other.wonders.includes('wonder_sonya')) {
-            other.gold -= 1;
-            active.gold += 1;
-            collected += 1;
-            const fromCard = getPlayerCardAnchor(idx);
-            triggerCoins(fromCard.x, fromCard.y, toCard.x, toCard.y, 2);
-          }
-        });
-        if (collected > 0) {
-          addLog(`🏟️ Колизей Степана принёс ${active.name} +${collected} 🪙 дани с соперников!`);
-        }
+      // Пассивный бонус, если Соня спит рядом со своим избранным хозяином
+      if (hostState.cats.sonyaOwnerId === active.id) {
+        active.gold += 1;
+        active.shield = true;
+        const pos = getPlayerHomePos(hostState.activeIndex, hostState.players.length);
+        spawnBannerPopup(pos.x, pos.y - 75, '+1 🪙 и Щит от спящей Сони', '#f472b6');
       }
 
-      hostState.headline = `ШАГ 1: ХОДИТ ${active.name.toUpperCase()} — ВЫБЕРИТЕ КОТА ДЛЯ БРОСКА`;
-      hostState.subline = `🐾 Соня (Щит и страховка +3🪙) • 💧 Наташа (Два острова сразу!) • 🔥 Степан (+2🪙 и налог с чужих башен)`;
+      hostState.headline = `ХОД ИГРОКА: ${active.name.toUpperCase()} — ВЫБЕРИТЕ ДЕЙСТВИЕ НА СМАРТФОНЕ`;
+      hostState.subline = `Золото: ${active.gold} 🪙 | Рубины: ${active.rubies} из 3 💎 | Жизни: ${active.hp} ❤️`;
 
-      syncAllPhones();
+      broadcastStateToPhones();
       renderHostHUD();
 
       if (active.isBot) {
-        setTimeout(() => {
-          const cats = ['sonya', 'natasha', 'stepan'];
-          runStep2IncomeSequence(cats[Math.floor(Math.random() * cats.length)]);
-        }, 1600);
+        setTimeout(() => runBotTurnDecision(active), 1500);
       }
     }
 
-    // ШАГ 2 ХОДА: БРОСОК КУБИКОВ И НАГЛЯДНЫЙ ДОХОД С ВЫПАВШИХ ОСТРОВОВ
-    function runStep2IncomeSequence(catId) {
-      const cat = CAT_ACTIONS[catId] || CAT_ACTIONS.sonya;
-      const active = hostState.players[hostState.activeIndex];
-      const activeCardPos = getPlayerCardAnchor(hostState.activeIndex);
-
-      hostState.phase = 'STEP2_INCOME';
-      hostState.chosenCat = cat.id;
-
-      // Определяем, какие острова (1..6) выпали
-      let rolled = [];
-      if (cat.id === 'natasha') {
-        const d1 = Math.floor(1 + Math.random() * 6);
-        let d2 = Math.floor(1 + Math.random() * 6);
-        if (d2 === d1) d2 = (d1 % 6) + 1; // Чтобы у Наташи всегда загорались 2 разных острова!
-        rolled = [d1, d2];
-      } else {
-        rolled = [Math.floor(1 + Math.random() * 6)];
+    function runBotTurnDecision(bot) {
+      if (bot.gold >= 6) {
+        executeLiteralActionScene('BUY_RUBY', null);
+        return;
       }
+      const others = hostState.players.filter(p => p.id !== bot.id);
+      const richTarget = others.find(p => p.gold >= 4 && !p.stealth);
+      if (richTarget && Math.random() > 0.4) {
+        const act = Math.random() > 0.5 ? 'ATTACK' : 'STEAL';
+        executeLiteralActionScene(act, richTarget.id);
+        return;
+      }
+      const choices = ['VAULT', 'SONYA', 'NATASHA_WATER', 'STEPAN'];
+      const pick = choices[Math.floor(Math.random() * choices.length)];
+      const randVictim = others[Math.floor(Math.random() * others.length)];
+      executeLiteralActionScene(pick, randVictim ? randVictim.id : null);
+    }
 
-      hostState.headline = `${active.name.toUpperCase()} ПРИЗЫВАЕТ: ${cat.badge.toUpperCase()}!`;
-      hostState.subline = `Кубики вращаются над архипелагом...`;
-      SoundFX.roll();
+    // БУКВАЛЬНАЯ АНИМАЦИЯ ДЕЙСТВИЯ ПЕРСОНАЖА НА ГЛАВНОМ ЭКРАНЕ
+    function executeLiteralActionScene(actionType, targetId) {
+      const actorIdx = hostState.activeIndex;
+      const actor = hostState.players[actorIdx];
+      const lm = getMansionLandmarks();
 
-      vfx.rollingDice.active = true;
-      vfx.rollingDice.nums = rolled.map(() => 1);
-      const spinTimer = setInterval(() => {
-        vfx.rollingDice.nums = rolled.map(() => Math.floor(1 + Math.random() * 6));
-      }, 90);
+      hostState.phase = 'ANIMATING';
+      const duration = 3100;
 
-      syncAllPhones();
-      renderHostHUD();
+      // 1. НАПАДЕНИЕ С КИНЖАЛОМ НА СОПЕРНИКА
+      if (actionType === 'ATTACK') {
+        const victimIdx = hostState.players.findIndex(p => p.id === targetId);
+        const victim = hostState.players[victimIdx];
+        if (!victim) {
+          startNextPlayerTurn();
+          return;
+        }
+        const victimPos = getPlayerHomePos(victimIdx, hostState.players.length);
 
-      setTimeout(() => {
-        clearInterval(spinTimer);
-        vfx.rollingDice.active = false;
-        hostState.activeSectors = rolled;
-
-        // 1. Особые бонусы выбранного Кота
-        if (cat.id === 'sonya') {
-          active.shield = true;
-          const myTowerOnRolled = active.towers[rolled[0]] || 0;
-          if (myTowerOnRolled === 0) {
-            active.gold += 3;
-            const sPos = getSectorPos(rolled[0]);
-            triggerCoins(sPos.x, sPos.y, activeCardPos.x, activeCardPos.y, 3);
-            triggerPopup(sPos.x, sPos.y - 30, '+3 🪙 Утешение Сони!', '#f472b6');
-            addLog(`🐾 На Острове [${rolled[0]}] нет башен ${active.name} — Соня дарит +3 🪙 и Щит!`);
-          } else {
-            addLog(`🐾 Соня ставит игроку ${active.name} защитный Щит!`);
-          }
-        } else if (cat.id === 'stepan') {
-          active.gold += 2;
-          triggerPopup(activeCardPos.x + 80, activeCardPos.y, '+2 🪙 Выход Степана!', '#fb923c');
-          addLog(`🔥 Степан сразу даёт ${active.name} +2 🪙 за внимание публики!`);
+        // Если нападающий был хозяином Сони — Соня пугается резкого движения и убегает на подушку!
+        if (hostState.cats.sonyaOwnerId === actor.id) {
+          hostState.cats.sonyaOwnerId = null;
+          addLog(`🐾 Соня испугалась резкого взмаха ножа ${actor.name} и убежала на подушку!`);
         }
 
-        // 2. Выплата золота всем владельцам башен на выпавших островах
-        rolled.forEach((secNum) => {
-          const sec = SECTORS.find(s => s.num === secNum);
-          const sPos = getSectorPos(secNum);
-          triggerRing(sPos.x, sPos.y, '#ffd15c');
+        hostState.scene = {
+          type: 'ATTACK',
+          actorIdx,
+          victimIdx,
+          targetPos: { x: victimPos.x - 26, y: victimPos.y },
+          startTime: performance.now(),
+          duration
+        };
 
-          hostState.players.forEach((pl, pIdx) => {
-            const lvl = pl.towers[secNum] || 0;
-            if (lvl <= 0) return;
-
-            let gain = sec.income * lvl;
-            // Каскад Наташи между Островами 3 и 4
-            if (secNum === 3 && (pl.towers[4] || 0) > 0) gain += 1;
-            if (secNum === 4 && (pl.towers[3] || 0) > 0) gain += 1;
-            // Чудо Наташи (+1 ко всем башням)
-            if (pl.wonders.includes('wonder_natasha')) gain += 1;
-            // Острова 1 и 2 дают владельцу Щит Сони
-            if (secNum === 1 || secNum === 2) pl.shield = true;
-
-            pl.gold += gain;
-            const pCard = getPlayerCardAnchor(pIdx);
-            SoundFX.coin();
-            triggerCoins(sPos.x, sPos.y, pCard.x, pCard.y, Math.min(5, gain));
-            triggerPopup(sPos.x, sPos.y - 40 - pIdx * 18, `${pl.name}: +${gain} 🪙`, pl.color);
-            addLog(`🏝️ Остров [${secNum}] «${sec.name}» приносит ${pl.name} +${gain} 🪙!`);
-
-            // Если активный игрок выбрал Степана — он берёт 1 🪙 комиссии с чужих сработавших башен (если нет Щита Сони)
-            if (cat.id === 'stepan' && pIdx !== hostState.activeIndex) {
-              const protectedBySonya = pl.shield || pl.wonders.includes('wonder_sonya');
-              if (!protectedBySonya && pl.gold > 0) {
-                pl.gold -= 1;
-                active.gold += 1;
-                triggerCoins(pCard.x, pCard.y, activeCardPos.x, activeCardPos.y, 1);
-                addLog(`🔥 Степан (${active.name}) берёт 1 🪙 комиссии с дохода ${pl.name}!`);
-              }
-            }
-          });
-        });
-
-        hostState.headline = `ШАГ 2: СРАБОТАЛ ОСТРОВ [${rolled.join(' И ')}]!`;
-        hostState.subline = `Золотые монеты перелетели с активных островов в казну владельцев башен`;
-        syncAllPhones();
+        hostState.headline = `🗡️ ${actor.name.toUpperCase()} ИДЁТ С НОЖОМ К ИГРОКУ ${victim.name.toUpperCase()}!`;
+        hostState.subline = `Все смотрят на центр зала...`;
+        SFX.sneakStep();
+        broadcastStateToPhones();
         renderHostHUD();
 
+        // Момент удара ножом в середине анимации!
         setTimeout(() => {
-          startStep3Build();
-        }, 2500);
-      }, 1500);
-    }
-
-    // ШАГ 3 ХОДА: СТРОИТЕЛЬСТВО БАШНИ НА ОСТРОВЕ ИЛИ ЧУДА
-    function startStep3Build() {
-      const active = hostState.players[hostState.activeIndex];
-      hostState.phase = 'STEP3_BUILD';
-      hostState.headline = `ШАГ 3: СТРОИТЕЛЬСТВО — ${active.name.toUpperCase()} (КАЗНА: ${active.gold} 🪙)`;
-      hostState.subline = `Выберите на смартфоне Остров [1–6] для постройки башни или возведите Коронное Чудо`;
-
-      syncAllPhones();
-      renderHostHUD();
-
-      if (active.isBot) {
-        setTimeout(() => {
-          const availWonder = WONDERS.find(w => !active.wonders.includes(w.id) && active.gold >= w.cost);
-          if (availWonder) {
-            executeBuildAction({ type: 'WONDER', id: availWonder.id });
+          // Проверяем, спасёт ли Соня своего любимого хозяина редким «Мяу»!
+          if (hostState.cats.sonyaOwnerId === victim.id && hostState.cats.sonyaMeowsLeft > 0) {
+            hostState.cats.sonyaMeowsLeft -= 1;
+            SFX.sonyaMeow();
+            spawnBannerPopup(victimPos.x, victimPos.y - 75, `🐱 МЯУ! СОНЯ СПАСАЕТ ХОЗЯИНА!`, '#f472b6');
+            hostState.headline = `🐱 СОНЯ ИЗДАЛА СВОЁ РЕДКОЕ «МЯУ» И ЗАЩИТИЛА ${victim.name.toUpperCase()}!`;
+            hostState.subline = `Осталось легендарных мяуканий Сони за партию: ${hostState.cats.sonyaMeowsLeft}`;
+            addLog(`🐱 Невероятно! Тихая Соня мяукнула и спасла своего хозяина ${victim.name} от ножа!`);
+            renderHostHUD();
             return;
           }
-          const affordableSectors = SECTORS.filter(s => active.gold >= s.cost && (active.towers[s.num] || 0) < 3);
-          if (affordableSectors.length > 0) {
-            const pick = affordableSectors[affordableSectors.length - 1];
-            hostState.previewTarget = { type: 'SECTOR', id: pick.num };
+
+          if (victim.shield) {
+            victim.shield = false;
+            SFX.shieldClang();
+            spawnBannerPopup(victimPos.x, victimPos.y - 75, `🛡️ ЩИТ ОТРАЗИЛ УДАР НОЖОМ!`, '#38bdf8');
+            hostState.headline = `🛡️ ${victim.name.toUpperCase()} ОТРАЖАЕТ УДАР НОЖОМ!`;
+            addLog(`🛡️ Щит спас ${victim.name} от кинжала ${actor.name}!`);
             renderHostHUD();
-            setTimeout(() => executeBuildAction({ type: 'SECTOR', id: pick.num }), 850);
-          } else {
-            executeBuildAction({ type: 'BANK' });
+            return;
           }
-        }, 1400);
-      }
-    }
 
-    function executeBuildAction(action) {
-      const active = hostState.players[hostState.activeIndex];
-      const pCard = getPlayerCardAnchor(hostState.activeIndex);
+          // Настоящий удар ножом!
+          SFX.knifeSlash();
+          spawnBloodSplash(victimPos.x, victimPos.y - 10);
+          victim.hp -= 1;
+          const loot = Math.max(1, Math.floor(victim.gold / 2));
+          const actualLoot = Math.min(victim.gold, loot);
+          victim.gold -= actualLoot;
+          actor.gold += actualLoot;
 
-      if (action.type === 'SECTOR') {
-        const sec = SECTORS.find(s => s.num === Number(action.id));
-        const curLvl = active.towers[sec.num] || 0;
-        if (sec && curLvl < 3 && active.gold >= sec.cost) {
-          active.gold -= sec.cost;
-          active.towers[sec.num] = curLvl + 1;
-          const sPos = getSectorPos(sec.num);
-          SoundFX.build();
-          triggerRing(sPos.x, sPos.y, active.color);
-          triggerPopup(sPos.x, sPos.y - 35, `🏗️ Башня ${active.name} (Ур.${curLvl + 1})!`, active.color);
-          hostState.headline = `${active.name.toUpperCase()} СТРОИТ БАШНЮ НА ОСТРОВЕ [${sec.num}]!`;
-          hostState.subline = `«${sec.name}» теперь приносит ${active.name} по +${sec.income * (curLvl + 1)} 🪙 при выпадении [${sec.num}]`;
-          addLog(`🏗️ ${active.name} возводит башню (Ур.${curLvl + 1}) на Острове [${sec.num}] «${sec.name}»!`);
-        }
-      } else if (action.type === 'WONDER') {
-        const w = WONDERS.find(x => x.id === action.id);
-        if (w && !active.wonders.includes(w.id) && active.gold >= w.cost) {
-          active.gold -= w.cost;
-          active.wonders.push(w.id);
-          SoundFX.build();
-          triggerRing(cw * 0.5, ch * 0.46, '#ffd15c');
-          triggerPopup(cw * 0.5, ch * 0.42, `👑 ${w.name}!`, '#ffd15c');
-          hostState.headline = `👑 ВОЗВЕДЕНО ЧУДО: ${w.name.toUpperCase()} (${active.wonders.length}/3)!`;
-          hostState.subline = `${active.name} становится ближе к абсолютной победе!`;
-          addLog(`👑 ${active.name} возводит КОРОННОЕ ЧУДО «${w.name}» (${active.wonders.length}/3)!`);
-        }
-      } else {
-        active.gold += 2;
-        SoundFX.coin();
-        triggerPopup(pCard.x + 80, pCard.y, '+2 🪙 Вклад в казну', '#ffd15c');
-        hostState.headline = `${active.name.toUpperCase()} БЕРЁТ +2 🪙 ИЗ КАЗНЫ`;
-        hostState.subline = `Игрок решил накопить золото на Коронное Чудо`;
-        addLog(`🪙 ${active.name} пропускает постройку и берёт +2 🪙 из казны.`);
-      }
-
-      // Бонус Чуда Сони в конце хода
-      if (active.wonders.includes('wonder_sonya')) {
-        active.gold += 2;
-      }
-
-      syncAllPhones();
-      renderHostHUD();
-
-      // Проверка победы (3 Коронных Чуда)
-      if (active.wonders.length >= 3) {
-        setTimeout(() => {
-          hostState.winner = active;
-          hostState.phase = 'GAME_OVER';
-          hostState.headline = `👑 ПОБЕДИТЕЛЬ ПАРТИИ: ${active.name.toUpperCase()}!`;
-          hostState.subline = `Все 3 Коронных Чуда Трёх Котов возведены!`;
-          SoundFX.build();
-          syncAllPhones();
+          if (victim.hp <= 0) {
+            victim.hp = 3; // Доктор особняка приводит в чувство, но атакующий забирает ещё бонус
+            actor.gold += 2;
+            spawnBannerPopup(victimPos.x, victimPos.y - 80, `💀 НОКАУТ! -${actualLoot} 🪙`, '#ff2a4b');
+            addLog(`🗡️ ${actor.name} поверг ${victim.name} ударом кинжала и забрал ${actualLoot} 🪙 + 2 🪙 трофея!`);
+          } else {
+            spawnBannerPopup(victimPos.x, victimPos.y - 80, `🩸 УДАР НОЖОМ! -1 ❤️ и -${actualLoot} 🪙`, '#ff2a4b');
+            addLog(`🗡️ ${actor.name} ранил ножом ${victim.name} и забрал ${actualLoot} 🪙!`);
+          }
           renderHostHUD();
-        }, 1900);
+        }, 1150);
+
+        setTimeout(() => finishTurnAndAdvance(), duration);
         return;
       }
 
-      setTimeout(() => {
-        hostState.activeIndex = (hostState.activeIndex + 1) % hostState.players.length;
-        if (hostState.activeIndex === 0) hostState.round += 1;
-        startStep1Roll();
-      }, 2000);
+      // 2. ТИХАЯ КРАЖА ЗОЛОТА ИЗ КАРМАНА
+      if (actionType === 'STEAL') {
+        const victimIdx = hostState.players.findIndex(p => p.id === targetId);
+        const victim = hostState.players[victimIdx];
+        if (!victim) {
+          startNextPlayerTurn();
+          return;
+        }
+        const victimPos = getPlayerHomePos(victimIdx, hostState.players.length);
+
+        hostState.scene = {
+          type: 'STEAL',
+          actorIdx,
+          victimIdx,
+          targetPos: { x: victimPos.x + 24, y: victimPos.y },
+          startTime: performance.now(),
+          duration
+        };
+
+        hostState.headline = `🕵️ ${actor.name.toUpperCase()} КРАДЁТСЯ К КАРМАНАМ ${victim.name.toUpperCase()}...`;
+        hostState.subline = `Персонаж в маске подбирается со спины`;
+        SFX.sneakStep();
+        broadcastStateToPhones();
+        renderHostHUD();
+
+        setTimeout(() => {
+          const stolen = Math.min(victim.gold, 3);
+          victim.gold -= stolen;
+          actor.gold += stolen;
+          SFX.coin();
+          spawnBannerPopup(victimPos.x, victimPos.y - 75, `💰 УКРАДЕНО ${stolen} 🪙!`, '#ffd15c');
+          hostState.headline = `💰 ${actor.name.toUpperCase()} ВЫТАЩИЛ ${stolen} 🪙 У ${victim.name.toUpperCase()}!`;
+          addLog(`🕵️ ${actor.name} незаметно вытащил ${stolen} 🪙 из кармана ${victim.name}!`);
+          renderHostHUD();
+        }, 1150);
+
+        setTimeout(() => finishTurnAndAdvance(), duration);
+        return;
+      }
+
+      // 3. ПОХОД К ЗОЛОТОМУ СЕЙФУ В ЦЕНТРЕ
+      if (actionType === 'VAULT') {
+        hostState.scene = {
+          type: 'VAULT',
+          actorIdx,
+          victimIdx: -1,
+          targetPos: { x: lm.vault.x, y: lm.vault.y + 22 },
+          startTime: performance.now(),
+          duration
+        };
+
+        const stepanAtDoor = hostState.cats.stepanLocation === 'VAULT';
+        hostState.headline = `🏦 ${actor.name.toUpperCase()} ИДЁТ К ЗОЛОТОМУ СЕЙФУ`;
+        hostState.subline = stepanAtDoor
+          ? `У двери сейфа развалился Степан — придётся погладить его и взять на руки!`
+          : `Персонаж подбирает шифр к замку...`;
+        SFX.sneakStep();
+        broadcastStateToPhones();
+        renderHostHUD();
+
+        setTimeout(() => {
+          const gain = stepanAtDoor ? 5 : 4;
+          actor.gold += gain;
+          SFX.coin();
+          spawnBannerPopup(lm.vault.x, lm.vault.y - 60, `+${gain} 🪙 ИЗ СЕЙФА!`, '#ffd15c');
+          if (stepanAtDoor) {
+            addLog(`🐱 ${actor.name} погладил Степана у двери сейфа и вынес целых +${gain} 🪙!`);
+          } else {
+            addLog(`🏦 ${actor.name} открыл Золотой Сейф и забрал +${gain} 🪙.`);
+          }
+          renderHostHUD();
+        }, 1150);
+
+        setTimeout(() => finishTurnAndAdvance(), duration);
+        return;
+      }
+
+      // 4. ПОКУПКА КОРОЛЕВСКОГО РУБИНА ДЛЯ ПОБЕДЫ
+      if (actionType === 'BUY_RUBY') {
+        hostState.scene = {
+          type: 'RUBY',
+          actorIdx,
+          victimIdx: -1,
+          targetPos: { x: lm.vault.x, y: lm.vault.y + 18 },
+          startTime: performance.now(),
+          duration
+        };
+
+        hostState.headline = `💎 ${actor.name.toUpperCase()} НАПРАВЛЯЕТСЯ ЗА КОРОЛЕВСКИМ РУБИНОМ!`;
+        SFX.sneakStep();
+        broadcastStateToPhones();
+        renderHostHUD();
+
+        setTimeout(() => {
+          if (actor.gold >= 6) {
+            actor.gold -= 6;
+            actor.rubies += 1;
+            SFX.fanfare();
+            spawnBannerPopup(lm.vault.x, lm.vault.y - 65, `💎 РУБИН ${actor.rubies} ИЗ 3!`, '#ff2a4b');
+            hostState.headline = `👑 ${actor.name.toUpperCase()} ПОЛУЧАЕТ РУБИН ${actor.rubies} ИЗ 3!`;
+            addLog(`💎 ${actor.name} покупает Королевский Рубин! Теперь у него ${actor.rubies} из 3!`);
+            renderHostHUD();
+          }
+        }, 1150);
+
+        setTimeout(() => finishTurnAndAdvance(), duration);
+        return;
+      }
+
+      // 5. ПОГЛАДИТЬ ТИХУЮ СОНЮ — ОНА ВЫБИРАЕТ ВАС СВОИМ ХОЗЯИНОМ
+      if (actionType === 'SONYA') {
+        const targetPos = { x: lm.cushion.x, y: lm.cushion.y };
+        hostState.scene = {
+          type: 'SONYA',
+          actorIdx,
+          victimIdx: -1,
+          targetPos,
+          startTime: performance.now(),
+          duration
+        };
+
+        hostState.headline = `🐾 ${actor.name.toUpperCase()} ТИХО ПОДХОДИТ ПОГЛАДИТЬ СОНЮ...`;
+        hostState.subline = `Соня обожает спокойствие и ласку своего избранного человека`;
+        broadcastStateToPhones();
+        renderHostHUD();
+
+        setTimeout(() => {
+          hostState.cats.sonyaOwnerId = actor.id;
+          actor.hp = Math.min(3, actor.hp + 1);
+          actor.shield = true;
+          actor.gold += 2;
+          SFX.coin();
+          spawnBannerPopup(targetPos.x, targetPos.y - 50, `💖 СОНЯ ВЫБРАЛА ${actor.name.toUpperCase()} ХОЗЯИНОМ!`, '#f472b6');
+          addLog(`🐾 ${actor.name} ласково погладил Соню! Теперь Соня спит рядом с ним, даёт Щит, +2 🪙 и лечит раны.`);
+          renderHostHUD();
+        }, 1150);
+
+        setTimeout(() => finishTurnAndAdvance(), duration);
+        return;
+      }
+
+      // 6. ВКЛЮЧИТЬ ВОДУ В ВАННОЙ ДЛЯ НАТАШИ
+      if (actionType === 'NATASHA_WATER') {
+        const targetPos = { x: lm.bath.x, y: lm.bath.y };
+        hostState.scene = {
+          type: 'NATASHA_WATER',
+          actorIdx,
+          victimIdx: -1,
+          targetPos,
+          startTime: performance.now(),
+          duration
+        };
+
+        hostState.headline = `💧 ${actor.name.toUpperCase()} ВКЛЮЧАЕТ ВОДУ В ВАННОЙ ДЛЯ НАТАШИ!`;
+        hostState.subline = `Наташа с высунутым язычком бежит играть со струйками воды!`;
+        broadcastStateToPhones();
+        renderHostHUD();
+
+        setTimeout(() => {
+          hostState.cats.natashaWaterActive = true;
+          SFX.waterSplash();
+          spawnWaterSplash(lm.bath.x, lm.bath.y);
+          actor.gold += 3;
+          actor.stealth = true;
+          spawnBannerPopup(lm.bath.x, lm.bath.y - 50, `💧 ИГРА С ВОДОЙ! +3 🪙 И СКРЫТНОСТЬ`, '#38bdf8');
+          addLog(`💧 ${actor.name} включил воду для Наташи! Наташа счастлива и приносит +3 🪙 и Скрытность от воров.`);
+          renderHostHUD();
+        }, 1150);
+
+        setTimeout(() => finishTurnAndAdvance(), duration);
+        return;
+      }
+
+      // 7. ВЗЯТЬ СТЕПАНА НА РУКИ И НАПРАВИТЬ В ЦЕНТР СОБЫТИЙ
+      if (actionType === 'STEPAN') {
+        const victim = hostState.players.find(p => p.id === targetId);
+        const targetPos = { x: lm.vault.x, y: lm.vault.y + 18 };
+        hostState.scene = {
+          type: 'STEPAN',
+          actorIdx,
+          victimIdx: -1,
+          targetPos,
+          startTime: performance.now(),
+          duration
+        };
+
+        hostState.headline = `🔥 ${actor.name.toUpperCase()} БЕРЁТ СТЕПАНА НА РУКИ И НАГЛАЖИВАЕТ!`;
+        hostState.subline = `Степан обожает быть в центре внимания и ложится прямо на чужие вещи!`;
+        broadcastStateToPhones();
+        renderHostHUD();
+
+        setTimeout(() => {
+          actor.gold += 3;
+          if (victim) {
+            hostState.cats.stepanLocation = victim.id;
+            const take = Math.min(victim.gold, 2);
+            victim.gold -= take;
+            actor.gold += take;
+            const vPos = getPlayerHomePos(hostState.players.indexOf(victim), hostState.players.length);
+            spawnBannerPopup(vPos.x, vPos.y - 75, `🐱 СТЕПАН ЛЁГ НА ВЕЩИ! -${take} 🪙`, '#fb923c');
+            addLog(`🔥 Довольный Степан улёгся прямо на вещи ${victim.name} и принёс ${actor.name} в сумме +${3 + take} 🪙!`);
+          } else {
+            hostState.cats.stepanLocation = 'VAULT';
+            addLog(`🔥 ${actor.name} подержал Степана на руках и получил +3 🪙!`);
+          }
+          SFX.coin();
+          renderHostHUD();
+        }, 1150);
+
+        setTimeout(() => finishTurnAndAdvance(), duration);
+        return;
+      }
     }
 
-    function syncAllPhones() {
+    function finishTurnAndAdvance() {
+      const active = hostState.players[hostState.activeIndex];
+
+      // Проверка победы: 3 Королевских Рубина
+      if (active.rubies >= 3) {
+        hostState.winner = active;
+        hostState.phase = 'GAME_OVER';
+        hostState.scene = null;
+        hostState.headline = `👑 ПОБЕДИТЕЛЬ ПАРТИИ: ${active.name.toUpperCase()}!`;
+        hostState.subline = `Собраны все 3 Королевских Рубина Особняка Трёх Кошек!`;
+        SFX.fanfare();
+        broadcastStateToPhones();
+        renderHostHUD();
+        return;
+      }
+
+      // Переход хода
+      hostState.activeIndex = (hostState.activeIndex + 1) % hostState.players.length;
+      const newRoundStarted = hostState.activeIndex === 0;
+      if (newRoundStarted) {
+        hostState.round += 1;
+      }
+
+      // КАЖДЫЕ 2 РАУНДА ПО ЧАСАМ: НАТАША ИДЁТ ПРОСИТЬ ПОЕСТЬ, ПОКУСЫВАЯ И ОБТИРАЯСЬ ОБ ИГРОКА!
+      if (newRoundStarted && hostState.round % 2 === 0) {
+        runNatashaFeedingClockEvent(() => startNextPlayerTurn());
+      } else {
+        startNextPlayerTurn();
+      }
+    }
+
+    // Специальная сценка каждые 2 раунда: Наташа просит есть как по часам!
+    function runNatashaFeedingClockEvent(onDone) {
+      // Наташа выбирает самого богатого игрока
+      const sorted = [...hostState.players].sort((a, b) => b.gold - a.gold);
+      const target = sorted[0];
+      const targetIdx = hostState.players.indexOf(target);
+      const tPos = getPlayerHomePos(targetIdx, hostState.players.length);
+
+      hostState.phase = 'ANIMATING';
+      hostState.scene = {
+        type: 'NATASHA_FEED',
+        actorIdx: -1,
+        victimIdx: targetIdx,
+        targetPos: tPos,
+        startTime: performance.now(),
+        duration: 2800
+      };
+
+      hostState.headline = `⏰ ЧАСЫ КОРМЁЖКИ НАТАШИ! ОНА БЕЖИТ К ИГРОКУ ${target.name.toUpperCase()}!`;
+      hostState.subline = `Наташа с высунутым язычком трётся об ноги и покусывает, требуя вкусняшку!`;
+      broadcastStateToPhones();
+      renderHostHUD();
+
+      setTimeout(() => {
+        if (target.gold >= 1) {
+          target.gold -= 1;
+          target.hp = Math.min(3, target.hp + 1);
+          target.shield = true;
+          SFX.coin();
+          spawnBannerPopup(tPos.x, tPos.y - 75, `🐟 НАТАША ПОКОРМЛЕНА! +1 ❤️ И ЩИТ`, '#38bdf8');
+          addLog(`🐟 Наташа покусала за ногу ${target.name}, выпросила угощение за 1 🪙 и подарила Щит и +1 ❤️!`);
+        } else {
+          spawnBannerPopup(tPos.x, tPos.y - 75, `😼 КУСЬ! НЕТ ЕДЫ!`, '#fb923c');
+          addLog(`😼 У ${target.name} не нашлось монетки на корм — Наташа сделала «кусь» и убежала к воде!`);
+        }
+        renderHostHUD();
+      }, 1200);
+
+      setTimeout(() => {
+        hostState.scene = null;
+        onDone();
+      }, 2800);
+    }
+
+    function broadcastStateToPhones() {
       const activePlayer = hostState.players[hostState.activeIndex];
+      const publicPlayers = hostState.players.map(p => ({
+        id: p.id,
+        name: p.name,
+        color: p.color,
+        gold: p.gold,
+        rubies: p.rubies,
+        hp: p.hp,
+        shield: p.shield
+      }));
+
       hostState.players.forEach((p, idx) => {
         if (p.conn && p.conn.open) {
           p.conn.send({
@@ -1555,14 +1689,16 @@
             round: hostState.round,
             isMyTurn: idx === hostState.activeIndex,
             activePlayerName: activePlayer ? activePlayer.name : '',
-            activeSectors: hostState.activeSectors,
+            headline: hostState.headline,
             winner: hostState.winner ? hostState.winner.name : null,
+            players: publicPlayers,
             me: {
+              id: p.id,
               name: p.name,
               color: p.color,
               gold: p.gold,
-              towers: p.towers,
-              wonders: p.wonders,
+              rubies: p.rubies,
+              hp: p.hp,
               shield: p.shield
             }
           });
@@ -1571,128 +1707,87 @@
     }
 
     /***************************************************************************
-     * 8. ИНТЕРФЕЙС ГЛАВНОГО ЭКРАНА (ТВ) — ПРОСТОЙ, ЧИТАЕМЫЙ И КРАСИВЫЙ
+     * 7. ОТРИСОВКА ИНТЕРФЕЙСА ЭКРАНА ТВ
      ***************************************************************************/
     function renderHostHUD() {
       if (mode !== 'HOST') return;
 
-      const s1 = hostState.phase === 'STEP1_ROLL' ? 'active' : '';
-      const s2 = hostState.phase === 'STEP2_INCOME' ? 'active' : '';
-      const s3 = hostState.phase === 'STEP3_BUILD' ? 'active' : '';
-
       const playersHtml = hostState.players.map((p, idx) => {
         const isTurn = (hostState.phase !== 'LOBBY' && idx === hostState.activeIndex);
-        const ownedSectors = Object.entries(p.towers)
-          .filter(([, lvl]) => lvl > 0)
-          .map(([num, lvl]) => `[Остров ${num}: ур.${lvl}]`)
-          .join(' ');
-
-        const wondersBar = WONDERS.map(w => {
-          const has = p.wonders.includes(w.id);
-          return `<div class="m-slot ${has ? 'owned' : ''}">${has ? '👑 ' : ''}${w.short}</div>`;
-        }).join('');
-
+        const isSonyaOwner = hostState.cats.sonyaOwnerId === p.id;
         return `
-          <div class="p-item ${isTurn ? 'active-turn' : ''}">
+          <div class="p-row ${isTurn ? 'active-turn' : ''}">
             <div style="display:flex; justify-content:space-between; align-items:center;">
-              <div style="display:flex; align-items:center; gap:7px; font-weight:900; font-size:0.95rem;">
-                <span class="p-color-dot" style="background:${p.color};"></span>
+              <div style="display:flex; align-items:center; gap:7px; font-weight:900;">
+                <span style="width:12px; height:12px; border-radius:50%; background:${p.color}; display:inline-block; border:2px solid #fff;"></span>
                 <span>${p.name} ${p.isBot ? '🤖' : ''}</span>
-                ${p.shield || p.wonders.includes('wonder_sonya') ? '<span title="Щит Сони">🛡️</span>' : ''}
               </div>
-              <span class="gold-counter">🪙 ${p.gold}</span>
+              <span style="color:var(--gold); font-weight:900;">🪙 ${p.gold} | 💎 ${p.rubies}/3</span>
             </div>
-            <div class="monument-slots">${wondersBar}</div>
-            <div style="font-size:0.72rem; color:var(--text-muted);">
-              ${ownedSectors || 'Башен пока нет'}
+            <div style="display:flex; justify-content:space-between; font-size:0.76rem; color:var(--text-muted);">
+              <span>Жизни: ${'❤️'.repeat(p.hp)} ${p.shield ? '🛡️ Щит' : ''}</span>
+              <span>${isSonyaOwner ? '🐾 Любимчик Сони' : ''}</span>
             </div>
           </div>
         `;
       }).join('');
 
-      const wondersHtml = WONDERS.map(w => {
-        const focused = hostState.previewTarget &&
-                        hostState.previewTarget.type === 'WONDER' &&
-                        hostState.previewTarget.id === w.id;
-        return `
-          <div class="wonder-box ${focused ? 'focused' : ''}">
-            <div style="display:flex; justify-content:space-between; font-weight:900; color:var(--gold);">
-              <span>👑 ${w.name}</span>
-              <span>🪙 ${w.cost}</span>
-            </div>
-            <div style="font-size:0.72rem; opacity:0.9; line-height:1.3;">${w.desc}</div>
-          </div>
-        `;
-      }).join('');
+      const sonyaOwner = hostState.players.find(p => p.id === hostState.cats.sonyaOwnerId);
+      const stepanTarget = hostState.players.find(p => p.id === hostState.cats.stepanLocation);
 
-      const catsLegendHtml = Object.values(CAT_ACTIONS).map(c => `
-        <div style="background:rgba(0,0,0,0.35); border-left:3px solid ${c.color}; padding:6px 8px; border-radius:0 8px 8px 0; font-size:0.74rem;">
-          <div style="font-weight:900; color:${c.color};">${c.badge}</div>
-          <div style="opacity:0.88; margin-top:2px;">${c.shortRule}</div>
-        </div>
-      `).join('');
-
-      const logsHtml = hostState.logs.map(l => `<div class="log-line">${l}</div>`).join('');
+      const logsHtml = hostState.logs.map(l => `<div class="log-item">${l}</div>`).join('');
 
       let centerModalHtml = '';
       if (hostState.phase === 'LOBBY') {
         centerModalHtml = `
           <div class="glass-panel interactive" style="padding:22px 28px; text-align:center; max-width:520px; margin:auto;">
-            <div class="title-main" style="font-size:1.55rem;">КАК ИГРАТЬ (ПОНЯТНО ЗА 10 СЕКУНД)</div>
-            <div style="text-align:left; font-size:0.86rem; line-height:1.45; margin:10px 0 14px; background:rgba(0,0,0,0.35); padding:12px; border-radius:10px;">
-              1️⃣ На экране <b>6 Островов (от 1 до 6)</b>. У каждого игрока есть свои цветные башни на островах.<br/>
-              2️⃣ В свой ход выберите на телефоне <b>Соню, Наташу или Степана</b> для броска кубиков.<br/>
-              3️⃣ Какой остров выпал — <b>все башни на нём сразу отправляют золото</b> своим владельцам!<br/>
-              4️⃣ Постройте башню или <b>3 Коронных Чуда</b> для победы!
+            <div class="title-grand" style="font-size:1.5rem;">ДОБРО ПОЖАЛОВАТЬ В ОСОБНЯК</div>
+            <div style="text-align:left; font-size:0.84rem; line-height:1.45; margin:10px 0 14px; background:rgba(0,0,0,0.4); padding:12px; border-radius:10px;">
+              🗡️ <b>Удар Кинжалом:</b> персонаж подходит к сопернику, ранит его ножом и забирает половину золота.<br/>
+              🕵️ <b>Кража:</b> персонаж в маске крадётся за спину и вытаскивает до 3 монет.<br/>
+              🐱 <b>Три Кошки:</b> тихая <b>Соня</b> спит у хозяина и спасает от ножа, <b>Наташа</b> с высунутым языком играет с водой в ванной и каждые 2 раунда просит поесть, а авантюрист <b>Степан</b> ложится у двери Сейфа и на чужие вещи!<br/>
+              💎 <b>Цель:</b> первым собрать <b>3 Королевских Рубина</b>!
             </div>
-            <div style="display:flex; gap:8px; justify-content:center; flex-wrap:wrap; margin-bottom:10px;">
-              <button class="btn" id="btn-lobby-color">🎨 Случайный Цвет Экрана</button>
-              <button class="btn" id="btn-lobby-bot">+ ИИ-Бот</button>
+            <div style="display:flex; gap:10px; justify-content:center; margin-bottom:10px;">
+              <button class="btn" id="btn-add-bot">+ Добавить ИИ-Гостя</button>
             </div>
-            <button class="btn btn-gold" id="btn-lobby-start" style="width:100%; font-size:1.12rem; padding:14px;">
-              2. Начать Партию (Дальше экран работает сам!) ▶
+            <button class="btn btn-gold" id="btn-start-match" style="width:100%; font-size:1.12rem; padding:14px;">
+              2. Начать Партию на Экране ТВ ▶
             </button>
           </div>
         `;
       } else if (hostState.phase === 'GAME_OVER') {
         centerModalHtml = `
           <div class="glass-panel interactive" style="padding:26px 34px; text-align:center; margin:auto;">
-            <div class="title-main" style="font-size:2rem;">👑 ПОБЕДИТЕЛЬ: ${hostState.winner.name}!</div>
-            <p class="subtitle" style="margin:10px 0 18px;">Все 3 Коронных Чуда возведены!</p>
-            <button class="btn btn-gold" onclick="location.reload()">Новая Игра</button>
+            <div class="title-grand" style="font-size:2rem;">👑 ПОБЕДИТЕЛЬ: ${hostState.winner.name}!</div>
+            <p style="margin:10px 0 18px;">Собраны все 3 Королевских Рубина Полуночного Особняка!</p>
+            <button class="btn btn-gold" onclick="location.reload()">Сыграть Ещё Раз</button>
           </div>
         `;
       }
 
       appEl.innerHTML = `
-        <div class="tv-grid">
+        <div class="tv-layout">
           <div class="glass-panel tv-header">
-            <div style="display:flex; align-items:center; gap:12px;">
-              <span style="font-weight:900; font-size:1.15rem; color:var(--gold);">ШЕСТЬ ОСТРОВОВ</span>
-              <span style="font-size:0.82rem; color:var(--text-muted);">Раунд ${hostState.round}</span>
+            <div style="display:flex; align-items:center; gap:14px;">
+              <span style="font-weight:900; font-size:1.15rem; color:var(--gold);">ПОЛУНОЧНЫЙ ОСОБНЯК</span>
+              <span style="font-size:0.84rem; color:var(--text-muted);">Раунд ${hostState.round} • Цель: 3 Рубина 💎</span>
             </div>
-
-            <div class="phase-stepper">
-              <div class="step-pill ${s1}">1. Выбор Кота и Бросок</div>
-              <div class="step-pill ${s2}">2. Доход Островов</div>
-              <div class="step-pill ${s3}">3. Постройка Башни / Чуда</div>
-            </div>
-
             <div style="display:flex; align-items:center; gap:10px;">
-              <span style="font-size:0.8rem; opacity:0.85;">PIN:</span>
-              <span class="pin-box">${hostState.pin}</span>
+              <span style="font-size:0.82rem;">КОД КОМНАТЫ:</span>
+              <span class="pin-display">${hostState.pin}</span>
             </div>
           </div>
 
           <div class="glass-panel tv-left">
-            <div style="font-weight:900; font-size:0.88rem; color:var(--gold); border-bottom:1px solid rgba(255,255,255,0.15); padding-bottom:5px;">
-              ИГРОКИ И ИХ КАЗНА (${hostState.players.length}/8)
+            <div style="font-weight:900; font-size:0.86rem; color:var(--gold); border-bottom:1px solid rgba(255,255,255,0.15); padding-bottom:5px;">
+              ПЕРСОНАЖИ В ЗАЛЕ: ${hostState.players.length} из 8
             </div>
-            ${playersHtml || '<div style="opacity:0.65; font-size:0.82rem;">Подключитесь со смартфона или нажмите «Начать Партию»...</div>'}
+            ${playersHtml || '<div style="opacity:0.65; font-size:0.82rem;">Подключитесь со смартфона или нажмите Начать Партию...</div>'}
           </div>
 
           <div class="tv-stage">
-            <div class="action-banner">
+            <div class="cinematic-banner">
               <div style="font-weight:900; font-size:1.08rem; color:var(--gold);">${hostState.headline}</div>
               <div style="font-size:0.83rem; margin-top:2px; opacity:0.92;">${hostState.subline}</div>
             </div>
@@ -1701,35 +1796,46 @@
           </div>
 
           <div class="glass-panel tv-right">
-            <div style="font-weight:900; font-size:0.85rem; color:var(--gold);">СИЛЫ ТРЁХ КОТОВ:</div>
-            <div style="display:flex; flex-direction:column; gap:5px;">
-              ${catsLegendHtml}
+            <div style="font-weight:900; font-size:0.86rem; color:var(--gold); border-bottom:1px solid rgba(255,255,255,0.15); padding-bottom:5px;">
+              ХРОНИКА ПРОИСШЕСТВИЙ
             </div>
-            <div style="font-weight:900; font-size:0.85rem; color:var(--gold); margin-top:4px;">СОБЫТИЯ НА ЭКРАНЕ:</div>
-            <div class="log-list">${logsHtml}</div>
+            <div class="log-feed">${logsHtml}</div>
           </div>
 
           <div class="glass-panel tv-bottom">
             <div style="font-size:0.75rem; font-weight:800; color:var(--gold);">
-              👑 ЦЕЛЬ ИГРЫ — ПОСТРОИТЬ ВСЕ 3 КОРОННЫХ ЧУДА:
+              🐱 ТРИ КОШКИ ОСОБНЯКА И ИХ ПОВЕДЕНИЕ СЕЙЧАС:
             </div>
-            <div class="wonders-row">${wondersHtml}</div>
+            <div class="cats-status-grid">
+              <div class="cat-status-card" style="border-left: 3px solid #f472b6;">
+                <div style="font-weight:900; color:#f472b6;">🐾 СОНЯ — Тихая и Верная</div>
+                <div>Хозяин сейчас: <b>${sonyaOwner ? sonyaOwner.name : 'Спит одна на подушке'}</b></div>
+                <div style="color:var(--gold);">Спасительных «Мяу» осталось: ${hostState.cats.sonyaMeowsLeft} из 2</div>
+              </div>
+              <div class="cat-status-card" style="border-left: 3px solid #38bdf8;">
+                <div style="font-weight:900; color:#38bdf8;">👅 НАТАША — Язычок, Вода и Еда</div>
+                <div>Любит струйки воды в ванной и просит есть каждые 2 раунда</div>
+                <div style="color:var(--gold);">Кормёжка через: ${2 - (hostState.round % 2)} р.</div>
+              </div>
+              <div class="cat-status-card" style="border-left: 3px solid #fb923c;">
+                <div style="font-weight:900; color:#fb923c;">🔥 СТЕПАН — В Центре Внимания</div>
+                <div>Где лежит сейчас: <b>${stepanTarget ? 'На вещах ' + stepanTarget.name : 'Поперёк двери Сейфа'}</b></div>
+                <div style="color:var(--gold);">Любит, когда его гладят и берут на руки</div>
+              </div>
+            </div>
           </div>
         </div>
       `;
 
-      const bColor = document.getElementById('btn-lobby-color');
-      if (bColor) bColor.onclick = applyRandomThemeColor;
+      const bBot = document.getElementById('btn-add-bot');
+      if (bBot) bBot.onclick = addBotOnHost;
 
-      const bBot = document.getElementById('btn-lobby-bot');
-      if (bBot) bBot.onclick = addBotPlayer;
-
-      const bStart = document.getElementById('btn-lobby-start');
-      if (bStart) bStart.onclick = startMatchOnTV;
+      const bStart = document.getElementById('btn-start-match');
+      if (bStart) bStart.onclick = startMansionGame;
     }
 
     /***************************************************************************
-     * 9. МОБИЛЬНЫЙ ПУЛЬТ ИГРОКА (СМАРТФОН)
+     * 8. МОБИЛЬНЫЙ КОНТРОЛЛЕР НА СМАРТФОНЕ
      ***************************************************************************/
     const clientState = {
       pin: '',
@@ -1739,8 +1845,9 @@
       round: 1,
       isMyTurn: false,
       activePlayerName: '',
-      activeSectors: [],
+      headline: '',
       winner: null,
+      players: [],
       me: null,
       conn: null
     };
@@ -1749,7 +1856,7 @@
       mode = 'CLIENT';
       clientState.pin = pin;
       clientState.name = name;
-      renderClientPhone('Подключение к Главному экрану...');
+      renderClientPhone('Подключение к Полуночному Особняку...');
 
       peer = new Peer();
       peer.on('open', () => {
@@ -1765,7 +1872,7 @@
         conn.on('data', (data) => {
           if (data.type === 'SYNC') {
             if (typeof data.themeHue === 'number') {
-              applyThemeColor(data.themeHue, data.themeSat || 82, 'Тема Хоста');
+              setGlobalTheme(data.themeHue, data.themeSat || 82);
             }
             Object.assign(clientState, data);
             renderClientPhone();
@@ -1774,7 +1881,7 @@
 
         conn.on('close', () => {
           clientState.connected = false;
-          renderClientPhone('Соединение с ТВ прервано.');
+          renderClientPhone('Связь с экраном ТВ прервана.');
         });
       });
 
@@ -1783,199 +1890,151 @@
       });
     }
 
-    function renderClientPhone(msg = '') {
+    function renderClientPhone(statusMsg = '') {
       if (mode !== 'CLIENT') return;
 
       if (!clientState.connected || !clientState.me) {
         appEl.innerHTML = `
           <div class="glass-panel center-modal">
-            <div class="title-main" style="font-size:1.45rem;">СВЯЗЬ С ИГРОЙ</div>
-            <p class="subtitle">${msg || 'Ожидание ответа от экрана ТВ...'}</p>
-            <button class="btn" onclick="location.reload()">В меню</button>
+            <div class="title-grand" style="font-size:1.45rem;">ВХОД В ОСОБНЯК</div>
+            <p>${statusMsg || 'Синхронизация с Главным экраном...'}</p>
+            <button class="btn" onclick="location.reload()">Назад</button>
           </div>
         `;
         return;
       }
 
       const me = clientState.me;
-      let contentHtml = '';
+      const rivals = clientState.players.filter(p => p.id !== me.id);
+      let bodyHtml = '';
 
       if (clientState.phase === 'LOBBY') {
-        contentHtml = `
+        bodyHtml = `
           <div style="text-align:center; padding:22px 10px;">
-            <div style="font-size:1.25rem; font-weight:900; color:var(--gold);">Вы подключены!</div>
-            <p class="subtitle" style="margin-top:8px;">
-              Ваша стартовая башня уже стоит на Острове на экране ТВ. Нажмите «Начать Партию» на телевизоре!
+            <div style="font-size:1.25rem; font-weight:900; color:var(--gold);">Ваш персонаж уже в Зале!</div>
+            <p style="margin-top:8px; font-size:0.9rem; opacity:0.88;">
+              Посмотрите на Главный экран ТВ и нажмите там кнопку «Начать Партию»!
             </p>
           </div>
         `;
-      } else if (clientState.phase === 'STEP1_ROLL') {
-        if (clientState.isMyTurn) {
-          contentHtml = `
-            <div style="font-weight:900; color:var(--gold); margin-bottom:8px;">
-              ШАГ 1: ВЫБЕРИТЕ КОТА ДЛЯ БРОСКА КУБИКОВ
+      } else if (clientState.phase === 'PLAYER_TURN' && clientState.isMyTurn) {
+        const attackButtons = rivals.map(r => `
+          <button class="action-btn-phone" data-act="ATTACK" data-target="${r.id}" style="border-left: 4px solid #ff2a4b;">
+            <div style="display:flex; justify-content:space-between; font-weight:900; color:#ff4d6d;">
+              <span>🗡️ Напасть с ножом на «${r.name}»</span>
+              <span>У него 🪙 ${r.gold}</span>
             </div>
-            <div style="display:flex; flex-direction:column; gap:10px;">
-              ${Object.values(CAT_ACTIONS).map(cat => `
-                <button class="phone-option" data-cat="${cat.id}" style="border-left: 4px solid ${cat.color};">
-                  <div style="font-weight:900; font-size:1rem; color:${cat.color};">${cat.badge}</div>
-                  <div style="font-size:0.8rem; opacity:0.92; line-height:1.35;">${cat.desc}</div>
-                </button>
-              `).join('')}
+            <div style="font-size:0.76rem; opacity:0.88;">Подойти и нанести удар кинжалом, забрав половину его золота!</div>
+          </button>
+        `).join('');
+
+        const stealButtons = rivals.map(r => `
+          <button class="action-btn-phone" data-act="STEAL" data-target="${r.id}" style="border-left: 4px solid #facc15;">
+            <div style="display:flex; justify-content:space-between; font-weight:900; color:var(--gold);">
+              <span>🕵️ Обокрасть карманы «${r.name}»</span>
+              <span>До +3 🪙</span>
             </div>
-          `;
-        } else {
-          contentHtml = `
-            <div style="text-align:center; padding:22px 10px;">
-              <div style="font-size:1.1rem; font-weight:800;">
-                Сейчас бросает кубики: <b style="color:var(--gold);">${clientState.activePlayerName}</b>
+            <div style="font-size:0.76rem; opacity:0.88;">Подкрасться со спины в маске и вытащить до 3 монет без шума.</div>
+          </button>
+        `).join('');
+
+        const firstRivalId = rivals[0] ? rivals[0].id : '';
+
+        bodyHtml = `
+          <div style="font-weight:900; color:var(--gold); margin-bottom:8px;">
+            ВАШ ХОД! ВЫБЕРИТЕ ДЕЙСТВИЕ ПЕРСОНАЖА:
+          </div>
+          <div style="display:flex; flex-direction:column; gap:8px;">
+            <button class="action-btn-phone" data-act="BUY_RUBY" data-target="" ${me.gold < 6 ? 'disabled' : ''}
+              style="border: 2px solid var(--gold); background: rgba(225, 29, 72, 0.28);">
+              <div style="display:flex; justify-content:space-between; font-weight:900; color:var(--gold);">
+                <span>💎 Купить Королевский Рубин Победы</span>
+                <span>Цена: 6 🪙</span>
               </div>
-              <p class="subtitle" style="margin-top:8px;">
-                Смотрите на ТВ! Если выпадет остров с вашей башней — вы тоже сразу получите золото!
-              </p>
+              <div style="font-size:0.76rem;">Соберите 3 Рубина для немедленной победы в партии!</div>
+            </button>
+
+            <button class="action-btn-phone" data-act="VAULT" data-target="" style="border-left: 4px solid #34d399;">
+              <div style="font-weight:900; color:#6ee7b7;">🏦 Взломать Золотой Сейф в центре зала — +4 или +5 🪙</div>
+              <div style="font-size:0.76rem; opacity:0.88;">Подойти к Сейфу, погладить Степана у двери и забрать золото.</div>
+            </button>
+
+            <div style="font-size:0.78rem; font-weight:800; color:var(--gold); margin-top:4px;">
+              🐱 ВЗАИМОДЕЙСТВИЕ С КОШКАМИ ОСОБНЯКА:
             </div>
-          `;
-        }
-      } else if (clientState.phase === 'STEP2_INCOME') {
-        contentHtml = `
-          <div style="text-align:center; padding:24px 10px;">
-            <div style="font-size:1.2rem; font-weight:900; color:var(--gold);">
-              ✨ СМОТРИТЕ НА ЭКРАН ТВ!
+
+            <button class="action-btn-phone" data-act="SONYA" data-target="" style="border-left: 4px solid #f472b6;">
+              <div style="font-weight:900; color:#f472b6;">🐾 Тихо погладить Соню — Стать её хозяином, +2 🪙 и Щит</div>
+              <div style="font-size:0.76rem; opacity:0.88;">Соня перейдёт спать к вашим ногам, вылечит +1 ❤️ и защитит от ножа!</div>
+            </button>
+
+            <button class="action-btn-phone" data-act="NATASHA_WATER" data-target="" style="border-left: 4px solid #38bdf8;">
+              <div style="font-weight:900; color:#38bdf8;">👅 Включить воду в ванной для Наташи — +3 🪙 и Скрытность</div>
+              <div style="font-size:0.76rem; opacity:0.88;">Наташа с высунутым язычком побежит играть с водой и найдёт вам клад.</div>
+            </button>
+
+            <button class="action-btn-phone" data-act="STEPAN" data-target="${firstRivalId}" style="border-left: 4px solid #fb923c;">
+              <div style="font-weight:900; color:#fb923c;">🔥 Взять Степана на руки и нагладить — до +5 🪙</div>
+              <div style="font-size:0.76rem; opacity:0.88;">Степан развалится прямо на вещах соперника и принесёт вам монеты!</div>
+            </button>
+
+            <div style="font-size:0.78rem; font-weight:800; color:#ff4d6d; margin-top:4px;">
+              🗡️ ПРЯМОЕ НАПАДЕНИЕ И ГРАБЁЖ СОПЕРНИКОВ:
             </div>
-            <p class="subtitle" style="margin-top:8px;">
-              Острова отправляют золотые монеты владельцам башен...
-            </p>
+            ${attackButtons}
+            ${stealButtons}
           </div>
         `;
-      } else if (clientState.phase === 'STEP3_BUILD') {
-        if (clientState.isMyTurn) {
-          const wondersBtns = WONDERS.map(w => {
-            const owned = me.wonders.includes(w.id);
-            const canBuy = !owned && me.gold >= w.cost;
-            return `
-              <button class="phone-option" data-wonder="${w.id}" ${!canBuy ? 'disabled' : ''}
-                style="border-color:var(--gold);">
-                <div style="display:flex; justify-content:space-between; width:100%; font-weight:900; color:var(--gold);">
-                  <span>👑 ${w.name} ${owned ? '(ПОСТРОЕНО)' : ''}</span>
-                  <span>🪙 ${w.cost}</span>
-                </div>
-                <div style="font-size:0.76rem; opacity:0.9;">${w.desc}</div>
-              </button>
-            `;
-          }).join('');
-
-          const sectorsBtns = SECTORS.map(sec => {
-            const lvl = me.towers[sec.num] || 0;
-            const canBuy = lvl < 3 && me.gold >= sec.cost;
-            return `
-              <button class="phone-option" data-sector="${sec.num}" ${!canBuy ? 'disabled' : ''}>
-                <div style="display:flex; justify-content:space-between; width:100%; font-weight:900;">
-                  <span style="color:var(--text-muted);">Остров [${sec.num}] • ${sec.name} (Ур.${lvl}/3)</span>
-                  <span style="color:var(--gold);">🪙 ${sec.cost}</span>
-                </div>
-                <div style="font-size:0.76rem; opacity:0.88;">${sec.shortRule}</div>
-              </button>
-            `;
-          }).join('');
-
-          contentHtml = `
-            <div style="font-weight:900; color:var(--gold); margin-bottom:8px;">
-              ШАГ 3: ПОСТРОЙТЕ БАШНЮ ИЛИ ЧУДО
-            </div>
-            <div style="display:flex; flex-direction:column; gap:8px;">
-              <button class="btn btn-gold" id="btn-phone-bank" style="width:100%;">
-                🪙 Взять +2 Золота из казны (пропустить постройку)
-              </button>
-              <div style="font-size:0.78rem; font-weight:800; color:var(--gold); margin-top:4px;">
-                КОРОННЫЕ ЧУДЕСА (ДЛЯ ПОБЕДЫ):
-              </div>
-              ${wondersBtns}
-              <div style="font-size:0.78rem; font-weight:800; color:var(--text-muted); margin-top:4px;">
-                ПОСТРОИТЬ / УЛУЧШИТЬ БАШНЮ НА ОСТРОВЕ:
-              </div>
-              ${sectorsBtns}
-            </div>
-          `;
-        } else {
-          contentHtml = `
-            <div style="text-align:center; padding:22px 10px;">
-              <div style="font-size:1.1rem; font-weight:800;">
-                Строит: <b style="color:var(--gold);">${clientState.activePlayerName}</b>
-              </div>
-              <p class="subtitle" style="margin-top:8px;">
-                На главном экране луч света показывает, какой остров сейчас выбирает игрок!
-              </p>
-            </div>
-          `;
-        }
       } else if (clientState.phase === 'GAME_OVER') {
-        contentHtml = `
+        bodyHtml = `
           <div style="text-align:center; padding:24px;">
-            <div class="title-main" style="font-size:1.5rem;">👑 ПОБЕДИТЕЛЬ: ${clientState.winner}</div>
+            <div class="title-grand" style="font-size:1.5rem;">👑 ПОБЕДИТЕЛЬ: ${clientState.winner}</div>
+          </div>
+        `;
+      } else {
+        bodyHtml = `
+          <div style="text-align:center; padding:24px 10px;">
+            <div style="font-size:1.15rem; font-weight:900; color:var(--gold);">
+              👀 СМОТРИТЕ НА ГЛАВНЫЙ ЭКРАН!
+            </div>
+            <p style="margin-top:8px; font-size:0.9rem;">
+              ${clientState.headline || 'Сейчас разыгрывается ход игрока ' + clientState.activePlayerName}
+            </p>
           </div>
         `;
       }
 
       appEl.innerHTML = `
-        <div class="phone-container">
+        <div class="phone-wrap">
           <div class="glass-panel" style="padding:12px 14px; display:flex; justify-content:space-between; align-items:center;">
             <div style="display:flex; align-items:center; gap:8px;">
-              <span class="p-color-dot" style="background:${me.color};"></span>
+              <span style="width:14px; height:14px; border-radius:50%; background:${me.color}; display:inline-block; border:2px solid #fff;"></span>
               <div>
                 <div style="font-weight:900; font-size:1.05rem;">${me.name}</div>
-                <div style="font-size:0.74rem; color:var(--gold);">Чудеса: ${me.wonders.length}/3</div>
+                <div style="font-size:0.75rem; color:var(--gold);">Жизни: ${'❤️'.repeat(me.hp)} • Рубины: ${me.rubies}/3 💎</div>
               </div>
             </div>
-            <div class="gold-counter" style="font-size:1.15rem; padding:5px 12px;">🪙 ${me.gold}</div>
+            <div style="font-weight:900; font-size:1.15rem; color:var(--gold);">🪙 ${me.gold}</div>
           </div>
 
           <div class="glass-panel" style="padding:14px; flex:1; overflow-y:auto;">
-            ${contentHtml}
+            ${bodyHtml}
           </div>
         </div>
       `;
 
-      document.querySelectorAll('[data-cat]').forEach(btn => {
+      document.querySelectorAll('[data-act]').forEach(btn => {
         btn.onclick = () => {
-          clientState.conn.send({ type: 'CHOOSE_CAT_ROLL', catId: btn.getAttribute('data-cat') });
+          clientState.conn.send({
+            type: 'PERFORM_ACTION',
+            actionType: btn.getAttribute('data-act'),
+            targetId: btn.getAttribute('data-target')
+          });
         };
       });
-
-      document.querySelectorAll('[data-sector]').forEach(btn => {
-        const sId = btn.getAttribute('data-sector');
-        btn.addEventListener('touchstart', () => {
-          clientState.conn.send({ type: 'PREVIEW', target: { type: 'SECTOR', id: sId } });
-        }, { passive: true });
-        btn.addEventListener('mouseenter', () => {
-          clientState.conn.send({ type: 'PREVIEW', target: { type: 'SECTOR', id: sId } });
-        });
-        btn.onclick = () => {
-          clientState.conn.send({ type: 'BUILD_DECISION', action: { type: 'SECTOR', id: Number(sId) } });
-        };
-      });
-
-      document.querySelectorAll('[data-wonder]').forEach(btn => {
-        const wId = btn.getAttribute('data-wonder');
-        btn.addEventListener('touchstart', () => {
-          clientState.conn.send({ type: 'PREVIEW', target: { type: 'WONDER', id: wId } });
-        }, { passive: true });
-        btn.addEventListener('mouseenter', () => {
-          clientState.conn.send({ type: 'PREVIEW', target: { type: 'WONDER', id: wId } });
-        });
-        btn.onclick = () => {
-          clientState.conn.send({ type: 'BUILD_DECISION', action: { type: 'WONDER', id: wId } });
-        };
-      });
-
-      const bBank = document.getElementById('btn-phone-bank');
-      if (bBank) {
-        bBank.onclick = () => {
-          clientState.conn.send({ type: 'BUILD_DECISION', action: { type: 'BANK' } });
-        };
-      }
     }
 
-    // Старт главного меню
+    // Запуск стартового экрана
     renderMenu();
   </script>
 </body>
