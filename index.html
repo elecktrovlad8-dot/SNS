@@ -3,643 +3,500 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Триада: Эхо Забытого Дома</title>
+    <title>Триада: Расколотый Город (Шедевр)</title>
     <script src="https://unpkg.com/peerjs@1.5.1/dist/peerjs.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Montserrat:wght@300;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Rajdhani:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg-deep: #050508;
-            --gold-light: #F4D068;
-            --gold-dark: #AA771C;
-            --stepan-color: #FF5722;
-            --natasha-color: #00E5FF;
-            --sonya-color: #B200FF;
-            --spirit-color: #4CAF50;
-            --danger-color: #FF003C;
+            --bg-base: #060609;
+            --panel-bg: rgba(15, 15, 22, 0.7);
+            
+            /* Фракции */
+            --faction-stepan: #FF5722; /* Кузня (Медь/Огонь) */
+            --faction-natasha: #00E5FF; /* Тени (Вода/Неон) */
+            --faction-sonya: #B200FF; /* Эхо (Магия/Аметист) */
+            --gold: #D4AF37;
+            
             --font-title: 'Cinzel', serif;
-            --font-ui: 'Montserrat', sans-serif;
+            --font-ui: 'Rajdhani', sans-serif;
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
-
-        body, html {
-            width: 100%; height: 100%; background-color: var(--bg-deep);
-            color: #fff; font-family: var(--font-ui); overflow: hidden;
-        }
-
+        body, html { width: 100%; height: 100%; background: var(--bg-base); color: #fff; font-family: var(--font-ui); overflow: hidden; }
         .hidden { display: none !important; }
 
-        /* --- BACKGROUND FX --- */
+        /* --- FX ФОН --- */
         #fx-canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; pointer-events: none; }
-        .vignette {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 2; pointer-events: none;
-            background: radial-gradient(circle at center, transparent 30%, rgba(0,0,0,0.85) 100%);
-        }
+        .vignette { position: absolute; top:0; left:0; width:100%; height:100%; background: radial-gradient(circle, transparent 20%, #030305 100%); z-index: 2; pointer-events: none; }
 
-        /* --- UI COMPONENTS (PREMIUM FEEL) --- */
-        .glass-panel {
-            background: rgba(15, 15, 20, 0.6); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
-            border: 1px solid rgba(244, 208, 104, 0.15); border-radius: 16px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.8), inset 0 0 20px rgba(244, 208, 104, 0.05);
-            padding: 24px; position: relative; z-index: 10;
-        }
-
+        /* --- БАЗОВЫЕ ЭЛЕМЕНТЫ UI --- */
+        h1, h2, h3 { font-family: var(--font-title); text-align: center; font-weight: 700; }
+        .glass { background: var(--panel-bg); backdrop-filter: blur(16px); border: 1px solid rgba(255,255,255,0.05); border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.8); }
+        
         .btn {
-            background: linear-gradient(135deg, rgba(30,30,35,0.9), rgba(15,15,20,0.9));
-            color: var(--gold-light); border: 1px solid var(--gold-dark);
-            padding: 16px 24px; font-size: 1rem; border-radius: 8px; cursor: pointer;
-            transition: all 0.4s cubic-bezier(0.25, 1, 0.5, 1); font-family: var(--font-title);
-            text-transform: uppercase; letter-spacing: 2px; font-weight: 700;
-            width: 100%; max-width: 340px; margin: 10px auto; display: block;
+            background: linear-gradient(180deg, rgba(40,40,50,0.8), rgba(20,20,25,0.9));
+            color: var(--gold); border: 1px solid rgba(212, 175, 55, 0.4);
+            padding: 15px 30px; font-family: var(--font-title); font-size: 1.2rem;
+            border-radius: 4px; cursor: pointer; transition: 0.3s;
+            text-transform: uppercase; letter-spacing: 2px; width: 100%; max-width: 320px; margin: 10px auto; display: block;
             position: relative; overflow: hidden; z-index: 10;
         }
-        .btn::before {
-            content: ''; position: absolute; top: 0; left: -100%; width: 50%; height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(244, 208, 104, 0.4), transparent);
-            transition: 0.5s; z-index: -1;
-        }
-        .btn:hover::before { left: 100%; }
-        .btn:hover { box-shadow: 0 0 20px rgba(170, 119, 28, 0.6); transform: translateY(-2px); }
-        .btn.selected { background: linear-gradient(135deg, var(--gold-dark), #553300); color: #fff; box-shadow: 0 0 30px var(--gold-dark); }
+        .btn:hover { background: rgba(212, 175, 55, 0.1); border-color: var(--gold); box-shadow: 0 0 20px rgba(212, 175, 55, 0.3); transform: translateY(-2px); }
+        .btn.selected { background: linear-gradient(180deg, rgba(212, 175, 55, 0.3), rgba(0,0,0,0.9)); border-color: var(--gold); box-shadow: 0 0 20px var(--gold); color: #fff;}
 
-        input, select {
-            width: 100%; max-width: 340px; padding: 16px; margin: 10px auto; display: block;
-            background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.2);
-            color: #fff; font-family: var(--font-ui); font-size: 1.1rem; text-align: center;
-            border-radius: 8px; outline: none; transition: 0.3s; z-index: 10; position: relative;
+        input {
+            width: 100%; max-width: 320px; padding: 15px; margin: 10px auto; display: block;
+            background: rgba(0,0,0,0.6); border: 1px solid rgba(255,255,255,0.2); border-radius: 4px;
+            color: #fff; font-family: var(--font-ui); font-size: 1.2rem; text-align: center; outline: none; z-index: 10; position: relative;
         }
-        input:focus, select:focus { border-color: var(--gold-light); box-shadow: 0 0 15px rgba(244, 208, 104, 0.3); }
-        option { background: var(--bg-deep); color: #fff; }
+        input:focus { border-color: var(--gold); }
 
-        /* --- SCREENS --- */
-        .screen {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 5;
-        }
+        .screen { position: absolute; top:0; left:0; width:100%; height:100%; display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 5; }
 
-        h1, h2, h3 { font-family: var(--font-title); text-align: center; }
-        .title-glow {
-            font-size: 3.5rem; text-transform: uppercase; letter-spacing: 5px;
-            background: linear-gradient(to bottom, #FFF, var(--gold-dark));
-            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-            filter: drop-shadow(0 0 15px rgba(244, 208, 104, 0.5)); margin-bottom: 10px; z-index: 10;
-        }
+        /* --- ГЛАВНЫЙ ЭКРАН (КАРТА ГОРОДА) --- */
+        #host-screen { justify-content: flex-start; padding: 40px; }
+        .header { display: flex; justify-content: space-between; width: 100%; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 20px; z-index: 10; }
+        .header-title { font-size: 1.5rem; letter-spacing: 3px; color: #aaa; }
+        .header-val { font-size: 2.5rem; color: var(--gold); font-family: var(--font-title); }
 
-        /* --- HOST: 3D FIELD --- */
-        #host-screen { justify-content: flex-start; padding-top: 5vh; }
-        .host-header {
-            width: 90%; display: flex; justify-content: space-between; align-items: center;
-            border-bottom: 1px solid rgba(244, 208, 104, 0.3); padding-bottom: 15px; margin-bottom: 4vh; z-index: 10;
-        }
-        
-        .arena-container {
-            width: 100%; height: 50vh; display: flex; justify-content: center; align-items: center;
-            perspective: 1200px; z-index: 10;
-        }
-        .room-monolith {
-            position: absolute; width: 220px; height: 320px;
-            transform-style: preserve-3d; transition: 1s cubic-bezier(0.2, 0.8, 0.2, 1);
+        /* Модульное поле */
+        .city-map {
+            position: relative; width: 800px; height: 500px; margin-top: 50px; z-index: 10;
             display: flex; justify-content: center; align-items: center;
         }
-        .monolith-face {
-            position: absolute; width: 100%; height: 100%; border-radius: 12px;
-            background: rgba(10,10,15,0.8); border: 1px solid rgba(255,255,255,0.1);
-            box-shadow: inset 0 0 30px rgba(0,0,0,0.9), 0 15px 35px rgba(0,0,0,0.8);
-            display: flex; flex-direction: column; justify-content: center; align-items: center;
-            backface-visibility: hidden; font-family: var(--font-title); font-size: 1.5rem;
-            backdrop-filter: blur(8px);
+        .district {
+            position: absolute; width: 180px; height: 180px;
+            background: radial-gradient(circle at top left, rgba(40,40,50,0.9), rgba(10,10,15,0.9));
+            border: 2px solid rgba(255,255,255,0.1); border-radius: 50%;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.9), inset 0 0 20px rgba(0,0,0,0.8);
+            transition: 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
         }
-        .monolith-back {
-            transform: rotateY(180deg); background-size: cover; background-position: center;
-            border: 2px solid var(--gold-light);
+        .district::before { content:''; position:absolute; top:-2px; left:-2px; right:-2px; bottom:-2px; border-radius: 50%; background: linear-gradient(45deg, transparent, var(--gold), transparent); z-index: -1; opacity: 0.3; }
+        .district-name { font-family: var(--font-title); font-size: 1.2rem; font-weight: 700; text-align: center; z-index: 2;}
+        .district-players { display: flex; gap: 5px; margin-top: 10px; flex-wrap: wrap; justify-content: center; z-index: 2;}
+        .player-token { width: 25px; height: 25px; border-radius: 50%; border: 2px solid #fff; box-shadow: 0 0 10px #000; }
+
+        /* Кинематографичный лог */
+        #cine-log {
+            position: absolute; bottom: 40px; width: 80%; max-width: 800px;
+            text-align: center; font-size: 1.8rem; padding: 20px; z-index: 20;
+            text-shadow: 0 4px 15px #000; opacity: 0; transition: opacity 0.3s;
         }
 
-        .host-status {
-            position: absolute; bottom: 5vh; width: 80%; max-width: 700px; text-align: center;
-        }
-        .progress-track { width: 100%; height: 4px; background: rgba(255,255,255,0.1); margin: 15px 0; border-radius: 2px; }
-        .progress-fill { height: 100%; width: 0%; background: var(--gold-light); transition: 0.5s; box-shadow: 0 0 15px var(--gold-light); }
-
-        /* --- CINEMATIC ENGINE --- */
-        #cinematic-overlay {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0, 0, 0, 0.9); z-index: 100;
-            display: flex; flex-direction: column; justify-content: center; align-items: center;
-            opacity: 0; pointer-events: none; transition: opacity 0.5s ease;
-        }
-        #cinematic-overlay.active { opacity: 1; pointer-events: all; }
-        #cinematic-text {
-            font-family: var(--font-title); font-size: 2.5rem; text-align: center;
-            text-shadow: 0 5px 30px #000, 0 0 20px rgba(255,255,255,0.2); padding: 40px; line-height: 1.4;
-        }
-        .flash { animation: flashAnim 0.3s ease-out; }
-        @keyframes flashAnim { 0% { background: #fff; } 100% { background: rgba(0,0,0,0.9); } }
-        .shake { animation: shakeAnim 0.4s cubic-bezier(.36,.07,.19,.97) both; }
-        @keyframes shakeAnim { 10%, 90% { transform: translate3d(-5px, 0, 0); } 20%, 80% { transform: translate3d(5px, 0, 0); } 30%, 50%, 70% { transform: translate3d(-10px, 0, 0); } 40%, 60% { transform: translate3d(10px, 0, 0); } }
-
-        /* --- PLAYER PHONE UI --- */
-        #player-screen { justify-content: flex-start; padding: 5vh 20px; overflow-y: auto; }
-        .player-header {
-            display: flex; justify-content: space-between; align-items: center;
-            width: 100%; max-width: 400px; margin-bottom: 20px; z-index: 10;
-        }
-        .stat-box { text-align: center; }
-        .stat-val { font-size: 2rem; font-family: var(--font-title); color: var(--gold-light); font-weight: bold; text-shadow: 0 0 10px var(--gold-dark); }
-        .stat-label { font-size: 0.7rem; color: #aaa; text-transform: uppercase; letter-spacing: 1px; }
+        /* --- ЭКРАН ИГРОКА (ТЕЛЕФОН) --- */
+        #player-screen { justify-content: flex-start; padding: 20px; overflow-y: auto; display: block;}
         
-        .role-desc { font-size: 0.85rem; color: #ccc; margin-top: 5px; text-transform: none; font-family: var(--font-ui); line-height: 1.4;}
-
-        .card-hand { width: 100%; max-width: 400px; display: flex; flex-direction: column; gap: 15px; z-index: 10; }
-        .action-select-card { padding: 15px; border-left: 4px solid var(--gold-light); }
+        /* Планшет героя */
+        .player-dashboard { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; z-index: 10; position: relative;}
+        .stat-card { padding: 15px; text-align: center; }
+        .stat-title { font-size: 0.8rem; color: #888; text-transform: uppercase; letter-spacing: 1px;}
+        .stat-value { font-size: 2rem; font-family: var(--font-title); margin-top: 5px;}
         
-        /* Roles Colors */
-        .color-stepan { color: var(--stepan-color); text-shadow: 0 0 10px rgba(255,87,34,0.5); }
-        .color-natasha { color: var(--natasha-color); text-shadow: 0 0 10px rgba(0,229,255,0.5); }
-        .color-sonya { color: var(--sonya-color); text-shadow: 0 0 10px rgba(178,0,255,0.5); }
+        /* Инвентарь */
+        .inventory-slots { display: flex; justify-content: space-between; margin-bottom: 20px; z-index: 10; position: relative;}
+        .slot { width: 30%; aspect-ratio: 1; border: 1px dashed rgba(255,255,255,0.2); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 2rem; color: rgba(255,255,255,0.1); background: rgba(0,0,0,0.3);}
+        .slot.filled { border-style: solid; border-color: var(--gold); color: #fff; background: rgba(212, 175, 55, 0.1); box-shadow: inset 0 0 15px rgba(212,175,55,0.2);}
+
+        /* Колода Действий (Таро стиль) */
+        .hand-container { display: flex; flex-direction: column; gap: 15px; z-index: 10; position: relative; padding-bottom: 50px;}
+        .action-card {
+            background: linear-gradient(135deg, rgba(30,30,40,0.95), rgba(15,15,20,0.95));
+            border: 1px solid #444; border-radius: 12px; padding: 20px;
+            display: grid; grid-template-columns: 50px 1fr; gap: 15px; align-items: center;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.5); transition: 0.3s;
+        }
+        .action-card.disabled { opacity: 0.4; pointer-events: none; filter: grayscale(1); }
+        .action-card:active { transform: scale(0.98); }
+        .card-init {
+            width: 50px; height: 50px; border-radius: 50%; background: var(--bg-base); border: 2px solid var(--gold);
+            display: flex; align-items: center; justify-content: center; font-family: var(--font-title); font-size: 1.5rem; color: var(--gold);
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.8);
+        }
+        .card-info h4 { font-size: 1.3rem; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 1px;}
+        .card-info p { font-size: 0.9rem; color: #aaa; line-height: 1.2;}
+
     </style>
 </head>
 <body>
 
-    <!-- FX CANVAS -->
+    <!-- Рендер FX -->
     <canvas id="fx-canvas"></canvas>
     <div class="vignette"></div>
 
-    <!-- MAIN MENU -->
+    <!-- МЕНЮ -->
     <div id="main-menu" class="screen">
-        <h1 class="title-glow">Триада</h1>
-        <h2 style="color: #aaa; letter-spacing: 4px; font-weight: 300; margin-bottom: 50px; z-index: 10;">Эхо Забытого Дома</h2>
-        
-        <button class="btn" onclick="initHost()">👁️ Врата Хроник (Доска)</button>
-        <button class="btn" onclick="showLobby()">📜 Зов Духа (Игрок)</button>
+        <h1 style="font-size: 4rem; text-transform: uppercase; letter-spacing: 8px; color: #fff; text-shadow: 0 0 20px var(--gold); margin-bottom: 0; z-index: 10;">ТРИАДА</h1>
+        <h2 style="font-size: 1.5rem; color: #888; font-family: var(--font-ui); font-weight: 400; letter-spacing: 5px; margin-bottom: 50px; z-index: 10;">РАСКОЛОТЫЙ ГОРОД</h2>
+        <button class="btn" onclick="initHost()">👁️ Создать Город (Стол)</button>
+        <button class="btn" onclick="show('lobby-screen')">📜 Возглавить Гильдию (Игрок)</button>
     </div>
 
-    <!-- LOBBY SCREEN -->
-    <div id="lobby-screen" class="screen hidden" style="overflow-y: auto; padding: 20px;">
-        <h2 style="margin-bottom: 20px; z-index: 10;">РИТУАЛ ПРИЗЫВА</h2>
-        <div class="glass-panel" style="width: 100%; max-width: 400px;">
-            <input type="text" id="room-code-input" placeholder="Код Ритуала (4 цифры)" maxlength="4" style="letter-spacing: 8px; font-size: 1.5rem; font-weight: bold;">
-            <input type="text" id="player-name" placeholder="Истинное Имя">
+    <!-- ЛОББИ ИГРОКА -->
+    <div id="lobby-screen" class="screen hidden">
+        <div class="glass" style="padding: 30px; width: 90%; max-width: 400px; text-align: center;">
+            <h2 style="margin-bottom: 20px; color: var(--gold);">РИТУАЛ ОСНОВАТЕЛЕЙ</h2>
+            <input type="text" id="room-code" placeholder="Код Города" maxlength="4" style="letter-spacing: 5px; font-weight: bold;">
+            <input type="text" id="player-name" placeholder="Имя Лидера">
             
-            <h3 style="margin: 20px 0 10px; font-size: 1rem; color: #aaa;">Выберите Аватара:</h3>
-            
-            <button class="btn role-btn" onclick="selectRole('Шуршик', this, '#4CAF50')">
-                🐭 Дух Дома (Шуршик)
-                <div class="role-desc">Сбор осколков. Уязвимы, но хитры. Имеют инвентарь и 3 ед. здоровья.</div>
+            <h3 style="margin: 20px 0 10px; font-size: 1rem; color: #aaa;">Выберите Покровителя:</h3>
+            <button class="btn role-btn" style="border-color: var(--faction-stepan); color: var(--faction-stepan);" onclick="selectFaction('Stepan', this)">
+                Кузня Степана<br><span style="font-size:0.7rem; color:#888;">Защита. Старт: Броня.</span>
             </button>
-            <button class="btn role-btn" onclick="selectRole('Степан', this, '#FF5722')">
-                🦁 Степан (Искатель)
-                <div class="role-desc">Спит у дверей. Полностью блокирует вход и выход из локации. Никто в его комнате не соберет Осколки.</div>
+            <button class="btn role-btn" style="border-color: var(--faction-natasha); color: var(--faction-natasha);" onclick="selectFaction('Natasha', this)">
+                Тени Наташи<br><span style="font-size:0.7rem; color:#888;">Блеф. Старт: +Кинжал.</span>
             </button>
-            <button class="btn role-btn" onclick="selectRole('Наташа', this, '#00E5FF')">
-                🌊 Наташа (Голодная Бездна)
-                <div class="role-desc">Затапливает комнату. Крадет Осколки у всех, кто не сможет отвлечь её водой.</div>
-            </button>
-            <button class="btn role-btn" onclick="selectRole('Соня', this, '#B200FF')">
-                🌙 Соня (Тень Безмолвия)
-                <div class="role-desc">Смертоносна, но пуглива. Атакует только тех, кто производит ШУМ в её комнате.</div>
+            <button class="btn role-btn" style="border-color: var(--faction-sonya); color: var(--faction-sonya);" onclick="selectFaction('Sonya', this)">
+                Эхо Сони<br><span style="font-size:0.7rem; color:#888;">Магия. Старт: Амулет.</span>
             </button>
 
-            <button class="btn" style="background: var(--gold-light); color: #000; margin-top: 25px;" onclick="joinGame()">ВОЙТИ В МИР</button>
-            <div style="text-align: center; margin-top: 15px; cursor: pointer; color: #888; z-index:10; position:relative;" onclick="showMainMenu()">⬅ Вернуться</div>
+            <button class="btn" style="background: var(--gold); color: #000; margin-top: 20px;" onclick="joinGame()">ВОЙТИ В СОВЕТ</button>
         </div>
     </div>
 
-    <!-- HOST SCREEN -->
+    <!-- ЭКРАН ХОСТА (СТОЛ) -->
     <div id="host-screen" class="screen hidden">
-        <div id="cinematic-overlay"><div id="cinematic-text"></div></div>
-
-        <div class="host-header">
-            <div style="font-family: var(--font-title); font-size: 1.2rem;">КОД РИТУАЛА: <br><span id="display-room-code" style="color: var(--gold-light); font-size: 2.5rem; letter-spacing: 5px;"></span></div>
-            <div style="font-family: var(--font-title); font-size: 1.2rem; text-align: right;">ЧАС НОЧИ: <br><span id="round-counter" style="color: var(--gold-light); font-size: 2.5rem;">1 / 7</span></div>
-        </div>
-        
-        <div class="arena-container" id="arena">
-            <!-- Rooms generated via JS -->
+        <div class="header">
+            <div><div class="header-title">КОД ДОСТУПА</div><div class="header-val" id="display-code">----</div></div>
+            <div style="text-align: right;"><div class="header-title">ЦИКЛ (РАУНД)</div><div class="header-val" id="round-counter">1 / 10</div></div>
         </div>
 
-        <div class="host-status glass-panel">
-            <div id="readiness-text" style="font-size: 1.2rem; color: #ccc;">Ожидание плетения судеб...</div>
-            <div class="progress-track"><div class="progress-fill" id="readiness-bar"></div></div>
-            <div style="font-size: 1rem; color: #888;">Сущностей в ритуале: <span id="player-count" style="color: #fff; font-weight: bold; font-size: 1.2rem;">0</span></div>
+        <div class="city-map" id="map-container">
+            <!-- Районы генерируются через JS -->
         </div>
+
+        <div id="cine-log" class="glass">Ожидание лидеров гильдий...</div>
     </div>
 
-    <!-- PLAYER SCREEN -->
+    <!-- ЭКРАН ИГРОКА (ТЕЛЕФОН) -->
     <div id="player-screen" class="screen hidden">
-        <div class="player-header glass-panel" style="padding: 15px;">
-            <div class="stat-box">
-                <div class="stat-label">Имя</div>
-                <div id="my-name-display" style="font-weight: bold; color: #fff;">Name</div>
+        <h2 style="font-size: 1.2rem; color: var(--gold); text-align: left; margin-bottom: 10px; width: 100%; z-index:10;" id="my-name-display">Имя</h2>
+        
+        <div class="player-dashboard">
+            <div class="glass stat-card">
+                <div class="stat-title">Победные Очки (ПО)</div>
+                <div class="stat-value" id="vp-display" style="color: var(--gold);">0</div>
             </div>
-            <div class="stat-box">
-                <div class="stat-label">Осколки</div>
-                <div class="stat-val" id="my-coins">0</div>
-            </div>
-            <div class="stat-box" id="hp-box">
-                <div class="stat-label">Жизнь</div>
-                <div class="stat-val" id="my-hp" style="color: var(--danger-color); text-shadow: 0 0 10px var(--danger-color);">3</div>
+            <div class="glass stat-card">
+                <div class="stat-title">Эфир (Валюта)</div>
+                <div class="stat-value" id="eth-display" style="color: #00E5FF;">0</div>
             </div>
         </div>
 
-        <h2 style="margin-bottom: 5px; z-index: 10; font-size: 1.2rem;">Роль: <span id="my-role" class="color-stepan"></span></h2>
-        <p id="player-status" style="color: #aaa; margin-bottom: 20px; z-index: 10; text-align: center;">Выберите локацию и действие.</p>
+        <div class="stat-title" style="margin-bottom: 5px; z-index:10; position:relative;">Ваш Инвентарь</div>
+        <div class="inventory-slots">
+            <div class="slot" id="inv-amulet" title="Амулет">🧿</div>
+            <div class="slot" id="inv-weapon" title="Оружие">⚔️</div>
+            <div class="slot" id="inv-armor" title="Броня">🛡️</div>
+        </div>
 
-        <div class="card-hand">
-            <div class="glass-panel action-select-card">
-                <div class="stat-label" style="margin-bottom: 10px;">Куда направим шаг?</div>
-                <select id="room-select">
-                    <option value="Кухня">Ущелье Котлов (Кухня)</option>
-                    <option value="Зал">Великая Пустошь (Зал)</option>
-                    <option value="Спальня">Грот Сновидений (Спальня)</option>
-                    <option value="Коридор">Перекресток Ветров (Коридор)</option>
-                </select>
-            </div>
+        <div class="glass" style="padding: 15px; margin-bottom: 20px; text-align: center; z-index: 10; position: relative;">
+            <div class="stat-title">Текущая Локация</div>
+            <div id="my-location" style="font-family: var(--font-title); font-size: 1.5rem; margin-top: 5px;">Шпиль Раскола</div>
+        </div>
 
-            <div class="glass-panel action-select-card hidden" id="actions-shurshik">
-                <div class="stat-label" style="margin-bottom: 10px;">Техника Духа</div>
-                <select id="action-select-shurshik">
-                    <option value="Жадный поиск">⚔️ Жадный поиск (+2 Осколка, ШУМНО - риск от Сони)</option>
-                    <option value="Скрытный шаг">🥷 Скрытный шаг (+1 Осколок, ТИХО - защита от Сони)</option>
-                    <option value="Включить воду">💧 Включить воду (0 Осколков, Завораживает Наташу)</option>
-                </select>
-            </div>
-
-            <button class="btn" id="btn-submit-action" style="background: var(--gold-light); color: #000; padding: 20px; font-size: 1.2rem;" onclick="submitAction()">СВЕРШИТЬ СУДЬБУ</button>
+        <div class="stat-title" style="margin-bottom: 10px; z-index:10; position:relative;" id="action-header">Фаза Интриг: Выберите действие</div>
+        <div class="hand-container" id="cards-container">
+            <!-- Карты генерируются JS -->
         </div>
     </div>
 
-    <!-- MAIN LOGIC -->
+    <!-- ЯДРО ИГРЫ (ЛОГИКА) -->
     <script>
-        /* --- GLOBALS --- */
-        let peer = null, hostConnection = null;
-        let playersData = {}, playerConnections = {};
-        let selectedRole = '', myRole = '', myCoins = 0, myHp = 3;
+        /* --- ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ --- */
+        let peer = null, hostConn = null;
+        let players = {}; // { id: { name, faction, vp, eth, loc, inv: {am, wp, ar}, action: null } }
         let currentRound = 1;
-        const MAX_ROUNDS = 7;
-        const sleep = ms => new Promise(r => setTimeout(r, ms));
-        const ROOMS = ["Кухня", "Зал", "Спальня", "Коридор"];
+        let phase = 'LOBBY'; // LOBBY, DRAFT, RESOLVE
+        
+        const DISTRICTS = [
+            { id: 0, name: 'Кузня Реальности', x: -250, y: -150, color: 'var(--faction-stepan)' },
+            { id: 1, name: 'Теневые Каналы', x: 250, y: -150, color: 'var(--faction-natasha)' },
+            { id: 2, name: 'Сады Эха', x: -250, y: 150, color: 'var(--faction-sonya)' },
+            { id: 3, name: 'Шпиль Раскола', x: 0, y: 0, color: 'var(--gold)' } // Центр
+        ];
 
-        /* --- FX ENGINE (CANVAS) --- */
+        // Колода действий игрока. Инициатива: 1 (самая быстрая) - 10 (медленная).
+        const CARDS = [
+            { id: 'move', title: 'Перемещение', desc: 'Перейдите в любой Район Города.', init: 2, icon: '🏃' },
+            { id: 'gather', title: 'Сбор Эфира', desc: 'Получите 2 Эфира в текущей локации.', init: 5, icon: '💎' },
+            { id: 'attack', title: 'Удар в спину', desc: 'Украсть 1 ПО у игрока в вашей локации.', init: 8, icon: '🗡️' },
+            { id: 'evolve', title: 'Модернизация', desc: 'Потратьте 3 Эфира на +1 ПО.', init: 9, icon: '⚙️' }
+        ];
+
+        let myId = '', myFaction = '', selectedFaction = '';
+        const sleep = ms => new Promise(r => setTimeout(r, ms));
+
+        /* --- FX КАНВАС (ЧАСТИЦЫ) --- */
         const canvas = document.getElementById('fx-canvas');
         const ctx = canvas.getContext('2d');
         let particles = [];
-        let fxMode = 'mist'; // mist, embers, water
+        window.addEventListener('resize', () => { canvas.width = window.innerWidth; canvas.height = window.innerHeight; });
+        canvas.width = window.innerWidth; canvas.height = window.innerHeight;
 
-        function resizeCanvas() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
-        window.addEventListener('resize', resizeCanvas); resizeCanvas();
-
-        class Particle {
-            constructor() { this.reset(); this.y = Math.random() * canvas.height; }
-            reset() {
-                this.x = Math.random() * canvas.width;
-                this.y = canvas.height + 10;
-                this.size = Math.random() * 3 + 1;
-                this.speedY = Math.random() * -1 - 0.5;
-                this.speedX = Math.random() * 1 - 0.5;
-                this.life = Math.random() * 0.5 + 0.3;
-            }
-            update() {
-                this.y += this.speedY; this.x += this.speedX;
-                if (fxMode === 'water') this.y += 2; // Water falls down
-                if (this.y < -10 || this.y > canvas.height + 20) this.reset();
-            }
-            draw() {
-                ctx.beginPath();
-                if (fxMode === 'embers') {
-                    ctx.fillStyle = `rgba(255, 87, 34, ${this.life})`;
-                    ctx.shadowBlur = 10; ctx.shadowColor = '#FF5722';
-                } else if (fxMode === 'water') {
-                    ctx.fillStyle = `rgba(0, 229, 255, ${this.life})`;
-                    ctx.shadowBlur = 5; ctx.shadowColor = '#00E5FF';
-                } else {
-                    ctx.fillStyle = `rgba(178, 0, 255, ${this.life * 0.3})`;
-                    ctx.shadowBlur = 20; ctx.shadowColor = '#B200FF';
-                    this.size = Math.random() * 10 + 5;
-                }
-                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2); ctx.fill();
-            }
-        }
-        for (let i = 0; i < 60; i++) particles.push(new Particle());
-        
-        function animateFx() {
+        function renderFx() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-            particles.forEach(p => { p.update(); p.draw(); });
-            requestAnimationFrame(animateFx);
-        }
-        animateFx();
-
-        function setFxMode(mode) { fxMode = mode; particles.forEach(p => p.reset()); }
-
-        /* --- NAVIGATION --- */
-        function show(id) {
-            ['main-menu', 'lobby-screen', 'host-screen', 'player-screen'].forEach(s => document.getElementById(s).classList.add('hidden'));
-            document.getElementById(id).classList.remove('hidden');
-        }
-        function showLobby() { show('lobby-screen'); }
-        function showMainMenu() { show('main-menu'); peer?.destroy(); }
-
-        function selectRole(role, btnElement, color) {
-            selectedRole = role;
-            document.querySelectorAll('.role-btn').forEach(b => b.classList.remove('selected'));
-            btnElement.classList.add('selected');
-        }
-
-        /* --- HOST 3D ARENA --- */
-        function setupArena() {
-            const arena = document.getElementById('arena');
-            arena.innerHTML = '';
-            ROOMS.forEach((r, i) => {
-                const angle = (i * 90) * (Math.PI / 180);
-                const radius = 280;
-                const x = Math.sin(angle) * radius;
-                const z = Math.cos(angle) * radius;
-                
-                const monolith = document.createElement('div');
-                monolith.className = 'room-monolith';
-                monolith.id = `room-${r}`;
-                monolith.style.transform = `translate3d(${x}px, 0, ${z}px) rotateY(${i*90}deg)`;
-                
-                monolith.innerHTML = `
-                    <div class="monolith-face" style="color:#fff;">
-                        <span style="font-size:0.8rem; color:#aaa;">ЛОКАЦИЯ</span>
-                        ${r}
-                    </div>
-                `;
-                arena.appendChild(monolith);
+            particles.forEach((p, i) => {
+                p.y -= p.speed; p.x += Math.sin(p.angle) * 0.5; p.alpha -= 0.005;
+                if (p.alpha <= 0) particles.splice(i, 1);
+                ctx.beginPath(); ctx.arc(p.x, p.y, p.size, 0, Math.PI*2);
+                ctx.fillStyle = `rgba(212,175,55,${p.alpha})`; ctx.shadowBlur = 10; ctx.shadowColor = '#D4AF37'; ctx.fill();
             });
+            if (Math.random() < 0.2) particles.push({ x: Math.random()*canvas.width, y: canvas.height+10, size: Math.random()*2+1, speed: Math.random()*1+0.5, angle: Math.random()*Math.PI*2, alpha: Math.random()*0.5+0.2 });
+            requestAnimationFrame(renderFx);
         }
+        renderFx();
 
-        async function focusMonolith(roomName, color, text) {
-            const arena = document.getElementById('arena');
-            const targetIndex = ROOMS.indexOf(roomName);
-            // Spin arena to face the room
-            arena.style.transition = 'transform 1s cubic-bezier(0.2, 0.8, 0.2, 1)';
-            arena.style.transform = `rotateY(${-targetIndex * 90}deg) translateZ(100px)`;
-            
-            const monolith = document.getElementById(`room-${roomName}`);
-            const face = monolith.querySelector('.monolith-face');
-            const originalBoxShadow = face.style.boxShadow;
-            
-            face.style.boxShadow = `0 0 50px ${color}, inset 0 0 30px ${color}`;
-            face.innerHTML = `<span style="font-size:0.8rem; color:#fff; text-shadow:none;">${text}</span><br>${roomName}`;
-            
-            await sleep(3500);
-            
-            // Reset
-            face.style.boxShadow = originalBoxShadow;
-            face.innerHTML = `<span style="font-size:0.8rem; color:#aaa;">ЛОКАЦИЯ</span>${roomName}`;
-            arena.style.transform = `rotateY(0deg) translateZ(0px)`;
-            await sleep(1000);
-        }
+        /* --- НАВИГАЦИЯ --- */
+        function show(id) { document.querySelectorAll('.screen').forEach(s => s.classList.add('hidden')); document.getElementById(id).classList.remove('hidden'); }
+        function selectFaction(f, btn) { selectedFaction = f; document.querySelectorAll('.role-btn').forEach(b => b.classList.remove('selected')); btn.classList.add('selected'); }
 
-
-        /* --- HOST LOGIC --- */
+        /* ================= ХОСТ (ИГРОВОЙ ДВИЖОК) ================= */
         function initHost() {
             show('host-screen');
-            setupArena();
+            drawMap();
             
-            const roomCode = String(Math.floor(1000 + Math.random() * 9000));
-            document.getElementById('display-room-code').innerText = roomCode;
-
-            peer = new Peer(roomCode);
+            const code = String(Math.floor(1000 + Math.random() * 9000));
+            document.getElementById('display-code').innerText = code;
+            
+            peer = new Peer(code);
             peer.on('connection', (conn) => {
-                conn.on('data', (data) => handleDataFromPlayer(conn.peer, data));
-                playerConnections[conn.peer] = conn;
-                updateHostUI();
+                conn.on('data', (data) => processHostData(conn.peer, conn, data));
             });
         }
 
-        function handleDataFromPlayer(peerId, data) {
+        function drawMap() {
+            const container = document.getElementById('map-container');
+            container.innerHTML = '';
+            DISTRICTS.forEach(d => {
+                const el = document.createElement('div');
+                el.className = 'district';
+                el.id = `dist-${d.id}`;
+                el.style.transform = `translate(${d.x}px, ${d.y}px)`;
+                el.style.borderColor = d.color;
+                el.innerHTML = `<div class="district-name" style="color:${d.color}">${d.name}</div><div class="district-players" id="dist-players-${d.id}"></div>`;
+                container.appendChild(el);
+            });
+        }
+
+        function updateHostMap() {
+            DISTRICTS.forEach(d => document.getElementById(`dist-players-${d.id}`).innerHTML = '');
+            Object.values(players).forEach(p => {
+                if (p.loc !== null) {
+                    const token = document.createElement('div');
+                    token.className = 'player-token';
+                    // Цвет фишки по фракции
+                    let color = p.faction==='Stepan'?'#FF5722':p.faction==='Natasha'?'#00E5FF':'#B200FF';
+                    token.style.background = color;
+                    token.title = p.name;
+                    document.getElementById(`dist-players-${p.loc}`).appendChild(token);
+                }
+            });
+        }
+
+        function processHostData(id, conn, data) {
             if (data.type === 'JOIN') {
-                playersData[peerId] = { name: data.name, role: data.role, coins: 0, hp: 3, ready: false };
-                updateHostUI();
+                // Инициализация RPG статов
+                let inv = { am: false, wp: false, ar: false };
+                if(data.faction === 'Stepan') inv.ar = true;
+                if(data.faction === 'Natasha') inv.wp = true;
+                if(data.faction === 'Sonya') inv.am = true;
+
+                players[id] = { conn, name: data.name, faction: data.faction, vp: 0, eth: 2, loc: 3, inv: inv, action: null };
+                logCine(`${data.name} прибыл в город.`, '#fff');
+                updateHostMap();
+                broadcastState();
+                
+                if(Object.keys(players).length >= 2 && phase === 'LOBBY') {
+                    phase = 'DRAFT';
+                    setTimeout(() => logCine(`Город ждет ваших приказов...`, 'var(--gold)'), 2000);
+                }
             }
-            if (data.type === 'ACTION') {
-                playersData[peerId].room = data.room;
-                playersData[peerId].action = data.action;
-                playersData[peerId].ready = true;
-                updateHostUI();
+            if (data.type === 'ACTION' && phase === 'DRAFT') {
+                players[id].action = data.action; // { cardId, targetLoc }
+                checkAllReady();
             }
         }
 
-        function updateHostUI() {
-            const total = Object.keys(playersData).length;
-            const readyCount = Object.values(playersData).filter(p => p.ready).length;
-            
-            document.getElementById('player-count').innerText = total;
-            const statusText = document.getElementById('readiness-text');
-            const progressBar = document.getElementById('readiness-bar');
+        async function logCine(text, color) {
+            const log = document.getElementById('cine-log');
+            log.innerHTML = text; log.style.color = color;
+            log.style.opacity = 1;
+            await sleep(2500);
+            log.style.opacity = 0;
+            await sleep(500);
+        }
 
-            if (total === 0) return;
-            progressBar.style.width = `${(readyCount / total) * 100}%`;
-
-            if (readyCount < total) {
-                statusText.innerHTML = `Плетение судеб... <span style="color:var(--gold-light);">${readyCount}/${total}</span>`;
+        function checkAllReady() {
+            const allReady = Object.values(players).every(p => p.action !== null);
+            if (allReady) {
+                phase = 'RESOLVE';
+                resolveRound();
             } else {
-                statusText.innerHTML = `<span style="color:var(--spirit-color);">Нити натянуты. Время Развязки.</span>`;
-                setTimeout(resolveRound, 1200);
+                const count = Object.values(players).filter(p => p.action !== null).length;
+                const total = Object.keys(players).length;
+                document.getElementById('cine-log').innerHTML = `Плетение интриг... ${count}/${total}`;
+                document.getElementById('cine-log').style.opacity = 1;
             }
         }
 
-        async function cinematicLog(html, color = "#fff", duration = 3000, fx = null, shake = false) {
-            const overlay = document.getElementById('cinematic-overlay');
-            const textBox = document.getElementById('cinematic-text');
-            if (fx) setFxMode(fx);
-            if (shake) overlay.classList.add('shake');
-            
-            textBox.innerHTML = html; 
-            textBox.style.color = color;
-            overlay.classList.add('active');
-            
-            await sleep(duration);
-            overlay.classList.remove('active');
-            overlay.classList.remove('shake');
-            await sleep(600);
-        }
-
-        /* --- THE GAME ENGINE (RESOLUTION PHASE) --- */
         async function resolveRound() {
-            // Prevent double triggers
-            Object.values(playersData).forEach(p => p.ready = false);
-
-            await cinematicLog(`ЧАС ${currentRound} ИЗ ${MAX_ROUNDS}<br><span style="font-size:1.5rem; color:#aaa;">Дом пробуждается...</span>`, "var(--gold-light)", 2000, 'mist');
-
-            // 1. Identify Cat Locations
-            let cats = { Stepan: null, Natasha: null, Sonya: null };
-            let spirits = [];
-
-            for (const [id, p] of Object.entries(playersData)) {
-                if(p.hp <= 0) continue; // Dead spirits do nothing
-                if(p.role === 'Степан') cats.Stepan = p.room;
-                else if(p.role === 'Наташа') cats.Natasha = p.room;
-                else if(p.role === 'Соня') cats.Sonya = p.room;
-                else if(p.role === 'Шуршик') spirits.push({id, ...p});
+            await logCine(`ЧАС ${currentRound}. НАЧАЛО.`, 'var(--gold)');
+            
+            // 1. Собираем и сортируем действия по инициативе (1 -> 10)
+            let actions = [];
+            for (let id in players) {
+                const card = CARDS.find(c => c.id === players[id].action.cardId);
+                actions.push({ id, p: players[id], card, targetLoc: players[id].action.targetLoc });
             }
+            actions.sort((a, b) => a.card.init - b.card.init);
 
-            // 2. Announce Cat Placements
-            if (cats.Stepan) {
-                await cinematicLog(`🦁 СТЕПАН лег у дверей в локации:<br><span style="color:var(--stepan-color)">${cats.Stepan}</span><br><span style="font-size:1.2rem">Вход заблокирован!</span>`, "#fff", 2500, 'embers');
-                await focusMonolith(cats.Stepan, 'var(--stepan-color)', 'Врата Закрыты');
-            }
-            if (cats.Natasha) {
-                await cinematicLog(`🌊 НАТАША открыла потоки в локации:<br><span style="color:var(--natasha-color)">${cats.Natasha}</span><br><span style="font-size:1.2rem">Начинается потоп...</span>`, "#fff", 2500, 'water');
-                await focusMonolith(cats.Natasha, 'var(--natasha-color)', 'Бездна');
-            }
-            if (cats.Sonya) {
-                await cinematicLog(`🌙 СОНЯ дремлет в тенях локации:<br><span style="color:var(--sonya-color)">${cats.Sonya}</span><br><span style="font-size:1.2rem">Не шумите...</span>`, "#fff", 2500, 'mist');
-            }
-
-            // 3. Resolve Spirit Actions
-            for (let sp of spirits) {
-                await cinematicLog(`Дух <span style="color:var(--gold-light)">${sp.name}</span> проникает в ${sp.room}...`, "#ccc", 1500, 'mist');
-
-                // Check Stepan (Absolute Block)
-                if (sp.room === cats.Stepan) {
-                    await cinematicLog(`💥 УДАР! Степан преграждает путь!<br>${sp.name} теряет ход и 1 Жизнь!`, "var(--stepan-color)", 3000, 'embers', true);
-                    playersData[sp.id].hp -= 1;
-                    continue; // Action completely blocked
+            // 2. Отыгрываем действия по очереди (RPG Движок)
+            for (let act of actions) {
+                const p = act.p;
+                
+                // Визуальный фокус на локации
+                const distEl = document.getElementById(`dist-${p.loc}`);
+                distEl.style.boxShadow = `0 0 50px ${DISTRICTS[p.loc].color}`;
+                
+                if (act.card.id === 'move') {
+                    p.loc = act.targetLoc;
+                    await logCine(`🏃 ${p.name} перемещается в ${DISTRICTS[p.loc].name}`, '#fff');
+                    updateHostMap();
+                } 
+                else if (act.card.id === 'gather') {
+                    let bonus = p.inv.am ? 1 : 0; // Амулет дает +1 Эфир
+                    p.eth += (2 + bonus);
+                    await logCine(`💎 ${p.name} добывает Эфир (+${2+bonus})`, '#00E5FF');
                 }
-
-                // Check Sonya (Sound mechanics)
-                if (sp.room === cats.Sonya) {
-                    if (sp.action === 'Жадный поиск') {
-                        await focusMonolith(cats.Sonya, 'var(--sonya-color)', 'ПРОБУЖДЕНИЕ');
-                        await cinematicLog(`КРИТИЧЕСКАЯ ОШИБКА!<br>Громкий звук будит Соню!`, "var(--danger-color)", 2000, 'mist', true);
-                        await cinematicLog(`Теневые когти наносят 2 Урона!<br>${sp.name} роняет осколки!`, "var(--sonya-color)", 3000, 'mist', true);
-                        playersData[sp.id].hp -= 2;
-                        continue;
-                    } else if (sp.action === 'Скрытный шаг') {
-                        await cinematicLog(`🌙 Соня продолжает спать...<br>${sp.name} безопасно проходит рядом.`, "#aaa", 2000);
-                    }
-                }
-
-                // Check Natasha (Water/Greed mechanics)
-                if (sp.room === cats.Natasha) {
-                    if (sp.action === 'Включить воду') {
-                        await cinematicLog(`💧 УСПЕХ! ${sp.name} включает воду!<br>Наташа заворожена игрой струй.`, "var(--natasha-color)", 3000, 'water');
-                        // Survives but gets 0 coins from this action
-                    } else {
-                        await cinematicLog(`🌊 ПОТОП! Водоворот Наташи затягивает ${sp.name}!`, "var(--natasha-color)", 2500, 'water', true);
-                        if (playersData[sp.id].coins > 0) {
-                            playersData[sp.id].coins = 0;
-                            await cinematicLog(`Наташа съедает ВСЕ осколки ${sp.name}!`, "var(--danger-color)", 2500);
+                else if (act.card.id === 'attack') {
+                    // Ищем цель в этой же локации
+                    const targets = Object.values(players).filter(t => t !== p && t.loc === p.loc);
+                    if (targets.length > 0) {
+                        let target = targets[0];
+                        if (target.inv.ar) {
+                            await logCine(`🛡️ ${target.name} отражает атаку Броней!`, '#FF5722');
+                            target.inv.ar = false; // Броня ломается
                         } else {
-                            playersData[sp.id].hp -= 1;
-                            await cinematicLog(`У ${sp.name} нет осколков... Наташа кусает за ногу! (-1 HP)`, "var(--danger-color)", 2500);
+                            if (target.vp > 0) {
+                                target.vp -= 1; p.vp += 1;
+                                let bonus = p.inv.wp ? " (и +1 Эфир за Кинжал)" : "";
+                                if (p.inv.wp) p.eth += 1;
+                                await logCine(`🗡️ ${p.name} крадет ПО у ${target.name}!${bonus}`, '#FF003C');
+                            } else {
+                                await logCine(`🗡️ У ${target.name} нет ПО для кражи.`, '#888');
+                            }
                         }
+                    } else {
+                        await logCine(`🗡️ ${p.name} атакует пустоту...`, '#888');
                     }
-                    continue; // Reached end of Natasha interaction
                 }
-
-                // Standard Resolution (If survived)
-                if (sp.action === 'Жадный поиск') {
-                    playersData[sp.id].coins += 2;
-                    await cinematicLog(`✨ Успех! ${sp.name} находит 2 Осколка!`, "var(--gold-light)");
-                } else if (sp.action === 'Скрытный шаг') {
-                    playersData[sp.id].coins += 1;
-                    await cinematicLog(`🥷 ${sp.name} тихо крадет 1 Осколок.`, "var(--spirit-color)");
-                } else if (sp.action === 'Включить воду') {
-                    await cinematicLog(`💧 ${sp.name} налил воду, но здесь никого нет... (0 Осколков)`, "#888");
+                else if (act.card.id === 'evolve') {
+                    if (p.eth >= 3) {
+                        p.eth -= 3; p.vp += 1;
+                        await logCine(`⚙️ ${p.name} строит двигатель! (+1 ПО)`, 'var(--gold)');
+                    } else {
+                        await logCine(`❌ ${p.name}: Недостаточно Эфира.`, '#888');
+                    }
                 }
+                
+                distEl.style.boxShadow = `0 15px 35px rgba(0,0,0,0.9)`;
+                await sleep(500);
             }
 
-            // Check Deaths
-            for (let sp of spirits) {
-                if (playersData[sp.id].hp <= 0) {
-                    await cinematicLog(`💀 ДУХ РАССЕЯН! ${sp.name} покидает этот мир...`, "var(--danger-color)", 3000, 'mist');
-                }
-            }
-
+            // Конец раунда
+            Object.values(players).forEach(p => p.action = null);
             currentRound++;
-            if (currentRound > MAX_ROUNDS) {
-                await cinematicLog("🌅 ЛУЧИ РАССВЕТА...<br>Дом растворяется в тумане. ИГРА ОКОНЧЕНА!", "var(--gold-light)", 8000, 'mist');
-                // Could display winner here based on coins
+            phase = 'DRAFT';
+            
+            if (currentRound > 10) {
+                let winner = Object.values(players).sort((a,b)=>b.vp - a.vp)[0];
+                await logCine(`ГОРОД ПАЛ. ПРАВИТЕЛЬ: ${winner.name} (${winner.vp} ПО)`, 'var(--gold)');
             } else {
-                await cinematicLog("Тьма сгущается вновь... Готовьтесь.", "#555", 2000, 'mist');
-                
-                // Send updates to phones
-                Object.keys(playerConnections).forEach(id => {
-                    const pd = playersData[id];
-                    playerConnections[id].send({ type: 'ROUND_END', coins: pd.coins, hp: pd.hp, round: currentRound });
-                });
-                
-                document.getElementById('round-counter').innerText = `${currentRound} / ${MAX_ROUNDS}`;
-                updateHostUI();
+                document.getElementById('round-counter').innerText = `${currentRound} / 10`;
+                broadcastState();
             }
         }
 
-        /* --- PLAYER PHONE LOGIC --- */
-        function joinGame() {
-            const roomCode = document.getElementById('room-code-input').value;
-            const playerName = document.getElementById('player-name').value;
-            
-            if (!roomCode || !playerName || !selectedRole) { 
-                alert("Заполните код, имя и выберите Аватара!"); return; 
+        function broadcastState() {
+            for (let id in players) {
+                const p = players[id];
+                p.conn.send({ type: 'STATE', vp: p.vp, eth: p.eth, loc: p.loc, inv: p.inv, phase });
             }
+        }
 
+        /* ================= ИГРОК (ТЕЛЕФОН) ================= */
+        function joinGame() {
+            const code = document.getElementById('room-code').value;
+            const name = document.getElementById('player-name').value;
+            if(!code || !name || !selectedFaction) return alert("Заполните все данные!");
+            
             event.target.innerText = "ПОДКЛЮЧЕНИЕ..."; event.target.disabled = true;
 
-            peer = new Peer(); 
+            peer = new Peer();
             peer.on('open', (id) => {
-                hostConnection = peer.connect(roomCode);
-                
-                hostConnection.on('open', () => {
-                    hostConnection.send({ type: 'JOIN', name: playerName, role: selectedRole });
-                    myRole = selectedRole;
-                    document.getElementById('my-name-display').innerText = playerName;
-                    
-                    const roleSpan = document.getElementById('my-role');
-                    roleSpan.innerText = myRole;
-                    
-                    if (myRole === 'Шуршик') {
-                        document.getElementById('actions-shurshik').classList.remove('hidden');
-                        roleSpan.className = 'color-spirit';
-                    } else if (myRole === 'Степан') {
-                        document.getElementById('hp-box').classList.add('hidden'); // Cats don't have HP
-                        roleSpan.className = 'color-stepan';
-                    } else if (myRole === 'Наташа') {
-                        document.getElementById('hp-box').classList.add('hidden');
-                        roleSpan.className = 'color-natasha';
-                    } else if (myRole === 'Соня') {
-                        document.getElementById('hp-box').classList.add('hidden');
-                        roleSpan.className = 'color-sonya';
-                    }
-                    
+                hostConn = peer.connect(code);
+                hostConn.on('open', () => {
+                    hostConn.send({ type: 'JOIN', name, faction: selectedFaction });
+                    document.getElementById('my-name-display').innerText = `Лидер: ${name}`;
+                    renderCards();
                     show('player-screen');
                 });
                 
-                hostConnection.on('data', (data) => {
-                    if (data.type === 'ROUND_END') {
-                        myCoins = data.coins;
-                        myHp = data.hp;
-                        document.getElementById('my-coins').innerText = myCoins;
-                        if(myRole === 'Шуршик') document.getElementById('my-hp').innerText = myHp;
+                hostConn.on('data', (data) => {
+                    if (data.type === 'STATE') {
+                        document.getElementById('vp-display').innerText = data.vp;
+                        document.getElementById('eth-display').innerText = data.eth;
+                        document.getElementById('my-location').innerText = DISTRICTS[data.loc].name;
                         
-                        if (myHp <= 0 && myRole === 'Шуршик') {
-                            document.getElementById('player-status').innerHTML = "<span style='color:red;'>ВЫ МЕРТВЫ. ВЫ СТАЛИ ТЕНЬЮ.</span>";
-                            document.getElementById('btn-submit-action').classList.add('hidden');
-                        } else {
-                            document.getElementById('btn-submit-action').classList.remove('hidden');
-                            document.getElementById('player-status').innerText = `Час ${data.round}. Выберите следующий шаг.`;
+                        document.getElementById('inv-amulet').classList.toggle('filled', data.inv.am);
+                        document.getElementById('inv-weapon').classList.toggle('filled', data.inv.wp);
+                        document.getElementById('inv-armor').classList.toggle('filled', data.inv.ar);
+
+                        if(data.phase === 'DRAFT') {
+                            document.getElementById('action-header').innerText = "Фаза Интриг: Выберите действие";
+                            document.querySelectorAll('.action-card').forEach(c => c.classList.remove('disabled'));
                         }
                     }
                 });
             });
-            
-            peer.on('error', function(err) {
-                alert("Ошибка! Врата не найдены. Проверьте код.");
-                document.querySelector('.btn[onclick="joinGame()"]').innerText = "ВОЙТИ В МИР";
-                document.querySelector('.btn[onclick="joinGame()"]').disabled = false;
+            peer.on('error', () => { alert("Ошибка подключения!"); show('lobby-screen'); });
+        }
+
+        function renderCards() {
+            const cont = document.getElementById('cards-container');
+            cont.innerHTML = '';
+            CARDS.forEach(c => {
+                const el = document.createElement('div');
+                el.className = 'action-card glass';
+                el.innerHTML = `
+                    <div class="card-init" title="Инициатива (чем меньше, тем быстрее)">${c.init}</div>
+                    <div class="card-info">
+                        <h4>${c.icon} ${c.title}</h4>
+                        <p>${c.desc}</p>
+                    </div>
+                `;
+                el.onclick = () => playCard(c.id, el);
+                cont.appendChild(el);
             });
         }
 
-        function submitAction() {
-            const room = document.getElementById('room-select').value;
-            let action = myRole === 'Шуршик' ? document.getElementById('action-select-shurshik').value : 'Влияние Аватара';
+        function playCard(cardId, el) {
+            // Защита от повторного клика
+            if(el.classList.contains('disabled')) return;
+            
+            let targetLoc = null;
+            if (cardId === 'move') {
+                // Упрощенный выбор: в прототипе просто прыгаем в случайный соседний район (или промптом)
+                let dest = prompt("Куда переместиться? (0: Кузня, 1: Каналы, 2: Сады, 3: Шпиль)", "0");
+                targetLoc = parseInt(dest);
+                if(isNaN(targetLoc) || targetLoc < 0 || targetLoc > 3) return alert("Отмена перемещения");
+            }
 
-            hostConnection.send({ type: 'ACTION', room: room, action: action });
-            document.getElementById('btn-submit-action').classList.add('hidden');
-            document.getElementById('player-status').innerHTML = "Решение принято.<br><span style='color:var(--gold-light);'>Смотрите на Врата (Главный экран).</span>";
+            document.querySelectorAll('.action-card').forEach(c => c.classList.add('disabled'));
+            document.getElementById('action-header').innerText = "Ожидайте развязки на Главном Экране...";
+            
+            hostConn.send({ type: 'ACTION', action: { cardId, targetLoc } });
         }
     </script>
 </body>
