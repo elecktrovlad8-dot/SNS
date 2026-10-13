@@ -3,501 +3,547 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Триада: Расколотый Город (Шедевр)</title>
-    <script src="https://unpkg.com/peerjs@1.5.1/dist/peerjs.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Rajdhani:wght@400;600;700&display=swap" rel="stylesheet">
+    <title>Золотая Астролябия - Ауренталь</title>
+    <script src="https://unpkg.com/peerjs@1.4.7/dist/peerjs.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
     <style>
         :root {
-            --bg-base: #060609;
-            --panel-bg: rgba(15, 15, 22, 0.7);
-            
-            /* Фракции */
-            --faction-stepan: #FF5722; /* Кузня (Медь/Огонь) */
-            --faction-natasha: #00E5FF; /* Тени (Вода/Неон) */
-            --faction-sonya: #B200FF; /* Эхо (Магия/Аметист) */
-            --gold: #D4AF37;
-            
-            --font-title: 'Cinzel', serif;
-            --font-ui: 'Rajdhani', sans-serif;
+            --bg-dark: #121212;
+            --gold: #d4af37;
+            --gold-dim: #998100;
+            --wood: #3d2314;
+            --iron: #434b4d;
         }
-
-        * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
-        body, html { width: 100%; height: 100%; background: var(--bg-base); color: #fff; font-family: var(--font-ui); overflow: hidden; }
-        .hidden { display: none !important; }
-
-        /* --- FX ФОН --- */
-        #fx-canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; pointer-events: none; }
-        .vignette { position: absolute; top:0; left:0; width:100%; height:100%; background: radial-gradient(circle, transparent 20%, #030305 100%); z-index: 2; pointer-events: none; }
-
-        /* --- БАЗОВЫЕ ЭЛЕМЕНТЫ UI --- */
-        h1, h2, h3 { font-family: var(--font-title); text-align: center; font-weight: 700; }
-        .glass { background: var(--panel-bg); backdrop-filter: blur(16px); border: 1px solid rgba(255,255,255,0.05); border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.8); }
-        
+        body {
+            background-color: var(--bg-dark);
+            color: #e0e0e0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow-x: hidden;
+            user-select: none;
+        }
+        .gold-text { color: var(--gold); text-shadow: 0 0 5px rgba(212, 175, 55, 0.5); }
         .btn {
-            background: linear-gradient(180deg, rgba(40,40,50,0.8), rgba(20,20,25,0.9));
-            color: var(--gold); border: 1px solid rgba(212, 175, 55, 0.4);
-            padding: 15px 30px; font-family: var(--font-title); font-size: 1.2rem;
-            border-radius: 4px; cursor: pointer; transition: 0.3s;
-            text-transform: uppercase; letter-spacing: 2px; width: 100%; max-width: 320px; margin: 10px auto; display: block;
-            position: relative; overflow: hidden; z-index: 10;
+            background: linear-gradient(145deg, #2a2a2a, #1a1a1a);
+            border: 1px solid var(--gold-dim);
+            color: var(--gold);
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
         }
-        .btn:hover { background: rgba(212, 175, 55, 0.1); border-color: var(--gold); box-shadow: 0 0 20px rgba(212, 175, 55, 0.3); transform: translateY(-2px); }
-        .btn.selected { background: linear-gradient(180deg, rgba(212, 175, 55, 0.3), rgba(0,0,0,0.9)); border-color: var(--gold); box-shadow: 0 0 20px var(--gold); color: #fff;}
-
-        input {
-            width: 100%; max-width: 320px; padding: 15px; margin: 10px auto; display: block;
-            background: rgba(0,0,0,0.6); border: 1px solid rgba(255,255,255,0.2); border-radius: 4px;
-            color: #fff; font-family: var(--font-ui); font-size: 1.2rem; text-align: center; outline: none; z-index: 10; position: relative;
-        }
-        input:focus { border-color: var(--gold); }
-
-        .screen { position: absolute; top:0; left:0; width:100%; height:100%; display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 5; }
-
-        /* --- ГЛАВНЫЙ ЭКРАН (КАРТА ГОРОДА) --- */
-        #host-screen { justify-content: flex-start; padding: 40px; }
-        .header { display: flex; justify-content: space-between; width: 100%; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 20px; z-index: 10; }
-        .header-title { font-size: 1.5rem; letter-spacing: 3px; color: #aaa; }
-        .header-val { font-size: 2.5rem; color: var(--gold); font-family: var(--font-title); }
-
-        /* Модульное поле */
-        .city-map {
-            position: relative; width: 800px; height: 500px; margin-top: 50px; z-index: 10;
-            display: flex; justify-content: center; align-items: center;
-        }
-        .district {
-            position: absolute; width: 180px; height: 180px;
-            background: radial-gradient(circle at top left, rgba(40,40,50,0.9), rgba(10,10,15,0.9));
-            border: 2px solid rgba(255,255,255,0.1); border-radius: 50%;
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.9), inset 0 0 20px rgba(0,0,0,0.8);
-            transition: 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
-        }
-        .district::before { content:''; position:absolute; top:-2px; left:-2px; right:-2px; bottom:-2px; border-radius: 50%; background: linear-gradient(45deg, transparent, var(--gold), transparent); z-index: -1; opacity: 0.3; }
-        .district-name { font-family: var(--font-title); font-size: 1.2rem; font-weight: 700; text-align: center; z-index: 2;}
-        .district-players { display: flex; gap: 5px; margin-top: 10px; flex-wrap: wrap; justify-content: center; z-index: 2;}
-        .player-token { width: 25px; height: 25px; border-radius: 50%; border: 2px solid #fff; box-shadow: 0 0 10px #000; }
-
-        /* Кинематографичный лог */
-        #cine-log {
-            position: absolute; bottom: 40px; width: 80%; max-width: 800px;
-            text-align: center; font-size: 1.8rem; padding: 20px; z-index: 20;
-            text-shadow: 0 4px 15px #000; opacity: 0; transition: opacity 0.3s;
-        }
-
-        /* --- ЭКРАН ИГРОКА (ТЕЛЕФОН) --- */
-        #player-screen { justify-content: flex-start; padding: 20px; overflow-y: auto; display: block;}
+        .btn:hover:not(:disabled) { background: var(--gold-dim); color: #fff; box-shadow: 0 0 10px var(--gold); }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; border-color: #555; color: #555; }
         
-        /* Планшет героя */
-        .player-dashboard { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; z-index: 10; position: relative;}
-        .stat-card { padding: 15px; text-align: center; }
-        .stat-title { font-size: 0.8rem; color: #888; text-transform: uppercase; letter-spacing: 1px;}
-        .stat-value { font-size: 2rem; font-family: var(--font-title); margin-top: 5px;}
+        /* Хост (Астролябия) */
+        .astrolabe-container {
+            position: relative;
+            width: 400px;
+            height: 400px;
+            margin: 0 auto;
+            border-radius: 50%;
+            border: 10px solid var(--wood);
+            box-shadow: inset 0 0 50px rgba(0,0,0,0.8), 0 0 20px var(--gold-dim);
+            background: radial-gradient(circle, #2a2a2a 0%, #111 100%);
+        }
+        .ring {
+            position: absolute;
+            border-radius: 50%;
+            border: 2px dashed var(--gold-dim);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: transform 2s cubic-bezier(0.25, 0.1, 0.25, 1);
+        }
+        .ring-outer { width: 360px; height: 360px; top: 10px; left: 10px; border-style: solid; }
+        .ring-middle { width: 260px; height: 260px; top: 60px; left: 60px; }
+        .ring-inner { width: 160px; height: 160px; top: 110px; left: 110px; border-style: solid; border-color: var(--iron); }
+        .pointer {
+            position: absolute;
+            top: -20px; left: 190px;
+            width: 0; height: 0;
+            border-left: 10px solid transparent;
+            border-right: 10px solid transparent;
+            border-top: 30px solid var(--gold);
+            z-index: 10;
+            filter: drop-shadow(0 0 5px var(--gold));
+        }
         
-        /* Инвентарь */
-        .inventory-slots { display: flex; justify-content: space-between; margin-bottom: 20px; z-index: 10; position: relative;}
-        .slot { width: 30%; aspect-ratio: 1; border: 1px dashed rgba(255,255,255,0.2); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 2rem; color: rgba(255,255,255,0.1); background: rgba(0,0,0,0.3);}
-        .slot.filled { border-style: solid; border-color: var(--gold); color: #fff; background: rgba(212, 175, 55, 0.1); box-shadow: inset 0 0 15px rgba(212,175,55,0.2);}
-
-        /* Колода Действий (Таро стиль) */
-        .hand-container { display: flex; flex-direction: column; gap: 15px; z-index: 10; position: relative; padding-bottom: 50px;}
-        .action-card {
-            background: linear-gradient(135deg, rgba(30,30,40,0.95), rgba(15,15,20,0.95));
-            border: 1px solid #444; border-radius: 12px; padding: 20px;
-            display: grid; grid-template-columns: 50px 1fr; gap: 15px; align-items: center;
-            box-shadow: 0 10px 20px rgba(0,0,0,0.5); transition: 0.3s;
-        }
-        .action-card.disabled { opacity: 0.4; pointer-events: none; filter: grayscale(1); }
-        .action-card:active { transform: scale(0.98); }
-        .card-init {
-            width: 50px; height: 50px; border-radius: 50%; background: var(--bg-base); border: 2px solid var(--gold);
-            display: flex; align-items: center; justify-content: center; font-family: var(--font-title); font-size: 1.5rem; color: var(--gold);
-            box-shadow: inset 0 0 10px rgba(0,0,0,0.8);
-        }
-        .card-info h4 { font-size: 1.3rem; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 1px;}
-        .card-info p { font-size: 0.9rem; color: #aaa; line-height: 1.2;}
-
+        .hidden { display: none !important; }
+        .card { background: #1f1f1f; border: 1px solid #333; border-radius: 8px; padding: 10px; }
     </style>
 </head>
-<body>
+<body class="min-h-screen flex flex-col">
 
-    <!-- Рендер FX -->
-    <canvas id="fx-canvas"></canvas>
-    <div class="vignette"></div>
-
-    <!-- МЕНЮ -->
-    <div id="main-menu" class="screen">
-        <h1 style="font-size: 4rem; text-transform: uppercase; letter-spacing: 8px; color: #fff; text-shadow: 0 0 20px var(--gold); margin-bottom: 0; z-index: 10;">ТРИАДА</h1>
-        <h2 style="font-size: 1.5rem; color: #888; font-family: var(--font-ui); font-weight: 400; letter-spacing: 5px; margin-bottom: 50px; z-index: 10;">РАСКОЛОТЫЙ ГОРОД</h2>
-        <button class="btn" onclick="initHost()">👁️ Создать Город (Стол)</button>
-        <button class="btn" onclick="show('lobby-screen')">📜 Возглавить Гильдию (Игрок)</button>
-    </div>
-
-    <!-- ЛОББИ ИГРОКА -->
-    <div id="lobby-screen" class="screen hidden">
-        <div class="glass" style="padding: 30px; width: 90%; max-width: 400px; text-align: center;">
-            <h2 style="margin-bottom: 20px; color: var(--gold);">РИТУАЛ ОСНОВАТЕЛЕЙ</h2>
-            <input type="text" id="room-code" placeholder="Код Города" maxlength="4" style="letter-spacing: 5px; font-weight: bold;">
-            <input type="text" id="player-name" placeholder="Имя Лидера">
-            
-            <h3 style="margin: 20px 0 10px; font-size: 1rem; color: #aaa;">Выберите Покровителя:</h3>
-            <button class="btn role-btn" style="border-color: var(--faction-stepan); color: var(--faction-stepan);" onclick="selectFaction('Stepan', this)">
-                Кузня Степана<br><span style="font-size:0.7rem; color:#888;">Защита. Старт: Броня.</span>
-            </button>
-            <button class="btn role-btn" style="border-color: var(--faction-natasha); color: var(--faction-natasha);" onclick="selectFaction('Natasha', this)">
-                Тени Наташи<br><span style="font-size:0.7rem; color:#888;">Блеф. Старт: +Кинжал.</span>
-            </button>
-            <button class="btn role-btn" style="border-color: var(--faction-sonya); color: var(--faction-sonya);" onclick="selectFaction('Sonya', this)">
-                Эхо Сони<br><span style="font-size:0.7rem; color:#888;">Магия. Старт: Амулет.</span>
-            </button>
-
-            <button class="btn" style="background: var(--gold); color: #000; margin-top: 20px;" onclick="joinGame()">ВОЙТИ В СОВЕТ</button>
+    <!-- Экран входа -->
+    <div id="screen-login" class="flex-1 flex flex-col items-center justify-center p-4">
+        <h1 class="text-5xl font-bold gold-text mb-8">Золотая Астролябия</h1>
+        <div class="flex gap-4 w-full max-w-md">
+            <button onclick="app.hostGame()" class="btn flex-1 text-xl">Создать игру (Экран)</button>
+        </div>
+        <div class="mt-8 flex gap-4 w-full max-w-md items-center">
+            <input type="text" id="join-pin" placeholder="PIN код" class="bg-gray-800 text-white p-3 rounded border border-gray-600 w-1/2 text-center text-xl uppercase" maxlength="4">
+            <button onclick="app.joinGame()" class="btn w-1/2 text-xl">Подключиться</button>
         </div>
     </div>
 
-    <!-- ЭКРАН ХОСТА (СТОЛ) -->
-    <div id="host-screen" class="screen hidden">
-        <div class="header">
-            <div><div class="header-title">КОД ДОСТУПА</div><div class="header-val" id="display-code">----</div></div>
-            <div style="text-align: right;"><div class="header-title">ЦИКЛ (РАУНД)</div><div class="header-val" id="round-counter">1 / 10</div></div>
-        </div>
-
-        <div class="city-map" id="map-container">
-            <!-- Районы генерируются через JS -->
-        </div>
-
-        <div id="cine-log" class="glass">Ожидание лидеров гильдий...</div>
-    </div>
-
-    <!-- ЭКРАН ИГРОКА (ТЕЛЕФОН) -->
-    <div id="player-screen" class="screen hidden">
-        <h2 style="font-size: 1.2rem; color: var(--gold); text-align: left; margin-bottom: 10px; width: 100%; z-index:10;" id="my-name-display">Имя</h2>
-        
-        <div class="player-dashboard">
-            <div class="glass stat-card">
-                <div class="stat-title">Победные Очки (ПО)</div>
-                <div class="stat-value" id="vp-display" style="color: var(--gold);">0</div>
+    <!-- Экран выбора персонажа (Клиент) -->
+    <div id="screen-character" class="hidden flex-1 flex flex-col items-center p-4">
+        <h2 class="text-3xl gold-text mb-6">Выберите Магистра</h2>
+        <div class="grid grid-cols-1 gap-4 w-full max-w-sm">
+            <!-- Соня[cite: 1] -->
+            <div class="card cursor-pointer hover:border-yellow-500" onclick="app.selectCharacter('sonya')">
+                <h3 class="text-xl font-bold text-gray-300">Соня (Гильдия Теней)</h3>
+                <p class="text-sm text-gray-400 mt-2">Пассив: Украсть ресурс, если отменила чужой ход.</p>
+                <p class="text-sm text-gray-400">Актив: Теневая Стрелка (свой доход).</p>
             </div>
-            <div class="glass stat-card">
-                <div class="stat-title">Эфир (Валюта)</div>
-                <div class="stat-value" id="eth-display" style="color: #00E5FF;">0</div>
+            <!-- Наташа[cite: 2] -->
+            <div class="card cursor-pointer hover:border-yellow-500" onclick="app.selectCharacter('natasha')">
+                <h3 class="text-xl font-bold text-blue-400">Наташа (Речной Картель)</h3>
+                <p class="text-sm text-gray-400 mt-2">Пассив: Двойной ресурс с Еды/Торговли.</p>
+                <p class="text-sm text-gray-400">Актив: 3 базовых в 1 роскошь.</p>
+            </div>
+            <!-- Степан[cite: 3] -->
+            <div class="card cursor-pointer hover:border-yellow-500" onclick="app.selectCharacter('stepan')">
+                <h3 class="text-xl font-bold text-yellow-500">Степан (Авантюристы)</h3>
+                <p class="text-sm text-gray-400 mt-2">Пассив: +1 Слава с Городских Событий.</p>
+                <p class="text-sm text-gray-400">Актив: Блок кольца Астролябии.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Главный Экран (Хост) -->
+    <div id="screen-host" class="hidden flex-1 flex flex-col p-4">
+        <div class="flex justify-between items-center mb-4">
+            <h2 class="text-2xl gold-text">Ауренталь</h2>
+            <div class="text-xl">PIN: <span id="host-pin-display" class="font-bold text-white bg-gray-800 px-3 py-1 rounded"></span></div>
+            <div class="text-lg" id="host-phase-display">Ожидание игроков...</div>
+        </div>
+        
+        <div class="flex-1 flex items-center justify-center relative">
+            <div class="astrolabe-container">
+                <div class="pointer"></div>
+                <div id="ring-outer" class="ring ring-outer"></div>
+                <div id="ring-middle" class="ring ring-middle"></div>
+                <div id="ring-inner" class="ring ring-inner"></div>
             </div>
         </div>
 
-        <div class="stat-title" style="margin-bottom: 5px; z-index:10; position:relative;">Ваш Инвентарь</div>
-        <div class="inventory-slots">
-            <div class="slot" id="inv-amulet" title="Амулет">🧿</div>
-            <div class="slot" id="inv-weapon" title="Оружие">⚔️</div>
-            <div class="slot" id="inv-armor" title="Броня">🛡️</div>
-        </div>
-
-        <div class="glass" style="padding: 15px; margin-bottom: 20px; text-align: center; z-index: 10; position: relative;">
-            <div class="stat-title">Текущая Локация</div>
-            <div id="my-location" style="font-family: var(--font-title); font-size: 1.5rem; margin-top: 5px;">Шпиль Раскола</div>
-        </div>
-
-        <div class="stat-title" style="margin-bottom: 10px; z-index:10; position:relative;" id="action-header">Фаза Интриг: Выберите действие</div>
-        <div class="hand-container" id="cards-container">
-            <!-- Карты генерируются JS -->
+        <div id="host-players" class="grid grid-cols-4 gap-4 mt-4 h-48">
+            <!-- Игроки рендерятся здесь -->
         </div>
     </div>
 
-    <!-- ЯДРО ИГРЫ (ЛОГИКА) -->
-    <script>
-        /* --- ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ --- */
-        let peer = null, hostConn = null;
-        let players = {}; // { id: { name, faction, vp, eth, loc, inv: {am, wp, ar}, action: null } }
-        let currentRound = 1;
-        let phase = 'LOBBY'; // LOBBY, DRAFT, RESOLVE
+    <!-- Экран Игрока (Клиент) -->
+    <div id="screen-client" class="hidden flex-1 flex flex-col p-2">
+        <div class="flex justify-between items-center mb-2 card">
+            <div>
+                <div id="client-char-name" class="font-bold gold-text"></div>
+                <div class="text-xs text-gray-400">Ваши ресурсы</div>
+            </div>
+            <button id="btn-ability" onclick="app.useAbility()" class="btn text-xs py-1 px-2">Навык</button>
+        </div>
+
+        <div id="client-resources" class="grid grid-cols-4 gap-1 mb-2 text-center text-sm card">
+            <!-- Ресурсы -->
+        </div>
+
+        <!-- Фаза Планирования (Выбор карт) -->
+        <div id="client-planning" class="flex-1 flex flex-col">
+            <h3 class="text-center text-gray-400 mb-2 text-sm">Вращение Астролябии</h3>
+            <div class="grid grid-cols-3 gap-2 flex-1">
+                <div class="card flex flex-col justify-between">
+                    <div class="text-xs text-center">Внешнее (Сырье)</div>
+                    <select id="card-outer" class="w-full bg-gray-800 text-white p-2 rounded mt-2">
+                        <option value="0">Оставить (0)</option><option value="1">+1 Шаг</option><option value="-1">-1 Шаг</option><option value="2">+2 Шага</option>
+                    </select>
+                </div>
+                <div class="card flex flex-col justify-between">
+                    <div class="text-xs text-center">Среднее (Роскошь)</div>
+                    <select id="card-middle" class="w-full bg-gray-800 text-white p-2 rounded mt-2">
+                        <option value="0">Оставить (0)</option><option value="1">+1 Шаг</option><option value="-1">-1 Шаг</option>
+                    </select>
+                </div>
+                <div class="card flex flex-col justify-between">
+                    <div class="text-xs text-center">Внутреннее (События)</div>
+                    <select id="card-inner" class="w-full bg-gray-800 text-white p-2 rounded mt-2">
+                        <option value="0">Оставить (0)</option><option value="1">+1 Шаг</option><option value="-1">-1 Шаг</option>
+                    </select>
+                </div>
+            </div>
+            <button id="btn-submit-cards" onclick="app.submitCards()" class="btn mt-2 w-full">Утвердить шестеренки</button>
+        </div>
+
+        <!-- Фаза Строительства (Магазин) -->
+        <div id="client-building" class="hidden flex-1 flex flex-col overflow-y-auto">
+            <h3 class="text-center text-gray-400 mb-2 text-sm">Рынок Контрактов</h3>
+            <div id="client-shop" class="flex flex-col gap-2">
+                <!-- Здания -->
+            </div>
+            <button onclick="app.skipBuild()" class="btn mt-2 w-full">Пропустить ход</button>
+        </div>
+    </div>
+
+<script>
+const GAME_DATA = {
+    rings: {
+        outer: ['Дерево', 'Камень', 'Железо', 'Пшеница', 'Дерево', 'Камень', 'Железо', 'Пшеница'],
+        middle: ['Шестеренка', 'Стекло', 'Чертеж', 'Золото', 'Шестеренка', 'Стекло', 'Чертеж', 'Золото'],
+        inner: ['Налог', 'Изобретение', 'Бунт', 'ЗолотойВек']
+    },
+    buildings: [
+        { id: 'b1', name: 'Речная Лесопилка', cost: { wood: 2, iron: 1 }, desc: '+2 Дерева если выпало Дерево' },
+        { id: 'b2', name: 'Тайный Рынок', cost: { stone: 2, blueprint: 1 }, desc: 'Обмен (Навык): 2 любых на 1 Золото' },
+        { id: 'b3', name: 'Таможня', cost: { stone: 2, wood: 2 }, desc: 'Если Торговля/Налог, крадет 1 сырье' },
+        { id: 'm1', name: 'Дворец Шепота (Монумент)', cost: { gold: 8, gear: 3, wood: 3 }, desc: 'Победа!' },
+        { id: 'm2', name: 'Гранд-Дамба (Монумент)', cost: { stone: 6, iron: 6, wheat: 4 }, desc: 'Победа!' }
+    ]
+};
+
+const app = {
+    peer: null,
+    conn: null,
+    isHost: false,
+    hostConns: {}, // peerId -> connection
+    
+    // Состояние Хоста
+    state: {
+        phase: 'LOBBY', // LOBBY, PLANNING, ANIMATION, COLLECTING, BUILDING
+        players: {},
+        astrolabe: { outer: 0, middle: 0, inner: 0 },
+        turnOrder: [],
+        currentTurn: 0,
+        pendingCards: {}
+    },
+    
+    // Состояние Клиента
+    clientData: {
+        id: null, name: null, char: null,
+        resources: { wood:0, stone:0, iron:0, wheat:0, gear:0, glass:0, blueprint:0, gold:3, glory:0 },
+        buildings: []
+    },
+
+    // 1. Инициализация и Сеть
+    hostGame() {
+        const pin = Math.floor(1000 + Math.random() * 9000).toString();
+        this.isHost = true;
+        this.peer = new Peer(`aurental-host-${pin}`);
         
-        const DISTRICTS = [
-            { id: 0, name: 'Кузня Реальности', x: -250, y: -150, color: 'var(--faction-stepan)' },
-            { id: 1, name: 'Теневые Каналы', x: 250, y: -150, color: 'var(--faction-natasha)' },
-            { id: 2, name: 'Сады Эха', x: -250, y: 150, color: 'var(--faction-sonya)' },
-            { id: 3, name: 'Шпиль Раскола', x: 0, y: 0, color: 'var(--gold)' } // Центр
-        ];
+        this.peer.on('open', (id) => {
+            document.getElementById('screen-login').classList.add('hidden');
+            document.getElementById('screen-host').classList.remove('hidden');
+            document.getElementById('host-pin-display').innerText = pin;
+            this.renderHostAstrolabe();
+        });
 
-        // Колода действий игрока. Инициатива: 1 (самая быстрая) - 10 (медленная).
-        const CARDS = [
-            { id: 'move', title: 'Перемещение', desc: 'Перейдите в любой Район Города.', init: 2, icon: '🏃' },
-            { id: 'gather', title: 'Сбор Эфира', desc: 'Получите 2 Эфира в текущей локации.', init: 5, icon: '💎' },
-            { id: 'attack', title: 'Удар в спину', desc: 'Украсть 1 ПО у игрока в вашей локации.', init: 8, icon: '🗡️' },
-            { id: 'evolve', title: 'Модернизация', desc: 'Потратьте 3 Эфира на +1 ПО.', init: 9, icon: '⚙️' }
-        ];
+        this.peer.on('connection', (conn) => {
+            conn.on('data', (data) => this.handleHostMessage(conn.peer, data));
+            this.hostConns[conn.peer] = conn;
+        });
+    },
 
-        let myId = '', myFaction = '', selectedFaction = '';
-        const sleep = ms => new Promise(r => setTimeout(r, ms));
-
-        /* --- FX КАНВАС (ЧАСТИЦЫ) --- */
-        const canvas = document.getElementById('fx-canvas');
-        const ctx = canvas.getContext('2d');
-        let particles = [];
-        window.addEventListener('resize', () => { canvas.width = window.innerWidth; canvas.height = window.innerHeight; });
-        canvas.width = window.innerWidth; canvas.height = window.innerHeight;
-
-        function renderFx() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            particles.forEach((p, i) => {
-                p.y -= p.speed; p.x += Math.sin(p.angle) * 0.5; p.alpha -= 0.005;
-                if (p.alpha <= 0) particles.splice(i, 1);
-                ctx.beginPath(); ctx.arc(p.x, p.y, p.size, 0, Math.PI*2);
-                ctx.fillStyle = `rgba(212,175,55,${p.alpha})`; ctx.shadowBlur = 10; ctx.shadowColor = '#D4AF37'; ctx.fill();
-            });
-            if (Math.random() < 0.2) particles.push({ x: Math.random()*canvas.width, y: canvas.height+10, size: Math.random()*2+1, speed: Math.random()*1+0.5, angle: Math.random()*Math.PI*2, alpha: Math.random()*0.5+0.2 });
-            requestAnimationFrame(renderFx);
-        }
-        renderFx();
-
-        /* --- НАВИГАЦИЯ --- */
-        function show(id) { document.querySelectorAll('.screen').forEach(s => s.classList.add('hidden')); document.getElementById(id).classList.remove('hidden'); }
-        function selectFaction(f, btn) { selectedFaction = f; document.querySelectorAll('.role-btn').forEach(b => b.classList.remove('selected')); btn.classList.add('selected'); }
-
-        /* ================= ХОСТ (ИГРОВОЙ ДВИЖОК) ================= */
-        function initHost() {
-            show('host-screen');
-            drawMap();
+    joinGame() {
+        const pin = document.getElementById('join-pin').value.trim();
+        if(pin.length !== 4) return alert('Введите 4 цифры');
+        
+        this.peer = new Peer();
+        this.peer.on('open', (id) => {
+            this.clientData.id = id;
+            this.conn = this.peer.connect(`aurental-host-${pin}`);
             
-            const code = String(Math.floor(1000 + Math.random() * 9000));
-            document.getElementById('display-code').innerText = code;
-            
-            peer = new Peer(code);
-            peer.on('connection', (conn) => {
-                conn.on('data', (data) => processHostData(conn.peer, conn, data));
+            this.conn.on('open', () => {
+                document.getElementById('screen-login').classList.add('hidden');
+                document.getElementById('screen-character').classList.remove('hidden');
             });
-        }
+            this.conn.on('data', (data) => this.handleClientMessage(data));
+        });
+    },
 
-        function drawMap() {
-            const container = document.getElementById('map-container');
-            container.innerHTML = '';
-            DISTRICTS.forEach(d => {
-                const el = document.createElement('div');
-                el.className = 'district';
-                el.id = `dist-${d.id}`;
-                el.style.transform = `translate(${d.x}px, ${d.y}px)`;
-                el.style.borderColor = d.color;
-                el.innerHTML = `<div class="district-name" style="color:${d.color}">${d.name}</div><div class="district-players" id="dist-players-${d.id}"></div>`;
-                container.appendChild(el);
-            });
-        }
+    selectCharacter(charId) {
+        this.clientData.char = charId;
+        const names = { sonya: 'Соня', natasha: 'Наташа', stepan: 'Степан' };
+        this.clientData.name = names[charId];
+        
+        this.conn.send({ type: 'JOIN', player: this.clientData });
+        
+        document.getElementById('screen-character').classList.add('hidden');
+        document.getElementById('screen-client').classList.remove('hidden');
+        document.getElementById('client-char-name').innerText = this.clientData.name;
+        this.renderClientUI();
+    },
 
-        function updateHostMap() {
-            DISTRICTS.forEach(d => document.getElementById(`dist-players-${d.id}`).innerHTML = '');
-            Object.values(players).forEach(p => {
-                if (p.loc !== null) {
-                    const token = document.createElement('div');
-                    token.className = 'player-token';
-                    // Цвет фишки по фракции
-                    let color = p.faction==='Stepan'?'#FF5722':p.faction==='Natasha'?'#00E5FF':'#B200FF';
-                    token.style.background = color;
-                    token.title = p.name;
-                    document.getElementById(`dist-players-${p.loc}`).appendChild(token);
-                }
-            });
-        }
-
-        function processHostData(id, conn, data) {
-            if (data.type === 'JOIN') {
-                // Инициализация RPG статов
-                let inv = { am: false, wp: false, ar: false };
-                if(data.faction === 'Stepan') inv.ar = true;
-                if(data.faction === 'Natasha') inv.wp = true;
-                if(data.faction === 'Sonya') inv.am = true;
-
-                players[id] = { conn, name: data.name, faction: data.faction, vp: 0, eth: 2, loc: 3, inv: inv, action: null };
-                logCine(`${data.name} прибыл в город.`, '#fff');
-                updateHostMap();
-                broadcastState();
-                
-                if(Object.keys(players).length >= 2 && phase === 'LOBBY') {
-                    phase = 'DRAFT';
-                    setTimeout(() => logCine(`Город ждет ваших приказов...`, 'var(--gold)'), 2000);
-                }
-            }
-            if (data.type === 'ACTION' && phase === 'DRAFT') {
-                players[id].action = data.action; // { cardId, targetLoc }
-                checkAllReady();
+    // 2. Логика Хоста
+    handleHostMessage(peerId, msg) {
+        if (msg.type === 'JOIN') {
+            this.state.players[peerId] = msg.player;
+            this.state.turnOrder.push(peerId);
+            this.broadcastState();
+            if (Object.keys(this.state.players).length >= 2 && this.state.phase === 'LOBBY') {
+                // Авто-старт для прототипа при 2+ игроках
+                this.startRound(); 
             }
         }
+        else if (msg.type === 'SUBMIT_CARDS' && this.state.phase === 'PLANNING') {
+            this.state.pendingCards[peerId] = msg.cards;
+            if (Object.keys(this.state.pendingCards).length === Object.keys(this.state.players).length) {
+                this.resolveAstrolabe();
+            }
+        }
+        else if (msg.type === 'BUY_BUILDING' && this.state.phase === 'BUILDING') {
+            if (this.state.turnOrder[this.state.currentTurn] !== peerId) return;
+            this.processBuy(peerId, msg.buildingId);
+        }
+        else if (msg.type === 'SKIP_TURN' && this.state.phase === 'BUILDING') {
+            if (this.state.turnOrder[this.state.currentTurn] !== peerId) return;
+            this.nextTurn();
+        }
+    },
 
-        async function logCine(text, color) {
-            const log = document.getElementById('cine-log');
-            log.innerHTML = text; log.style.color = color;
-            log.style.opacity = 1;
-            await sleep(2500);
-            log.style.opacity = 0;
-            await sleep(500);
+    startRound() {
+        this.state.phase = 'PLANNING';
+        this.state.pendingCards = {};
+        document.getElementById('host-phase-display').innerText = 'Фаза Планирования...';
+        this.broadcastState();
+    },
+
+    resolveAstrolabe() {
+        this.state.phase = 'ANIMATION';
+        document.getElementById('host-phase-display').innerText = 'Вращение...';
+        
+        let netOuter = 0, netMiddle = 0, netInner = 0;
+        for (let p in this.state.pendingCards) {
+            netOuter += this.state.pendingCards[p].outer;
+            netMiddle += this.state.pendingCards[p].middle;
+            netInner += this.state.pendingCards[p].inner;
         }
 
-        function checkAllReady() {
-            const allReady = Object.values(players).every(p => p.action !== null);
-            if (allReady) {
-                phase = 'RESOLVE';
-                resolveRound();
+        this.state.astrolabe.outer = (this.state.astrolabe.outer + netOuter + 8) % 8;
+        this.state.astrolabe.middle = (this.state.astrolabe.middle + netMiddle + 8) % 8;
+        this.state.astrolabe.inner = (this.state.astrolabe.inner + netInner + 4) % 4;
+
+        this.broadcastState();
+        this.renderHostAstrolabe();
+
+        setTimeout(() => this.collectResources(), 2500);
+    },
+
+    collectResources() {
+        this.state.phase = 'COLLECTING';
+        const resOuter = GAME_DATA.rings.outer[this.state.astrolabe.outer];
+        const resMiddle = GAME_DATA.rings.middle[this.state.astrolabe.middle];
+        const resInner = GAME_DATA.rings.inner[this.state.astrolabe.inner];
+
+        const dict = { 'Дерево':'wood', 'Камень':'stone', 'Железо':'iron', 'Пшеница':'wheat', 
+                       'Шестеренка':'gear', 'Стекло':'glass', 'Чертеж':'blueprint', 'Золото':'gold' };
+
+        // Базовый сбор
+        for (let pid in this.state.players) {
+            let p = this.state.players[pid];
+            if(dict[resOuter]) p.resources[dict[resOuter]]++;
+            if(dict[resMiddle]) p.resources[dict[resMiddle]]++;
+            
+            // Пассивка Наташи (Еда/Вода)
+            if (p.char === 'natasha' && (resOuter === 'Пшеница' || resInner === 'Налог')) {
+                if(dict[resOuter]) p.resources[dict[resOuter]]++;
+            }
+            // Пассивка Степана
+            if (p.char === 'stepan' && (resInner === 'Бунт' || resInner === 'Изобретение' || resInner === 'ЗолотойВек')) {
+                p.resources.glory++;
+            }
+        }
+
+        document.getElementById('host-phase-display').innerText = `Результат: ${resOuter}, ${resMiddle}, ${resInner}`;
+        this.broadcastState();
+        
+        setTimeout(() => {
+            this.state.phase = 'BUILDING';
+            this.state.currentTurn = 0;
+            this.broadcastState();
+        }, 3000);
+    },
+
+    processBuy(peerId, bId) {
+        const b = GAME_DATA.buildings.find(x => x.id === bId);
+        const p = this.state.players[peerId];
+        
+        let canBuy = true;
+        for (let res in b.cost) {
+            if (p.resources[res] < b.cost[res]) canBuy = false;
+        }
+
+        if (canBuy) {
+            for (let res in b.cost) p.resources[res] -= b.cost[res];
+            p.buildings.push(bId);
+            
+            if (b.id.startsWith('m')) {
+                alert(`ИГРОК ${p.name} ВОЗВЕЛ МОНУМЕНТ И ПОБЕДИЛ!`);
+                this.state.phase = 'LOBBY';
             } else {
-                const count = Object.values(players).filter(p => p.action !== null).length;
-                const total = Object.keys(players).length;
-                document.getElementById('cine-log').innerHTML = `Плетение интриг... ${count}/${total}`;
-                document.getElementById('cine-log').style.opacity = 1;
+                this.nextTurn();
             }
         }
+    },
 
-        async function resolveRound() {
-            await logCine(`ЧАС ${currentRound}. НАЧАЛО.`, 'var(--gold)');
-            
-            // 1. Собираем и сортируем действия по инициативе (1 -> 10)
-            let actions = [];
-            for (let id in players) {
-                const card = CARDS.find(c => c.id === players[id].action.cardId);
-                actions.push({ id, p: players[id], card, targetLoc: players[id].action.targetLoc });
-            }
-            actions.sort((a, b) => a.card.init - b.card.init);
-
-            // 2. Отыгрываем действия по очереди (RPG Движок)
-            for (let act of actions) {
-                const p = act.p;
-                
-                // Визуальный фокус на локации
-                const distEl = document.getElementById(`dist-${p.loc}`);
-                distEl.style.boxShadow = `0 0 50px ${DISTRICTS[p.loc].color}`;
-                
-                if (act.card.id === 'move') {
-                    p.loc = act.targetLoc;
-                    await logCine(`🏃 ${p.name} перемещается в ${DISTRICTS[p.loc].name}`, '#fff');
-                    updateHostMap();
-                } 
-                else if (act.card.id === 'gather') {
-                    let bonus = p.inv.am ? 1 : 0; // Амулет дает +1 Эфир
-                    p.eth += (2 + bonus);
-                    await logCine(`💎 ${p.name} добывает Эфир (+${2+bonus})`, '#00E5FF');
-                }
-                else if (act.card.id === 'attack') {
-                    // Ищем цель в этой же локации
-                    const targets = Object.values(players).filter(t => t !== p && t.loc === p.loc);
-                    if (targets.length > 0) {
-                        let target = targets[0];
-                        if (target.inv.ar) {
-                            await logCine(`🛡️ ${target.name} отражает атаку Броней!`, '#FF5722');
-                            target.inv.ar = false; // Броня ломается
-                        } else {
-                            if (target.vp > 0) {
-                                target.vp -= 1; p.vp += 1;
-                                let bonus = p.inv.wp ? " (и +1 Эфир за Кинжал)" : "";
-                                if (p.inv.wp) p.eth += 1;
-                                await logCine(`🗡️ ${p.name} крадет ПО у ${target.name}!${bonus}`, '#FF003C');
-                            } else {
-                                await logCine(`🗡️ У ${target.name} нет ПО для кражи.`, '#888');
-                            }
-                        }
-                    } else {
-                        await logCine(`🗡️ ${p.name} атакует пустоту...`, '#888');
-                    }
-                }
-                else if (act.card.id === 'evolve') {
-                    if (p.eth >= 3) {
-                        p.eth -= 3; p.vp += 1;
-                        await logCine(`⚙️ ${p.name} строит двигатель! (+1 ПО)`, 'var(--gold)');
-                    } else {
-                        await logCine(`❌ ${p.name}: Недостаточно Эфира.`, '#888');
-                    }
-                }
-                
-                distEl.style.boxShadow = `0 15px 35px rgba(0,0,0,0.9)`;
-                await sleep(500);
-            }
-
-            // Конец раунда
-            Object.values(players).forEach(p => p.action = null);
-            currentRound++;
-            phase = 'DRAFT';
-            
-            if (currentRound > 10) {
-                let winner = Object.values(players).sort((a,b)=>b.vp - a.vp)[0];
-                await logCine(`ГОРОД ПАЛ. ПРАВИТЕЛЬ: ${winner.name} (${winner.vp} ПО)`, 'var(--gold)');
-            } else {
-                document.getElementById('round-counter').innerText = `${currentRound} / 10`;
-                broadcastState();
-            }
+    nextTurn() {
+        this.state.currentTurn++;
+        if (this.state.currentTurn >= this.state.turnOrder.length) {
+            this.startRound();
+        } else {
+            this.broadcastState();
         }
+    },
 
-        function broadcastState() {
-            for (let id in players) {
-                const p = players[id];
-                p.conn.send({ type: 'STATE', vp: p.vp, eth: p.eth, loc: p.loc, inv: p.inv, phase });
-            }
-        }
-
-        /* ================= ИГРОК (ТЕЛЕФОН) ================= */
-        function joinGame() {
-            const code = document.getElementById('room-code').value;
-            const name = document.getElementById('player-name').value;
-            if(!code || !name || !selectedFaction) return alert("Заполните все данные!");
-            
-            event.target.innerText = "ПОДКЛЮЧЕНИЕ..."; event.target.disabled = true;
-
-            peer = new Peer();
-            peer.on('open', (id) => {
-                hostConn = peer.connect(code);
-                hostConn.on('open', () => {
-                    hostConn.send({ type: 'JOIN', name, faction: selectedFaction });
-                    document.getElementById('my-name-display').innerText = `Лидер: ${name}`;
-                    renderCards();
-                    show('player-screen');
-                });
-                
-                hostConn.on('data', (data) => {
-                    if (data.type === 'STATE') {
-                        document.getElementById('vp-display').innerText = data.vp;
-                        document.getElementById('eth-display').innerText = data.eth;
-                        document.getElementById('my-location').innerText = DISTRICTS[data.loc].name;
-                        
-                        document.getElementById('inv-amulet').classList.toggle('filled', data.inv.am);
-                        document.getElementById('inv-weapon').classList.toggle('filled', data.inv.wp);
-                        document.getElementById('inv-armor').classList.toggle('filled', data.inv.ar);
-
-                        if(data.phase === 'DRAFT') {
-                            document.getElementById('action-header').innerText = "Фаза Интриг: Выберите действие";
-                            document.querySelectorAll('.action-card').forEach(c => c.classList.remove('disabled'));
-                        }
-                    }
-                });
+    broadcastState() {
+        for (let id in this.hostConns) {
+            this.hostConns[id].send({
+                type: 'STATE_UPDATE',
+                state: this.state,
+                you: this.state.players[id]
             });
-            peer.on('error', () => { alert("Ошибка подключения!"); show('lobby-screen'); });
         }
+        this.renderHostPlayers();
+    },
 
-        function renderCards() {
-            const cont = document.getElementById('cards-container');
-            cont.innerHTML = '';
-            CARDS.forEach(c => {
-                const el = document.createElement('div');
-                el.className = 'action-card glass';
-                el.innerHTML = `
-                    <div class="card-init" title="Инициатива (чем меньше, тем быстрее)">${c.init}</div>
-                    <div class="card-info">
-                        <h4>${c.icon} ${c.title}</h4>
-                        <p>${c.desc}</p>
+    // 3. Логика Клиента
+    handleClientMessage(msg) {
+        if (msg.type === 'STATE_UPDATE') {
+            this.clientData = msg.you;
+            this.renderClientUI(msg.state);
+        }
+    },
+
+    submitCards() {
+        const o = parseInt(document.getElementById('card-outer').value);
+        const m = parseInt(document.getElementById('card-middle').value);
+        const i = parseInt(document.getElementById('card-inner').value);
+        
+        this.conn.send({ type: 'SUBMIT_CARDS', cards: { outer: o, middle: m, inner: i } });
+        document.getElementById('btn-submit-cards').disabled = true;
+        document.getElementById('btn-submit-cards').innerText = 'Ожидание...';
+    },
+
+    skipBuild() {
+        this.conn.send({ type: 'SKIP_TURN' });
+    },
+
+    buyBuilding(id) {
+        this.conn.send({ type: 'BUY_BUILDING', buildingId: id });
+    },
+
+    // 4. Отрисовка
+    renderHostAstrolabe() {
+        const ro = document.getElementById('ring-outer');
+        const rm = document.getElementById('ring-middle');
+        const ri = document.getElementById('ring-inner');
+        
+        const degOuter = this.state.astrolabe.outer * (360 / 8);
+        const degMiddle = this.state.astrolabe.middle * (360 / 8);
+        const degInner = this.state.astrolabe.inner * (360 / 4);
+
+        ro.style.transform = `rotate(${degOuter}deg)`;
+        rm.style.transform = `rotate(${degMiddle}deg)`;
+        ri.style.transform = `rotate(${degInner}deg)`;
+        
+        // Рисуем сектора (упрощенно текстово для прототипа)
+        ro.innerHTML = ''; rm.innerHTML = ''; ri.innerHTML = '';
+        GAME_DATA.rings.outer.forEach((txt, i) => {
+            const el = document.createElement('div');
+            el.style.position = 'absolute'; el.style.transform = `rotate(${i*-45}deg) translateY(-160px)`;
+            el.innerText = txt.substring(0,3); el.className = 'text-xs text-gray-400'; ro.appendChild(el);
+        });
+        GAME_DATA.rings.middle.forEach((txt, i) => {
+            const el = document.createElement('div');
+            el.style.position = 'absolute'; el.style.transform = `rotate(${i*-45}deg) translateY(-110px)`;
+            el.innerText = txt.substring(0,3); el.className = 'text-xs text-yellow-600'; rm.appendChild(el);
+        });
+        GAME_DATA.rings.inner.forEach((txt, i) => {
+            const el = document.createElement('div');
+            el.style.position = 'absolute'; el.style.transform = `rotate(${i*-90}deg) translateY(-60px)`;
+            el.innerText = txt.substring(0,3); el.className = 'text-xs text-red-500'; ri.appendChild(el);
+        });
+    },
+
+    renderHostPlayers() {
+        const container = document.getElementById('host-players');
+        container.innerHTML = '';
+        for (let pid in this.state.players) {
+            let p = this.state.players[pid];
+            let isTurn = (this.state.phase === 'BUILDING' && this.state.turnOrder[this.state.currentTurn] === pid);
+            container.innerHTML += `
+                <div class="card ${isTurn ? 'border-yellow-500' : ''}">
+                    <h3 class="font-bold gold-text">${p.name}</h3>
+                    <div class="text-xs text-gray-400">Зданий: ${p.buildings.length}</div>
+                    <div class="text-xs mt-2">Золото: ${p.resources.gold} | Ресурсы: ${p.resources.wood + p.resources.stone + p.resources.iron + p.resources.wheat}</div>
+                </div>
+            `;
+        }
+        if(this.state.phase === 'BUILDING') {
+            const activeId = this.state.turnOrder[this.state.currentTurn];
+            document.getElementById('host-phase-display').innerText = `Ход: ${this.state.players[activeId].name} (Строительство)`;
+        }
+    },
+
+    renderClientUI(gameState) {
+        if (!gameState) return;
+
+        // Ресурсы
+        const r = this.clientData.resources;
+        document.getElementById('client-resources').innerHTML = `
+            <div>Дер: ${r.wood}</div><div>Кам: ${r.stone}</div><div>Жел: ${r.iron}</div><div>Пше: ${r.wheat}</div>
+            <div class="text-yellow-600">Шес: ${r.gear}</div><div class="text-yellow-600">Сте: ${r.glass}</div>
+            <div class="text-yellow-600">Чер: ${r.blueprint}</div><div class="text-yellow-400 font-bold">Зол: ${r.gold}</div>
+        `;
+
+        // Фазы
+        const cp = document.getElementById('client-planning');
+        const cb = document.getElementById('client-building');
+        const btnSub = document.getElementById('btn-submit-cards');
+        
+        if (gameState.phase === 'PLANNING') {
+            cp.classList.remove('hidden');
+            cb.classList.add('hidden');
+            btnSub.disabled = false;
+            btnSub.innerText = 'Утвердить шестеренки';
+        } 
+        else if (gameState.phase === 'BUILDING') {
+            cp.classList.add('hidden');
+            cb.classList.remove('hidden');
+            
+            const isMyTurn = (gameState.turnOrder[gameState.currentTurn] === this.clientData.id);
+            
+            // Рендер магазина
+            const shop = document.getElementById('client-shop');
+            shop.innerHTML = '';
+            GAME_DATA.buildings.forEach(b => {
+                // Проверка стоимости
+                let canAfford = true;
+                let costStr = [];
+                for(let k in b.cost) {
+                    costStr.push(`${b.cost[k]} ${k}`);
+                    if(r[k] < b.cost[k]) canAfford = false;
+                }
+                
+                shop.innerHTML += `
+                    <div class="card flex justify-between items-center ${b.id.startsWith('m') ? 'border-yellow-500' : ''}">
+                        <div>
+                            <div class="font-bold text-sm">${b.name}</div>
+                            <div class="text-xs text-gray-500">${costStr.join(', ')}</div>
+                        </div>
+                        <button onclick="app.buyBuilding('${b.id}')" ${(!isMyTurn || !canAfford) ? 'disabled' : ''} class="btn text-xs py-1">Купить</button>
                     </div>
                 `;
-                el.onclick = () => playCard(c.id, el);
-                cont.appendChild(el);
             });
+        } else {
+            cp.classList.add('hidden');
+            cb.classList.add('hidden');
         }
-
-        function playCard(cardId, el) {
-            // Защита от повторного клика
-            if(el.classList.contains('disabled')) return;
-            
-            let targetLoc = null;
-            if (cardId === 'move') {
-                // Упрощенный выбор: в прототипе просто прыгаем в случайный соседний район (или промптом)
-                let dest = prompt("Куда переместиться? (0: Кузня, 1: Каналы, 2: Сады, 3: Шпиль)", "0");
-                targetLoc = parseInt(dest);
-                if(isNaN(targetLoc) || targetLoc < 0 || targetLoc > 3) return alert("Отмена перемещения");
-            }
-
-            document.querySelectorAll('.action-card').forEach(c => c.classList.add('disabled'));
-            document.getElementById('action-header').innerText = "Ожидайте развязки на Главном Экране...";
-            
-            hostConn.send({ type: 'ACTION', action: { cardId, targetLoc } });
-        }
-    </script>
+    },
+    
+    useAbility() {
+        alert("Навык активирован (Логика обрабатывается на сервере)");
+        // Здесь добавляется отправка спец-сообщения на хост для активных навыков
+    }
+};
+</script>
 </body>
 </html>
