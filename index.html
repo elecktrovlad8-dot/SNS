@@ -3,15 +3,16 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>Полуночный Особняк: Тайна Трёх Кошек</title>
+  <title>Тайна 3D Особняка: Воссоединение Трёх Кошек</title>
   <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
   <style>
     :root {
       --theme-hue: 350;
       --theme-sat: 82%;
       --bg-dark: hsl(350, 75%, 5%);
       --glass-bg: hsla(350, 65%, 9%, 0.82);
-      --glass-border: hsla(350, 90%, 65%, 0.35);
+      --glass-border: hsla(350, 90%, 65%, 0.36);
       --accent: hsl(350, 95%, 60%);
       --accent-soft: hsla(350, 95%, 60%, 0.25);
       --gold: #ffd15c;
@@ -36,13 +37,59 @@
       color: var(--text-main);
     }
 
-    #mansion-canvas {
+    #webgl-container {
       position: fixed;
       top: 0;
       left: 0;
       width: 100vw;
       height: 100vh;
       z-index: 0;
+    }
+
+    /* Слой 2D-подписей поверх 3D-комнат */
+    #labels-layer {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      z-index: 5;
+      pointer-events: none;
+      overflow: hidden;
+    }
+
+    .room-3d-label {
+      position: absolute;
+      transform: translate(-50%, -50%);
+      background: rgba(8, 4, 12, 0.85);
+      border: 1.5px solid var(--glass-border);
+      padding: 4px 10px;
+      border-radius: 8px;
+      font-size: 0.74rem;
+      font-weight: 800;
+      color: #fff;
+      white-space: nowrap;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.7);
+      transition: border-color 0.25s ease;
+    }
+
+    .room-3d-label.explored {
+      border-color: var(--gold);
+      color: var(--gold);
+    }
+
+    .cat-3d-tag {
+      position: absolute;
+      transform: translate(-50%, -100%);
+      background: rgba(12, 6, 18, 0.92);
+      border: 2px solid #fff;
+      padding: 3px 9px;
+      border-radius: 999px;
+      font-size: 0.76rem;
+      font-weight: 900;
+      color: #fff;
+      white-space: nowrap;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.8);
     }
 
     .glass-panel {
@@ -68,29 +115,29 @@
       pointer-events: auto;
     }
 
-    /* Верхняя полоса быстрого выбора цвета */
+    /* Верхняя панель выбора цвета */
     .top-color-bar {
       position: fixed;
       top: 10px;
       left: 50%;
       transform: translateX(-50%);
-      z-index: 50;
+      z-index: 60;
       display: flex;
       align-items: center;
-      gap: 6px;
-      padding: 5px 12px;
+      gap: 7px;
+      padding: 5px 14px;
       border-radius: 999px;
-      background: rgba(8, 4, 10, 0.85);
+      background: rgba(8, 4, 12, 0.88);
       border: 1px solid var(--glass-border);
       pointer-events: auto;
-      box-shadow: 0 6px 20px rgba(0,0,0,0.6);
+      box-shadow: 0 6px 20px rgba(0,0,0,0.65);
     }
 
     .c-dot {
       width: 22px;
       height: 22px;
       border-radius: 50%;
-      border: 2px solid rgba(255,255,255,0.45);
+      border: 2px solid rgba(255,255,255,0.5);
       cursor: pointer;
       transition: transform 0.15s ease, border-color 0.15s ease;
     }
@@ -109,7 +156,6 @@
       padding: 4px 10px;
       border-radius: 999px;
       cursor: pointer;
-      text-shadow: 0 1px 3px rgba(0,0,0,0.8);
     }
 
     .btn {
@@ -118,7 +164,7 @@
       color: var(--text-main);
       padding: 12px 20px;
       border-radius: 12px;
-      font-size: 0.98rem;
+      font-size: 0.96rem;
       font-weight: 700;
       cursor: pointer;
       transition: all 0.2s ease;
@@ -137,7 +183,7 @@
     }
 
     .btn-gold {
-      background: linear-gradient(135deg, rgba(245, 158, 11, 0.8), hsla(var(--theme-hue), 85%, 30%, 0.95));
+      background: linear-gradient(135deg, rgba(245, 158, 11, 0.82), hsla(var(--theme-hue), 85%, 30%, 0.95));
       border: 2px solid var(--gold);
       color: #fffbeb;
       box-shadow: 0 0 24px rgba(255, 209, 92, 0.3);
@@ -156,27 +202,23 @@
       pointer-events: auto;
     }
 
-    input[type="text"]:focus {
-      border-color: var(--gold);
-    }
-
     .center-modal {
       position: absolute;
       top: 52%;
       left: 50%;
       transform: translate(-50%, -50%);
-      padding: 28px 32px;
-      max-width: 580px;
+      padding: 26px 30px;
+      max-width: 590px;
       width: 94%;
       text-align: center;
       display: flex;
       flex-direction: column;
-      gap: 16px;
+      gap: 14px;
       pointer-events: auto;
     }
 
     .title-grand {
-      font-size: 2rem;
+      font-size: 1.95rem;
       font-weight: 900;
       letter-spacing: 1px;
       background: linear-gradient(90deg, #ffffff, var(--gold), var(--accent));
@@ -190,8 +232,8 @@
       width: 100vw;
       height: 100vh;
       display: grid;
-      grid-template-columns: 300px 1fr 310px;
-      grid-template-rows: 66px 1fr 126px;
+      grid-template-columns: 295px 1fr 305px;
+      grid-template-rows: 64px 1fr 122px;
       gap: 12px;
       padding: 12px;
     }
@@ -209,7 +251,7 @@
       border: 2px solid var(--gold);
       padding: 4px 14px;
       border-radius: 10px;
-      font-size: 1.35rem;
+      font-size: 1.3rem;
       font-weight: 900;
       letter-spacing: 3px;
       color: var(--gold);
@@ -249,7 +291,7 @@
     .tv-bottom {
       grid-column: 2 / 3;
       grid-row: 3 / 4;
-      padding: 10px 16px;
+      padding: 9px 14px;
       display: flex;
       flex-direction: column;
       justify-content: space-between;
@@ -263,42 +305,40 @@
       display: flex;
       flex-direction: column;
       gap: 4px;
-      transition: all 0.25s ease;
     }
 
     .p-row.active-turn {
       border: 2px solid var(--gold);
       background: linear-gradient(135deg, hsla(var(--theme-hue), 80%, 26%, 0.88), rgba(12, 8, 14, 0.92));
       box-shadow: 0 0 18px rgba(255, 209, 92, 0.35);
-      transform: translateX(4px);
     }
 
     .cinematic-banner {
-      background: rgba(8, 4, 10, 0.9);
+      background: rgba(8, 4, 12, 0.9);
       border: 2px solid var(--gold);
       border-radius: 14px;
       padding: 8px 22px;
       text-align: center;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.8);
-      max-width: 95%;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.85);
+      max-width: 96%;
     }
 
-    .cats-status-grid {
+    .cats-grid {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
       gap: 10px;
       height: 100%;
     }
 
-    .cat-status-card {
-      background: rgba(0, 0, 0, 0.45);
+    .cat-card {
+      background: rgba(0, 0, 0, 0.48);
       border: 1px solid rgba(255, 255, 255, 0.16);
       border-radius: 10px;
       padding: 6px 10px;
       display: flex;
       flex-direction: column;
       justify-content: space-between;
-      font-size: 0.74rem;
+      font-size: 0.73rem;
     }
 
     .log-feed {
@@ -307,12 +347,12 @@
       display: flex;
       flex-direction: column;
       gap: 6px;
-      font-size: 0.79rem;
+      font-size: 0.78rem;
       padding-right: 4px;
     }
 
     .log-item {
-      background: rgba(0, 0, 0, 0.38);
+      background: rgba(0, 0, 0, 0.4);
       border-left: 3px solid var(--accent);
       padding: 6px 9px;
       border-radius: 0 8px 8px 0;
@@ -333,19 +373,42 @@
       pointer-events: auto;
     }
 
+    .cat-tab-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 6px;
+    }
+
+    .cat-tab-btn {
+      padding: 10px 6px;
+      border-radius: 10px;
+      background: rgba(0,0,0,0.5);
+      border: 1.5px solid rgba(255,255,255,0.2);
+      color: #fff;
+      font-weight: 800;
+      font-size: 0.82rem;
+      cursor: pointer;
+      text-align: center;
+    }
+
+    .cat-tab-btn.selected {
+      border-color: var(--gold);
+      background: hsla(var(--theme-hue), 80%, 32%, 0.9);
+      box-shadow: 0 0 14px var(--accent-soft);
+    }
+
     .action-btn-phone {
       width: 100%;
       text-align: left;
       padding: 12px 14px;
       border-radius: 12px;
-      background: rgba(14, 7, 15, 0.92);
+      background: rgba(14, 7, 16, 0.92);
       border: 1px solid var(--glass-border);
       color: var(--text-main);
       cursor: pointer;
       display: flex;
       flex-direction: column;
       gap: 3px;
-      transition: transform 0.12s ease, border-color 0.12s ease;
     }
 
     .action-btn-phone:active:not(:disabled) {
@@ -360,31 +423,31 @@
 </head>
 <body>
 
-  <!-- Верхняя панель смены цвета (доступна на главном экране в любой момент) -->
-  <div class="top-color-bar" id="color-bar">
+  <!-- Верхняя панель выбора цвета -->
+  <div class="top-color-bar">
     <span style="font-size:0.74rem; font-weight:800; color:var(--gold); margin-right:4px;">ЦВЕТ:</span>
-    <div class="c-dot" style="background:hsl(350, 82%, 45%);" data-hue="350" data-sat="82" title="Багровый"></div>
-    <div class="c-dot" style="background:hsl(160, 78%, 40%);" data-hue="160" data-sat="78" title="Изумрудный"></div>
-    <div class="c-dot" style="background:hsl(215, 84%, 48%);" data-hue="215" data-sat="84" title="Сапфировый"></div>
-    <div class="c-dot" style="background:hsl(275, 78%, 48%);" data-hue="275" data-sat="78" title="Аметистовый"></div>
-    <div class="c-dot" style="background:hsl(24, 88%, 46%);" data-hue="24" data-sat="88" title="Янтарный"></div>
+    <div class="c-dot" style="background:hsl(350, 82%, 45%);" data-hue="350" data-sat="82"></div>
+    <div class="c-dot" style="background:hsl(160, 78%, 40%);" data-hue="160" data-sat="78"></div>
+    <div class="c-dot" style="background:hsl(215, 84%, 48%);" data-hue="215" data-sat="84"></div>
+    <div class="c-dot" style="background:hsl(275, 78%, 48%);" data-hue="275" data-sat="78"></div>
+    <div class="c-dot" style="background:hsl(24, 88%, 46%);" data-hue="24" data-sat="88"></div>
     <button class="c-random-btn" id="btn-top-random">🎲 Рандом</button>
   </div>
 
-  <!-- Анимированная сцена Особняка, Персонажей и Трёх Кошек -->
-  <canvas id="mansion-canvas"></canvas>
+  <!-- 3D-сцена Three.js -->
+  <div id="webgl-container"></div>
 
-  <!-- Слой интерфейса -->
+  <!-- Проекционные 2D-названия поверх 3D-комнат и кошек -->
+  <div id="labels-layer"></div>
+
+  <!-- Основной интерфейс -->
   <div id="app"></div>
 
   <script>
     /***************************************************************************
-     * 1. УПРАВЛЕНИЕ ЦВЕТОМ И СИНХРОНИЗАЦИЯ СО ВСЕМИ ИГРОКАМИ
+     * 1. ЦВЕТОВАЯ ТЕМА И СИНХРОНИЗАЦИЯ С ТЕЛЕФОНАМИ
      ***************************************************************************/
-    const themeState = {
-      hue: 350,
-      sat: 82
-    };
+    const themeState = { hue: 350, sat: 82 };
 
     function setGlobalTheme(hue, sat = 82) {
       themeState.hue = ((hue % 360) + 360) % 360;
@@ -397,32 +460,29 @@
       r.style.setProperty('--theme-sat', `${s}%`);
       r.style.setProperty('--bg-dark', `hsl(${h}, 75%, 5%)`);
       r.style.setProperty('--glass-bg', `hsla(${h}, 65%, 9%, 0.82)`);
-      r.style.setProperty('--glass-border', `hsla(${h}, 90%, 65%, 0.35)`);
+      r.style.setProperty('--glass-border', `hsla(${h}, 90%, 65%, 0.36)`);
       r.style.setProperty('--accent', `hsl(${h}, 95%, 60%)`);
       r.style.setProperty('--accent-soft', `hsla(${h}, 95%, 60%, 0.25)`);
       r.style.setProperty('--text-muted', `hsl(${h}, 80%, 84%)`);
 
-      if (mode === 'HOST') {
-        broadcastStateToPhones();
-      }
+      update3DThemeLighting();
+      if (mode === 'HOST') broadcastToPhones();
     }
 
     document.querySelectorAll('.c-dot').forEach(dot => {
       dot.onclick = () => {
         setGlobalTheme(Number(dot.getAttribute('data-hue')), Number(dot.getAttribute('data-sat')));
-        SFX.coin();
+        SFX.chime();
       };
     });
 
     document.getElementById('btn-top-random').onclick = () => {
-      const rh = Math.floor(Math.random() * 360);
-      const rs = 70 + Math.floor(Math.random() * 25);
-      setGlobalTheme(rh, rs);
-      SFX.coin();
+      setGlobalTheme(Math.floor(Math.random() * 360), 72 + Math.floor(Math.random() * 22));
+      SFX.chime();
     };
 
     /***************************************************************************
-     * 2. ЗВУКОВОЙ ДВИЖОК (ШАГИ, УДАР НОЖОМ, МЯУКАНЬЕ, ВОДА, ЗВОН МОНЕТ)
+     * 2. ЗВУКОВОЙ СИНТЕЗАТОР WEB AUDIO API
      ***************************************************************************/
     const SFX = {
       ctx: null,
@@ -433,7 +493,7 @@
         }
         if (this.ctx && this.ctx.state === 'suspended') this.ctx.resume();
       },
-      play(freq, type = 'sine', dur = 0.15, vol = 0.12, slide = null) {
+      tone(freq, type = 'sine', dur = 0.16, vol = 0.11, slide = null) {
         if (!this.ctx) return;
         try {
           const o = this.ctx.createOscillator();
@@ -449,691 +509,625 @@
           o.stop(this.ctx.currentTime + dur);
         } catch (e) {}
       },
-      coin() {
-        this.play(1046, 'sine', 0.1, 0.1);
-        setTimeout(() => this.play(1318, 'triangle', 0.18, 0.12), 65);
+      chime() {
+        this.tone(880, 'sine', 0.12, 0.1);
+        setTimeout(() => this.tone(1318, 'triangle', 0.22, 0.12), 70);
       },
-      knifeSlash() {
-        this.play(680, 'sawtooth', 0.16, 0.16, 120);
-        setTimeout(() => this.play(160, 'square', 0.22, 0.15, 65), 90);
-      },
-      shieldClang() {
-        this.play(520, 'square', 0.12, 0.14);
-        setTimeout(() => this.play(880, 'triangle', 0.25, 0.14), 60);
-      },
-      sneakStep() {
-        for (let i = 0; i < 4; i++) {
-          setTimeout(() => this.play(180 + (i % 2) * 40, 'sine', 0.06, 0.07), i * 130);
-        }
+      doorOpen() {
+        this.tone(180, 'sawtooth', 0.25, 0.09, 320);
+        setTimeout(() => this.tone(523, 'triangle', 0.25, 0.12), 200);
       },
       sonyaMeow() {
-        this.play(540, 'sine', 0.35, 0.14, 720);
-        setTimeout(() => this.play(720, 'sine', 0.4, 0.12, 480), 220);
+        this.tone(580, 'sine', 0.35, 0.14, 760);
+        setTimeout(() => this.tone(760, 'sine', 0.42, 0.12, 510), 230);
       },
       waterSplash() {
         for (let i = 0; i < 5; i++) {
-          setTimeout(() => this.play(400 + Math.random() * 500, 'sine', 0.09, 0.08), i * 65);
+          setTimeout(() => this.tone(420 + Math.random() * 480, 'sine', 0.08, 0.08), i * 60);
         }
       },
       fanfare() {
-        [261, 329, 392, 523].forEach((f, i) => {
-          setTimeout(() => this.play(f, 'triangle', 0.24, 0.15), i * 95);
+        [261, 329, 392, 523, 659].forEach((f, i) => {
+          setTimeout(() => this.tone(f, 'triangle', 0.26, 0.15), i * 95);
         });
       }
     };
 
     /***************************************************************************
-     * 3. СОСТОЯНИЕ ОСОБНЯКА, ИГРОКОВ, ТРЁХ КОШЕК И АНИМАЦИОННОЙ СЦЕНЫ
+     * 3. АРХИТЕКТУРА 9 КОМНАТ 3D-ОСОБНЯКА И СЮЖЕТ ТРЁХ КОШЕК
      ***************************************************************************/
-    const AVATAR_COLORS = [
-      '#ff3b5c', '#38bdf8', '#a3e635', '#fb923c',
-      '#c084fc', '#2dd4bf', '#facc15', '#f472b6'
+    const ROOMS_DATA = [
+      {
+        id: 0, row: 0, col: 0,
+        name: 'Шалаш из Тёплого Пледа',
+        furnType: 'blanket_tent',
+        floorColor: 0x4a1d2c,
+        desc: 'Уютная кровать с тёмно-бордовым одеялом шалашом, где тихая Соня чувствует себя в безопасности'
+      },
+      {
+        id: 1, row: 0, col: 1,
+        name: 'Зеркальная Галерея',
+        furnType: 'gallery',
+        floorColor: 0x2e1a36,
+        desc: 'Высокий коридор со старинными портретами и свечами'
+      },
+      {
+        id: 2, row: 0, col: 2,
+        name: 'Кухня с Клетчатой Миской',
+        furnType: 'natasha_kitchen',
+        floorColor: 0x3b281e,
+        desc: 'Стол с красно-чёрной клетчатой миской и зелёным цветком в белом горшке, любимое место Наташи'
+      },
+      {
+        id: 3, row: 1, col: 0,
+        name: 'Тайная Библиотека',
+        furnType: 'library',
+        floorColor: 0x2c1d18,
+        desc: 'Книжные шкафы до потолка и парящие золотые страницы'
+      },
+      {
+        id: 4, row: 1, col: 1,
+        name: 'Центральный Зал Встречи',
+        furnType: 'grand_hall',
+        floorColor: 0x591224,
+        desc: 'Сердце Особняка с золотым порталом, где все три кошки должны встретиться вместе'
+      },
+      {
+        id: 5, row: 1, col: 2,
+        name: 'Мраморная Купальня',
+        furnType: 'bathtub',
+        floorColor: 0x12354a,
+        desc: 'Ванная с включённой водой и поилкой, где Наташа играет со струйками воды'
+      },
+      {
+        id: 6, row: 2, col: 0,
+        name: 'Каминный Зал Теней',
+        furnType: 'fireplace',
+        floorColor: 0x3d1919,
+        desc: 'Каменный камин с живым пламенем и бархатным креслом'
+      },
+      {
+        id: 7, row: 2, col: 1,
+        name: 'Часовая Оранжерея',
+        furnType: 'clock_garden',
+        floorColor: 0x193829,
+        desc: 'Старинные напольные часы, отсчитывающие каждые два часа до кормёжки Наташи'
+      },
+      {
+        id: 8, row: 2, col: 2,
+        name: 'Прихожая с Фиолетовой Плиткой',
+        furnType: 'stepan_door',
+        floorColor: 0x6b3fa0,
+        desc: 'Фиолетовый кафельный пол и светлая деревянная дверь, под которой развалился Степан'
+      }
     ];
 
-    const ROOM_PREFIX = 'midnight-mansion-';
+    // Функция проверки соседства комнат по сетке 3x3
+    function getAdjacentRooms(roomId) {
+      const r = ROOMS_DATA[roomId];
+      return ROOMS_DATA.filter(other => {
+        const dist = Math.abs(other.row - r.row) + Math.abs(other.col - r.col);
+        return dist === 1;
+      }).map(o => o.id);
+    }
+
+    const PLAYER_COLORS = ['#ff3b5c', '#38bdf8', '#a3e635', '#fb923c', '#c084fc', '#2dd4bf', '#facc15', '#f472b6'];
+    const ROOM_PREFIX = 'mansion-3d-cats-';
     const appEl = document.getElementById('app');
+    const labelsLayer = document.getElementById('labels-layer');
+
     let mode = 'MENU'; // MENU | HOST | CLIENT
     let peer = null;
 
     const hostState = {
       pin: '',
-      phase: 'LOBBY', // LOBBY | PLAYER_TURN | ANIMATING | GAME_OVER
+      phase: 'LOBBY', // LOBBY | TURN_SELECT | ANIMATING | GAME_OVER
       round: 1,
       activeIndex: 0,
-      headline: 'ОЖИДАНИЕ ГОСТЕЙ В ОСОБНЯКЕ',
-      subline: 'Подключитесь со смартфонов по PIN-коду или нажмите Начать Игру',
-      winner: null,
-      players: [], // { id, name, color, gold, rubies, hp, shield, stealth, isBot, conn }
-
-      // Состояние Трёх Кошек Особняка
+      keysFound: 0,
+      keysNeeded: 3,
+      sonyaMeowsLeft: 2,
+      headline: 'ОЖИДАНИЕ СПАСАТЕЛЕЙ У ВОРОТ ОСОБНЯКА',
+      subline: 'Степана затянуло в Особняк, а Соня и Наташа бросились за ним и потерялись в разных крыльях',
+      winnerName: '',
+      players: [], // { id, name, color, score, isBot, conn }
+      exploredRooms: [0, 2, 8], // На старте открыты только 3 угловые комнаты, где оказались кошки!
+      keyRooms: [1, 3, 5, 6, 7], // Комнаты, где спрятаны Золотые Ключи
       cats: {
-        // Соня: спит у любимого хозяина, боится резких движений, мяукает максимум 2 раза за всю партию
-        sonyaOwnerId: null,
-        sonyaMeowsLeft: 2,
-
-        // Наташа: высунутый язычок, любит воду в ванной и каждые 2 раунда просит поесть
-        natashaWaterActive: false,
-        natashaTargetId: null,
-
-        // Степан: авантюрист, лежит у двери Сейфа или прямо на вещах выбранного игрока
-        stepanLocation: 'VAULT', // 'VAULT' или ID игрока, на чьих вещах он развалился
+        sonya: { id: 'sonya', name: 'Соня', roomId: 0, color: '#f472b6', desc: 'Полосатая тихоня с прямыми ушками' },
+        natasha: { id: 'natasha', name: 'Наташа', roomId: 2, color: '#38bdf8', desc: 'Золотистая вислоухая с розовым язычком' },
+        stepan: { id: 'stepan', name: 'Степан', roomId: 8, color: '#fb923c', desc: 'Серебристый мраморный вислоухий авантюрист' }
       },
-
-      // Текущая буквальная анимация на экране
-      // type: 'ATTACK' | 'STEAL' | 'VAULT' | 'RUBY' | 'SONYA' | 'NATASHA_WATER' | 'NATASHA_FEED' | 'STEPAN'
-      scene: null,
       logs: []
     };
 
-    const vfx = {
-      floatingTexts: [],
-      particles: [],
-      bloodDrops: [],
-      waterDrops: [],
-      hearts: [],
-      screenShake: 0
-    };
-
     /***************************************************************************
-     * 4. КАРТА ОСОБНЯКА И БУКВАЛЬНАЯ АНИМАЦИЯ ПЕРСОНАЖЕЙ И КОШЕК НА CANVAS
+     * 4. НАСТОЯЩИЙ 3D-ДВИЖОК THREE.JS: 3D-КОМНАТЫ, МЕБЕЛЬ И 3D-МОДЕЛИ КОШЕК
      ***************************************************************************/
-    const canvas = document.getElementById('mansion-canvas');
-    const ctx = canvas.getContext('2d');
-    let cw = window.innerWidth;
-    let ch = window.innerHeight;
+    let scene, camera, renderer, ambientLight, mainSpotLight;
+    const roomMeshes = {};  // roomId -> { group, furnitureGroup, targetScaleY, pointLight }
+    const catMeshes = {};   // catKey -> { group, targetPos, currentPos, bobPhase }
+    const cameraTarget = new THREE.Vector3(0, 0, 0);
+    const cameraPositionGoal = new THREE.Vector3(0, 29, 25);
 
-    function resizeCanvas() {
-      cw = canvas.width = window.innerWidth;
-      ch = canvas.height = window.innerHeight;
-    }
-    window.addEventListener('resize', resizeCanvas);
-    resizeCanvas();
+    const ROOM_SPACING = 8.4;
 
-    // Координаты объектов в центре Зала Особняка
-    function getMansionLandmarks() {
-      const cx = cw * 0.5;
-      const cy = ch * 0.48;
-      return {
-        center: { x: cx, y: cy },
-        vault: { x: cx, y: cy - 88 },          // Золотой Сейф и Рубиновый Пьедестал
-        bath: { x: cx - 125, y: cy + 18 },     // Мраморная Ванная и Поилка Наташи
-        cushion: { x: cx + 125, y: cy + 18 }   // Тихая Подушка Сони
-      };
+    function getRoomWorldCoords(roomId) {
+      const r = ROOMS_DATA[roomId];
+      const x = (r.col - 1) * ROOM_SPACING;
+      const z = (r.row - 1) * ROOM_SPACING;
+      return new THREE.Vector3(x, 0, z);
     }
 
-    // Координаты каждого персонажа игрока вокруг центрального ковра
-    function getPlayerHomePos(index, total) {
-      const count = Math.max(2, total);
-      const angle = (index / count) * Math.PI * 2 - Math.PI / 2;
-      const rx = Math.min(cw * 0.25, 315);
-      const ry = Math.min(ch * 0.25, 195);
-      const cx = cw * 0.5;
-      const cy = ch * 0.48;
-      return {
-        x: cx + Math.cos(angle) * rx,
-        y: cy + Math.sin(angle) * ry
-      };
-    }
+    function initThreeJS() {
+      const container = document.getElementById('webgl-container');
+      scene = new THREE.Scene();
+      scene.fog = new THREE.FogExp2(0x120308, 0.018);
 
-    // Отрисовка живой кошки с узнаваемыми деталями!
-    function drawCatSprite(x, y, type, time, labelText) {
-      ctx.save();
-      ctx.translate(x, y);
-      const bob = Math.sin(time * 3.5) * 2;
+      camera = new THREE.PerspectiveCamera(42, window.innerWidth / window.innerHeight, 0.1, 200);
+      camera.position.copy(cameraPositionGoal);
+      camera.lookAt(cameraTarget);
 
-      if (type === 'sonya') {
-        // Соня: пушистая, тихая, свернулась калачиком и мирно спит
-        ctx.fillStyle = '#e2e8f0';
-        ctx.strokeStyle = '#475569';
-        ctx.lineWidth = 2;
-        ctx.beginPath();
-        ctx.ellipse(0, 4, 16, 11, 0, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.stroke();
+      renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+      renderer.shadowMap.enabled = true;
+      container.appendChild(renderer.domElement);
 
-        // Голова с закрытыми сонными глазками
-        ctx.beginPath();
-        ctx.arc(-9, 1, 9, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.stroke();
+      ambientLight = new THREE.AmbientLight(0xffd1dc, 0.65);
+      scene.add(ambientLight);
 
-        // Ушки
-        ctx.fillStyle = '#f472b6';
-        ctx.beginPath();
-        ctx.moveTo(-15, -5); ctx.lineTo(-12, -13); ctx.lineTo(-7, -7);
-        ctx.moveTo(-6, -6); ctx.lineTo(-2, -13); ctx.lineTo(-1, -5);
-        ctx.fill();
+      mainSpotLight = new THREE.DirectionalLight(0xffeedd, 0.95);
+      mainSpotLight.position.set(14, 32, 18);
+      mainSpotLight.castShadow = true;
+      scene.add(mainSpotLight);
 
-        // Сонные реснички
-        ctx.strokeStyle = '#1e293b';
-        ctx.lineWidth = 1.8;
-        ctx.beginPath();
-        ctx.arc(-12, 1, 2.5, 0, Math.PI);
-        ctx.moveTo(-6, 1);
-        ctx.arc(-6, 1, 2.5, 0, Math.PI);
-        ctx.stroke();
-      } else if (type === 'natasha') {
-        // Наташа: любопытная, сидит у воды, и ВСЕГДА торчит розовый кончик языка!
-        ctx.fillStyle = '#334155';
-        ctx.strokeStyle = '#94a3b8';
-        ctx.lineWidth = 2;
-        ctx.beginPath();
-        ctx.ellipse(0, 5 + bob * 0.4, 14, 12, 0, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.stroke();
-
-        // Голова
-        ctx.beginPath();
-        ctx.arc(0, -8 + bob, 10, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.stroke();
-
-        // Ушки
-        ctx.beginPath();
-        ctx.moveTo(-8, -14 + bob); ctx.lineTo(-10, -23 + bob); ctx.lineTo(-2, -17 + bob);
-        ctx.moveTo(8, -14 + bob); ctx.lineTo(10, -23 + bob); ctx.lineTo(2, -17 + bob);
-        ctx.fill();
-        ctx.stroke();
-
-        // Любопытные большие глаза
-        ctx.fillStyle = '#fde047';
-        ctx.beginPath();
-        ctx.arc(-4, -9 + bob, 2.8, 0, Math.PI * 2);
-        ctx.arc(4, -9 + bob, 2.8, 0, Math.PI * 2);
-        ctx.fill();
-
-        // ТОТ САМЫЙ РОЗОВЫЙ ЯЗЫЧОК НАТАШИ, КОТОРЫЙ ВСЕГДА ТОРЧИТ!
-        ctx.fillStyle = '#ff4d79';
-        ctx.strokeStyle = '#9f1239';
-        ctx.lineWidth = 1;
-        ctx.beginPath();
-        ctx.roundRect(-2.8, -3 + bob, 5.6, 6.5, 3);
-        ctx.fill();
-        ctx.stroke();
-      } else if (type === 'stepan') {
-        // Степан: рыжий/золотистый авантюрист, развалился в кайф прямо посреди событий!
-        ctx.fillStyle = '#fb923c';
-        ctx.strokeStyle = '#7c2d12';
-        ctx.lineWidth = 2;
-        ctx.beginPath();
-        ctx.ellipse(0, 5, 19, 11, 0, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.stroke();
-
-        // Довольная морда авантюриста
-        ctx.beginPath();
-        ctx.arc(11, -3 + bob, 10, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.stroke();
-
-        // Ушки
-        ctx.beginPath();
-        ctx.moveTo(5, -10 + bob); ctx.lineTo(4, -19 + bob); ctx.lineTo(10, -12 + bob);
-        ctx.moveTo(14, -11 + bob); ctx.lineTo(18, -19 + bob); ctx.lineTo(19, -9 + bob);
-        ctx.fill();
-        ctx.stroke();
-
-        // Яркие глаза
-        ctx.fillStyle = '#ffffff';
-        ctx.beginPath();
-        ctx.arc(8, -4 + bob, 2.4, 0, Math.PI * 2);
-        ctx.arc(14, -4 + bob, 2.4, 0, Math.PI * 2);
-        ctx.fill();
-      }
-
-      // Подпись имени кошки
-      if (labelText) {
-        ctx.font = '800 11px "Segoe UI", sans-serif';
-        ctx.textAlign = 'center';
-        const w = ctx.measureText(labelText).width + 10;
-        ctx.fillStyle = 'rgba(0, 0, 0, 0.82)';
-        ctx.beginPath();
-        ctx.roundRect(-w / 2, 19, w, 16, 6);
-        ctx.fill();
-        ctx.fillStyle = '#ffd15c';
-        ctx.fillText(labelText, 0, 30);
-      }
-
-      ctx.restore();
-    }
-
-    // Отрисовка живого персонажа игрока (с оружием, маской вора, щитом и эмоциями!)
-    function drawHumanCharacter(x, y, player, isTurn, pose, time) {
-      // pose: 'IDLE' | 'WALK' | 'STAB' | 'HURT' | 'SNEAK' | 'CELEBRATE'
-      ctx.save();
-      ctx.translate(x, y);
-
-      const walkCycle = pose === 'WALK' || pose === 'SNEAK' ? Math.sin(time * 18) * 6 : 0;
-      const bodyTilt = pose === 'HURT' ? 0.35 : (pose === 'SNEAK' ? -0.18 : 0);
-      ctx.rotate(bodyTilt);
-
-      // Тень под ногами
-      ctx.fillStyle = 'rgba(0, 0, 0, 0.45)';
-      ctx.beginPath();
-      ctx.ellipse(0, 24, 20, 8, 0, 0, Math.PI * 2);
-      ctx.fill();
-
-      // Золотой ореол под активным игроком
-      if (isTurn) {
-        ctx.strokeStyle = '#ffd15c';
-        ctx.lineWidth = 3;
-        ctx.beginPath();
-        ctx.ellipse(0, 24, 26 + Math.sin(time * 5) * 3, 11, 0, 0, Math.PI * 2);
-        ctx.stroke();
-      }
-
-      // Ноги в движении
-      ctx.strokeStyle = '#1e293b';
-      ctx.lineWidth = 5;
-      ctx.lineCap = 'round';
-      ctx.beginPath();
-      ctx.moveTo(-6, 10);
-      ctx.lineTo(-6 - walkCycle, 22);
-      ctx.moveTo(6, 10);
-      ctx.lineTo(6 + walkCycle, 22);
-      ctx.stroke();
-
-      // Плащ и торс персонажа в его цвете
-      ctx.fillStyle = player.color;
-      ctx.strokeStyle = '#ffffff';
-      ctx.lineWidth = 2;
-      ctx.beginPath();
-      ctx.moveTo(-14, 14);
-      ctx.lineTo(-10, -10);
-      ctx.lineTo(10, -10);
-      ctx.lineTo(14, 14);
-      ctx.closePath();
-      ctx.fill();
-      ctx.stroke();
-
-      // Голова персонажа
-      ctx.fillStyle = '#fde68a';
-      ctx.strokeStyle = '#1e293b';
-      ctx.lineWidth = 2;
-      ctx.beginPath();
-      ctx.arc(0, -19, 11, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.stroke();
-
-      // Если персонаж крадётся как вор — рисуем чёрную маску грабителя на глазах!
-      if (pose === 'SNEAK' || player.stealth) {
-        ctx.fillStyle = '#0f172a';
-        ctx.fillRect(-10, -23, 20, 6);
-      }
-
-      // Глаза
-      ctx.fillStyle = pose === 'HURT' ? '#ef4444' : '#0f172a';
-      ctx.beginPath();
-      ctx.arc(-4, -20, 1.8, 0, Math.PI * 2);
-      ctx.arc(4, -20, 1.8, 0, Math.PI * 2);
-      ctx.fill();
-
-      // Щит, если игрок защищён
-      if (player.shield) {
-        ctx.fillStyle = '#38bdf8';
-        ctx.strokeStyle = '#ffd15c';
-        ctx.lineWidth = 2;
-        ctx.beginPath();
-        ctx.moveTo(-18, -8);
-        ctx.lineTo(-10, -8);
-        ctx.lineTo(-10, 4);
-        ctx.lineTo(-14, 10);
-        ctx.lineTo(-18, 4);
-        ctx.closePath();
-        ctx.fill();
-        ctx.stroke();
-      }
-
-      // Если поза STAB — рисуем в руке большой сверкающий КИНЖАЛ и кровавый росчерк!
-      if (pose === 'STAB') {
-        ctx.save();
-        ctx.translate(16, -4);
-        ctx.rotate(Math.sin(time * 25) * 0.5);
-        // Рукоять
-        ctx.fillStyle = '#78350f';
-        ctx.fillRect(-4, -2, 8, 4);
-        // Лезвие ножа с багровым кончиком
-        ctx.fillStyle = '#e2e8f0';
-        ctx.strokeStyle = '#ff2a4b';
-        ctx.lineWidth = 1.5;
-        ctx.beginPath();
-        ctx.moveTo(4, -4);
-        ctx.lineTo(28, 0);
-        ctx.lineTo(4, 4);
-        ctx.closePath();
-        ctx.fill();
-        ctx.stroke();
-        ctx.restore();
-      }
-
-      // Если поза CELEBRATE — персонаж держит над головой сияющий Рубин или мешок золота!
-      if (pose === 'CELEBRATE') {
-        ctx.fillStyle = '#ff2a4b';
-        ctx.strokeStyle = '#ffd15c';
-        ctx.lineWidth = 2;
-        ctx.beginPath();
-        ctx.moveTo(0, -48);
-        ctx.lineTo(10, -38);
-        ctx.lineTo(0, -28);
-        ctx.lineTo(-10, -38);
-        ctx.closePath();
-        ctx.fill();
-        ctx.stroke();
-      }
-
-      ctx.restore();
-
-      // Информационная плашка прямо над головой каждого персонажа: Имя, Сердца, Золото, Рубины
-      ctx.save();
-      const heartsStr = '❤️'.repeat(Math.max(0, player.hp));
-      const rubiesStr = '💎'.repeat(player.rubies);
-      const topLabel = `${player.name} ${rubiesStr}`;
-      const subLabel = `${heartsStr}  🪙 ${player.gold}`;
-
-      ctx.font = '900 12px "Segoe UI", sans-serif';
-      const w = Math.max(ctx.measureText(topLabel).width, ctx.measureText(subLabel).width) + 16;
-
-      ctx.fillStyle = 'rgba(8, 4, 12, 0.86)';
-      ctx.strokeStyle = isTurn ? '#ffd15c' : player.color;
-      ctx.lineWidth = isTurn ? 2.5 : 1.5;
-      ctx.beginPath();
-      ctx.roundRect(x - w / 2, y - 66, w, 32, 8);
-      ctx.fill();
-      ctx.stroke();
-
-      ctx.fillStyle = '#ffffff';
-      ctx.textAlign = 'center';
-      ctx.fillText(topLabel, x, y - 53);
-
-      ctx.font = '800 11px "Segoe UI", sans-serif';
-      ctx.fillStyle = '#ffd15c';
-      ctx.fillText(subLabel, x, y - 39);
-      ctx.restore();
-    }
-
-    function renderMansionCanvas(timestamp) {
-      const t = timestamp * 0.001;
-      const h = themeState.hue;
-      const s = themeState.sat;
-
-      ctx.save();
-      if (vfx.screenShake > 0) {
-        const dx = (Math.random() - 0.5) * vfx.screenShake;
-        const dy = (Math.random() - 0.5) * vfx.screenShake;
-        ctx.translate(dx, dy);
-        vfx.screenShake *= 0.88;
-        if (vfx.screenShake < 0.5) vfx.screenShake = 0;
-      }
-
-      // 1. Фон Особняка
-      const bgGrad = ctx.createRadialGradient(cw * 0.5, ch * 0.48, 40, cw * 0.5, ch * 0.5, Math.max(cw, ch) * 0.85);
-      bgGrad.addColorStop(0, `hsl(${h}, ${s}%, 19%)`);
-      bgGrad.addColorStop(0.55, `hsl(${h}, ${s}%, 9%)`);
-      bgGrad.addColorStop(1, `hsl(${h}, 80%, 4%)`);
-      ctx.fillStyle = bgGrad;
-      ctx.fillRect(0, 0, cw, ch);
-
-      const lm = getMansionLandmarks();
-
-      // 2. Королевский ковёр в центре зала
-      ctx.save();
-      ctx.translate(lm.center.x, lm.center.y);
-      ctx.scale(1, 0.62);
-      ctx.beginPath();
-      ctx.arc(0, 0, 265, 0, Math.PI * 2);
-      ctx.fillStyle = `hsla(${h}, 75%, 15%, 0.85)`;
-      ctx.fill();
-      ctx.strokeStyle = '#ffd15c';
-      ctx.lineWidth = 4;
-      ctx.stroke();
-
-      ctx.beginPath();
-      ctx.arc(0, 0, 245, 0, Math.PI * 2);
-      ctx.strokeStyle = `hsla(${h}, 90%, 68%, 0.35)`;
-      ctx.lineWidth = 2;
-      ctx.stroke();
-      ctx.restore();
-
-      // 3. Отрисовка 3 центральных интерактивных зон Особняка:
-      // 3.1. ЗОЛОТОЙ СЕЙФ И СОКРОВИЩНИЦА РУБИНОВ
-      ctx.save();
-      ctx.fillStyle = '#1e293b';
-      ctx.strokeStyle = '#ffd15c';
-      ctx.lineWidth = 3;
-      ctx.beginPath();
-      ctx.roundRect(lm.vault.x - 46, lm.vault.y - 32, 92, 54, 10);
-      ctx.fill();
-      ctx.stroke();
-      // Рубин на вершине сейфа
-      ctx.fillStyle = '#ff2a4b';
-      ctx.beginPath();
-      ctx.moveTo(lm.vault.x, lm.vault.y - 46);
-      ctx.lineTo(lm.vault.x + 10, lm.vault.y - 36);
-      ctx.lineTo(lm.vault.x, lm.vault.y - 26);
-      ctx.lineTo(lm.vault.x - 10, lm.vault.y - 36);
-      ctx.closePath();
-      ctx.fill();
-      ctx.fillStyle = '#ffd15c';
-      ctx.font = '800 11px "Segoe UI", sans-serif';
-      ctx.textAlign = 'center';
-      ctx.fillText('ЗОЛОТОЙ СЕЙФ И РУБИНЫ', lm.vault.x, lm.vault.y - 52);
-      ctx.restore();
-
-      // 3.2. МРАМОРНАЯ ВАННАЯ И ПОИЛКА НАТАШИ
-      ctx.save();
-      ctx.fillStyle = '#0f172a';
-      ctx.strokeStyle = '#38bdf8';
-      ctx.lineWidth = 2.5;
-      ctx.beginPath();
-      ctx.ellipse(lm.bath.x, lm.bath.y, 44, 24, 0, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.stroke();
-      ctx.fillStyle = hostState.cats.natashaWaterActive ? '#38bdf8' : '#0284c7';
-      ctx.beginPath();
-      ctx.ellipse(lm.bath.x, lm.bath.y + 2, 36, 17, 0, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.fillStyle = '#7dd3fc';
-      ctx.font = '800 11px "Segoe UI", sans-serif';
-      ctx.textAlign = 'center';
-      ctx.fillText('ВАННАЯ НАТАШИ', lm.bath.x, lm.bath.y - 30);
-      ctx.restore();
-
-      // 3.3. БАРХАТНАЯ ПОДУШКА СОНИ
-      ctx.save();
-      ctx.fillStyle = '#831843';
-      ctx.strokeStyle = '#f472b6';
-      ctx.lineWidth = 2.5;
-      ctx.beginPath();
-      ctx.ellipse(lm.cushion.x, lm.cushion.y, 40, 22, 0, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.stroke();
-      ctx.fillStyle = '#fbcfe8';
-      ctx.font = '800 11px "Segoe UI", sans-serif';
-      ctx.textAlign = 'center';
-      ctx.fillText('УГОЛОК ТИШИНЫ СОНИ', lm.cushion.x, lm.cushion.y - 28);
-      ctx.restore();
-
-      // 4. Вычисление текущих позиций всех игроков с учётом буквальной анимации (`hostState.scene`)
-      const sc = hostState.scene;
-      let scProgress = 0;
-      if (sc) {
-        scProgress = Math.min(1, (performance.now() - sc.startTime) / sc.duration);
-      }
-
-      hostState.players.forEach((p, idx) => {
-        const home = getPlayerHomePos(idx, hostState.players.length);
-        let drawX = home.x;
-        let drawY = home.y;
-        let pose = 'IDLE';
-
-        if (sc && sc.actorIdx === idx) {
-          // Сцена, где этот игрок идёт к цели, совершает действие и возвращается!
-          const target = sc.targetPos;
-          if (scProgress < 0.35) {
-            // Идёт к цели
-            const k = scProgress / 0.35;
-            drawX = home.x + (target.x - home.x) * k;
-            drawY = home.y + (target.y - home.y) * k;
-            pose = sc.type === 'STEAL' ? 'SNEAK' : 'WALK';
-          } else if (scProgress < 0.72) {
-            // Совершает действие у цели (режет ножом, крадёт, открывает сейф и т.д.)
-            drawX = target.x;
-            drawY = target.y;
-            if (sc.type === 'ATTACK') pose = 'STAB';
-            else if (sc.type === 'STEAL') pose = 'SNEAK';
-            else pose = 'CELEBRATE';
-          } else {
-            // Возвращается на своё место
-            const k = (scProgress - 0.72) / 0.28;
-            drawX = target.x + (home.x - target.x) * k;
-            drawY = target.y + (home.y - target.y) * k;
-            pose = 'WALK';
-          }
-        } else if (sc && sc.victimIdx === idx && scProgress >= 0.35 && scProgress <= 0.75) {
-          if (sc.type === 'ATTACK') pose = 'HURT';
-        }
-
-        drawHumanCharacter(drawX, drawY, p, idx === hostState.activeIndex && hostState.phase !== 'LOBBY', pose, t);
-
-        // Если Соня выбрала этого игрока своим хозяином — Соня спит прямо у его ног!
-        if (hostState.cats.sonyaOwnerId === p.id) {
-          drawCatSprite(drawX + 28, drawY + 14, 'sonya', t, 'Соня спит у хозяина');
-        }
-
-        // Если Степан развалился прямо на вещах этого игрока
-        if (hostState.cats.stepanLocation === p.id) {
-          drawCatSprite(drawX - 28, drawY + 14, 'stepan', t, 'Степан лежит на вещах!');
-        }
+      // Строим все 9 комнат в 3D-пространстве
+      ROOMS_DATA.forEach(rData => {
+        build3DRoom(rData);
       });
 
-      // Отрисовка кошек на их центральных местах, если они не у игроков
-      if (!hostState.cats.sonyaOwnerId) {
-        drawCatSprite(lm.cushion.x, lm.cushion.y, 'sonya', t, 'Соня ждёт ласки');
-      }
+      // Создаём точные 3D-фигурки Сони, Наташи и Степана по фотографиям!
+      catMeshes.sonya = create3DCatModel('sonya');
+      catMeshes.natasha = create3DCatModel('natasha');
+      catMeshes.stepan = create3DCatModel('stepan');
 
-      // Наташа: либо у ванной с высунутым языком, либо бежит будить/кусать игрока в раунде кормёжки!
-      let natashaPos = { x: lm.bath.x, y: lm.bath.y + 4 };
-      if (sc && sc.type === 'NATASHA_FEED' && sc.targetPos) {
-        const k = scProgress < 0.5 ? scProgress * 2 : (1 - scProgress) * 2;
-        natashaPos = {
-          x: lm.bath.x + (sc.targetPos.x - lm.bath.x) * k,
-          y: lm.bath.y + (sc.targetPos.y - lm.bath.y) * k
-        };
-      }
-      drawCatSprite(natashaPos.x, natashaPos.y, 'natasha', t, 'Наташа 👅');
+      scene.add(catMeshes.sonya.group);
+      scene.add(catMeshes.natasha.group);
+      scene.add(catMeshes.stepan.group);
 
-      // Степан у двери Сейфа
-      if (hostState.cats.stepanLocation === 'VAULT') {
-        drawCatSprite(lm.vault.x, lm.vault.y + 18, 'stepan', t, 'Степан у двери Сейфа');
-      }
+      update3DCatsPositionsImmediate();
+      update3DThemeLighting();
 
-      // 5. Спецэффекты: Брызги крови при ударе ножом, брызги воды в ванной Наташи, сердечки
-      for (let i = vfx.bloodDrops.length - 1; i >= 0; i--) {
-        const b = vfx.bloodDrops[i];
-        b.x += b.vx;
-        b.y += b.vy;
-        b.vy += 0.25;
-        b.life -= 1;
-        if (b.life <= 0) {
-          vfx.bloodDrops.splice(i, 1);
-          continue;
-        }
-        ctx.fillStyle = '#ff1e42';
-        ctx.beginPath();
-        ctx.arc(b.x, b.y, b.r, 0, Math.PI * 2);
-        ctx.fill();
-      }
+      window.addEventListener('resize', () => {
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+      });
 
-      for (let i = vfx.waterDrops.length - 1; i >= 0; i--) {
-        const w = vfx.waterDrops[i];
-        w.x += w.vx;
-        w.y += w.vy;
-        w.vy += 0.18;
-        w.life -= 1;
-        if (w.life <= 0) {
-          vfx.waterDrops.splice(i, 1);
-          continue;
-        }
-        ctx.fillStyle = '#38bdf8';
-        ctx.beginPath();
-        ctx.arc(w.x, w.y, 3.5, 0, Math.PI * 2);
-        ctx.fill();
-      }
-
-      // 6. Крупные всплывающие тексты над персонажами
-      for (let i = vfx.floatingTexts.length - 1; i >= 0; i--) {
-        const ft = vfx.floatingTexts[i];
-        ft.y -= 0.9;
-        ft.life -= 1;
-        if (ft.life <= 0) {
-          vfx.floatingTexts.splice(i, 1);
-          continue;
-        }
-        ctx.save();
-        ctx.font = '900 18px "Segoe UI", sans-serif';
-        ctx.textAlign = 'center';
-        ctx.globalAlpha = Math.min(1, ft.life / 25);
-        ctx.fillStyle = ft.color;
-        ctx.shadowColor = '#000';
-        ctx.shadowBlur = 8;
-        ctx.fillText(ft.text, ft.x, ft.y);
-        ctx.restore();
-      }
-
-      ctx.restore();
-      requestAnimationFrame(renderMansionCanvas);
+      requestAnimationFrame(animateThreeJS);
     }
-    requestAnimationFrame(renderMansionCanvas);
 
-    function spawnBloodSplash(x, y) {
-      vfx.screenShake = 14;
-      for (let i = 0; i < 24; i++) {
-        vfx.bloodDrops.push({
-          x,
-          y,
-          vx: (Math.random() - 0.5) * 9,
-          vy: -Math.random() * 7 - 2,
-          r: 2.5 + Math.random() * 3.5,
-          life: 40 + Math.random() * 20
-        });
+    function update3DThemeLighting() {
+      if (!scene) return;
+      const color = new THREE.Color(`hsl(${themeState.hue}, 75%, 6%)`);
+      scene.background = color;
+      scene.fog.color.copy(color);
+      if (ambientLight) {
+        ambientLight.color.setStyle(`hsl(${themeState.hue}, 80%, 82%)`);
       }
     }
 
-    function spawnWaterSplash(x, y) {
-      for (let i = 0; i < 22; i++) {
-        vfx.waterDrops.push({
-          x,
-          y,
-          vx: (Math.random() - 0.5) * 7,
-          vy: -Math.random() * 6 - 2,
-          life: 45 + Math.random() * 15
-        });
+    // Построение отдельной 3D-комнаты в разрезе с мебелью внутри
+    function build3DRoom(rData) {
+      const group = new THREE.Group();
+      const pos = getRoomWorldCoords(rData.id);
+      group.position.copy(pos);
+
+      const roomW = 7.4;
+      const roomD = 7.4;
+      const wallH = 2.6;
+
+      // Пол комнаты
+      const floorGeo = new THREE.BoxGeometry(roomW, 0.35, roomD);
+      const floorMat = new THREE.MeshStandardMaterial({
+        color: rData.floorColor,
+        roughness: 0.6,
+        metalness: 0.15
+      });
+      const floorMesh = new THREE.Mesh(floorGeo, floorMat);
+      floorMesh.receiveShadow = true;
+      group.add(floorMesh);
+
+      // Золотая рамка периметра комнаты
+      const edgesGeo = new THREE.EdgesGeometry(floorGeo);
+      const edgesMat = new THREE.LineBasicMaterial({ color: 0xffd15c });
+      const edgesMesh = new THREE.LineSegments(edgesGeo, edgesMat);
+      group.add(edgesMesh);
+
+      // Задняя и боковая 3D-стены в разрезе (Cutaway Dollhouse style)
+      const wallMat = new THREE.MeshStandardMaterial({
+        color: 0x24101c,
+        roughness: 0.75
+      });
+      const backWall = new THREE.Mesh(new THREE.BoxGeometry(roomW, wallH, 0.3), wallMat);
+      backWall.position.set(0, wallH / 2, -roomD / 2 + 0.15);
+      group.add(backWall);
+
+      const leftWall = new THREE.Mesh(new THREE.BoxGeometry(0.3, wallH, roomD), wallMat);
+      leftWall.position.set(-roomW / 2 + 0.15, wallH / 2, 0);
+      group.add(leftWall);
+
+      // Группа реальной 3D-мебели внутри комнаты
+      const furnitureGroup = new THREE.Group();
+      populateRoom3DFurniture(furnitureGroup, rData.furnType);
+      group.add(furnitureGroup);
+
+      // Тёплый точечный свет внутри комнаты
+      const pLight = new THREE.PointLight(0xffcf66, 0.9, 9);
+      pLight.position.set(0, 3.2, 0);
+      group.add(pLight);
+
+      scene.add(group);
+      roomMeshes[rData.id] = {
+        group,
+        furnitureGroup,
+        floorMat,
+        pLight,
+        baseFloorColor: rData.floorColor
+      };
+    }
+
+    // Наполнение каждой 3D-комнаты узнаваемыми 3D-предметами из истории и фотографий!
+    function populateRoom3DFurniture(fGroup, furnType) {
+      if (furnType === 'blanket_tent') {
+        // Кровать и бордовый плед-шалаш Сони (по фото 1)
+        const bedBase = new THREE.Mesh(
+          new THREE.BoxGeometry(3.2, 0.5, 2.4),
+          new THREE.MeshStandardMaterial({ color: 0xfce7f3 })
+        );
+        bedBase.position.set(-1.2, 0.4, -1.5);
+        fGroup.add(bedBase);
+
+        const tentGeo = new THREE.ConeGeometry(1.7, 1.5, 4);
+        const tentMat = new THREE.MeshStandardMaterial({ color: 0x3b1d2e, roughness: 0.85 });
+        const tent = new THREE.Mesh(tentGeo, tentMat);
+        tent.position.set(-1.2, 1.35, -1.5);
+        tent.rotation.y = Math.PI / 4;
+        fGroup.add(tent);
+      } else if (furnType === 'natasha_kitchen') {
+        // Стол с красно-чёрной клетчатой миской и белым горшком с фикусом (по фото 2)
+        const table = new THREE.Mesh(
+          new THREE.BoxGeometry(2.8, 0.8, 2.0),
+          new THREE.MeshStandardMaterial({ color: 0xd6c7b2 })
+        );
+        table.position.set(-1.0, 0.55, -1.6);
+        fGroup.add(table);
+
+        // Красно-чёрная миска Наташи
+        const bowlOuter = new THREE.Mesh(
+          new THREE.CylinderGeometry(0.55, 0.45, 0.22, 18),
+          new THREE.MeshStandardMaterial({ color: 0xdc2626 })
+        );
+        bowlOuter.position.set(-0.8, 1.05, -1.4);
+        fGroup.add(bowlOuter);
+
+        const bowlInner = new THREE.Mesh(
+          new THREE.CylinderGeometry(0.42, 0.38, 0.24, 18),
+          new THREE.MeshStandardMaterial({ color: 0xffffff })
+        );
+        bowlInner.position.set(-0.8, 1.06, -1.4);
+        fGroup.add(bowlInner);
+
+        // Белый цветочный горшок с зелёным деревцем (по фото 2)
+        const pot = new THREE.Mesh(
+          new THREE.CylinderGeometry(0.42, 0.32, 0.7, 16),
+          new THREE.MeshStandardMaterial({ color: 0xf8fafc })
+        );
+        pot.position.set(1.4, 0.5, -2.0);
+        fGroup.add(pot);
+
+        const leaves = new THREE.Mesh(
+          new THREE.SphereGeometry(0.75, 12, 12),
+          new THREE.MeshStandardMaterial({ color: 0x15803d })
+        );
+        leaves.position.set(1.4, 1.45, -2.0);
+        fGroup.add(leaves);
+      } else if (furnType === 'stepan_door') {
+        // Светлая деревянная дверь и фиолетовая плитка, где лежит Степан (по фото 3)
+        const doorFrame = new THREE.Mesh(
+          new THREE.BoxGeometry(2.2, 2.5, 0.28),
+          new THREE.MeshStandardMaterial({ color: 0xd6c3a5 })
+        );
+        doorFrame.position.set(0.5, 1.4, -3.4);
+        fGroup.add(doorFrame);
+
+        const handle = new THREE.Mesh(
+          new THREE.SphereGeometry(0.12, 8, 8),
+          new THREE.MeshStandardMaterial({ color: 0xffd15c, metalness: 0.8 })
+        );
+        handle.position.set(1.2, 1.3, -3.2);
+        fGroup.add(handle);
+      } else if (furnType === 'bathtub') {
+        // Мраморная ванная с голубой водой для Наташи
+        const tub = new THREE.Mesh(
+          new THREE.BoxGeometry(2.8, 0.85, 1.6),
+          new THREE.MeshStandardMaterial({ color: 0xf1f5f9 })
+        );
+        tub.position.set(-1.1, 0.6, -1.7);
+        fGroup.add(tub);
+
+        const water = new THREE.Mesh(
+          new THREE.BoxGeometry(2.5, 0.7, 1.3),
+          new THREE.MeshStandardMaterial({ color: 0x38bdf8, emissive: 0x0284c7, emissiveIntensity: 0.35 })
+        );
+        water.position.set(-1.1, 0.75, -1.7);
+        fGroup.add(water);
+      } else if (furnType === 'fireplace') {
+        // Камин с живым огнём
+        const hearth = new THREE.Mesh(
+          new THREE.BoxGeometry(2.4, 2.2, 1.0),
+          new THREE.MeshStandardMaterial({ color: 0x475569 })
+        );
+        hearth.position.set(0, 1.2, -2.9);
+        fGroup.add(hearth);
+
+        const fire = new THREE.Mesh(
+          new THREE.ConeGeometry(0.55, 1.0, 8),
+          new THREE.MeshStandardMaterial({ color: 0xff5500, emissive: 0xff3300, emissiveIntensity: 0.8 })
+        );
+        fire.position.set(0, 0.7, -2.6);
+        fGroup.add(fire);
+      } else if (furnType === 'grand_hall') {
+        // Центральный золотой пьедестал Воссоединения
+        const pedestal = new THREE.Mesh(
+          new THREE.CylinderGeometry(1.8, 2.1, 0.35, 24),
+          new THREE.MeshStandardMaterial({ color: 0xffd15c, metalness: 0.6, roughness: 0.3 })
+        );
+        pedestal.position.set(0, 0.35, 0);
+        fGroup.add(pedestal);
+      } else {
+        // Книжные шкафы и колонны для остальных комнат
+        const shelf = new THREE.Mesh(
+          new THREE.BoxGeometry(2.6, 2.2, 0.7),
+          new THREE.MeshStandardMaterial({ color: 0x5c341d })
+        );
+        shelf.position.set(-1.2, 1.2, -2.8);
+        fGroup.add(shelf);
       }
     }
 
-    function spawnBannerPopup(x, y, text, color = '#ffd15c') {
-      vfx.floatingTexts.push({ x, y, text, color, life: 95 });
+    // Создание 3D-фигурок Сони, Наташи и Степана с их реальными чертами по фото!
+    function create3DCatModel(catType) {
+      const group = new THREE.Group();
+
+      // Цвета шерсти по фотографиям:
+      // Соня — тёплый золотисто-бурый табби с прямыми ушками
+      // Наташа — золотисто-персиковая вислоухая с высунутым розовым язычком
+      // Степан — серебристо-белый мраморный вислоухий с полосатым хвостом
+      let coatHex = 0xa6754b;
+      if (catType === 'natasha') coatHex = 0xd99b52;
+      if (catType === 'stepan') coatHex = 0xdbe2e9;
+
+      const coatMat = new THREE.MeshStandardMaterial({ color: coatHex, roughness: 0.55 });
+      const stripeMat = new THREE.MeshStandardMaterial({ color: 0x334155, roughness: 0.6 });
+
+      // Туловище
+      const body = new THREE.Mesh(new THREE.SphereGeometry(0.62, 16, 14), coatMat);
+      body.scale.set(1.25, 0.9, 0.95);
+      body.position.set(0, 0.65, 0);
+      group.add(body);
+
+      // Мраморные полоски на спине у Степана и Сони
+      if (catType === 'stepan' || catType === 'sonya') {
+        const stripe = new THREE.Mesh(new THREE.BoxGeometry(0.7, 0.62, 0.8), stripeMat);
+        stripe.position.set(-0.05, 0.72, 0);
+        group.add(stripe);
+      }
+
+      // Голова
+      const head = new THREE.Mesh(new THREE.SphereGeometry(0.52, 16, 16), coatMat);
+      head.position.set(0.55, 1.15, 0);
+      group.add(head);
+
+      // Изумрудные глаза
+      const eyeMat = new THREE.MeshStandardMaterial({ color: 0x65a30d, emissive: 0x365314, emissiveIntensity: 0.4 });
+      const leftEye = new THREE.Mesh(new THREE.SphereGeometry(0.09, 8, 8), eyeMat);
+      leftEye.position.set(0.98, 1.24, 0.2);
+      const rightEye = new THREE.Mesh(new THREE.SphereGeometry(0.09, 8, 8), eyeMat);
+      rightEye.position.set(0.98, 1.24, -0.2);
+      group.add(leftEye, rightEye);
+
+      // Ушки: у Сони прямые стоячие (фото 1), у Наташи и Степана — сложенные вислоухие (фото 2 и 3)
+      if (catType === 'sonya') {
+        const earGeo = new THREE.ConeGeometry(0.18, 0.42, 6);
+        const earL = new THREE.Mesh(earGeo, coatMat);
+        earL.position.set(0.52, 1.68, 0.25);
+        const earR = new THREE.Mesh(earGeo, coatMat);
+        earR.position.set(0.52, 1.68, -0.25);
+        group.add(earL, earR);
+      } else {
+        const foldEarGeo = new THREE.BoxGeometry(0.22, 0.12, 0.24);
+        const earL = new THREE.Mesh(foldEarGeo, coatMat);
+        earL.position.set(0.52, 1.54, 0.34);
+        earL.rotation.x = 0.4;
+        const earR = new THREE.Mesh(foldEarGeo, coatMat);
+        earR.position.set(0.52, 1.54, -0.34);
+        earR.rotation.x = -0.4;
+        group.add(earL, earR);
+      }
+
+      // ВЫСУНУТЫЙ РОЗОВЫЙ ЯЗЫЧОК НАТАШИ И КАПЕЛЬКИ ВОДЫ НА НОСУ (ТОЧНО ПО ФОТО 2!)
+      if (catType === 'natasha') {
+        const tongueMat = new THREE.MeshStandardMaterial({ color: 0xff4d88, emissive: 0xbe185d, emissiveIntensity: 0.3 });
+        const tongue = new THREE.Mesh(new THREE.BoxGeometry(0.24, 0.08, 0.32), tongueMat);
+        tongue.position.set(1.04, 0.96, 0.12);
+        tongue.rotation.z = -0.25;
+        group.add(tongue);
+
+        // Блестящие капельки воды на носике
+        const dropMat = new THREE.MeshStandardMaterial({ color: 0xffffff, emissive: 0x38bdf8, emissiveIntensity: 0.6 });
+        const drop = new THREE.Mesh(new THREE.SphereGeometry(0.055, 8, 8), dropMat);
+        drop.position.set(1.06, 1.15, 0);
+        group.add(drop);
+      }
+
+      // Пушистый полосатый хвост
+      const tail = new THREE.Mesh(new THREE.CylinderGeometry(0.13, 0.16, 1.1, 10), stripeMat);
+      tail.position.set(-0.85, 0.75, 0);
+      tail.rotation.z = 0.85;
+      group.add(tail);
+
+      return {
+        group,
+        currentPos: new THREE.Vector3(),
+        targetPos: new THREE.Vector3(),
+        bobPhase: Math.random() * Math.PI * 2
+      };
+    }
+
+    // Вычисление позиции кошки внутри комнаты
+    function getCatTargetWorldPos(catKey, roomId) {
+      const base = getRoomWorldCoords(roomId);
+      const offsets = {
+        sonya: new THREE.Vector3(-1.3, 0.2, 0.9),
+        natasha: new THREE.Vector3(0.0, 0.2, 1.2),
+        stepan: new THREE.Vector3(1.3, 0.2, 0.9)
+      };
+      return base.add(offsets[catKey]);
+    }
+
+    function update3DCatsPositionsImmediate() {
+      ['sonya', 'natasha', 'stepan'].forEach(k => {
+        const rId = hostState.cats[k].roomId;
+        const tPos = getCatTargetWorldPos(k, rId);
+        catMeshes[k].currentPos.copy(tPos);
+        catMeshes[k].targetPos.copy(tPos);
+        catMeshes[k].group.position.copy(tPos);
+      });
+    }
+
+    // Главный цикл рендеринга 3D-Особняка и проекции 2D-подписей
+    function animateThreeJS(time) {
+      const t = time * 0.001;
+
+      // Плавное движение 3D-камеры
+      camera.position.lerp(cameraPositionGoal, 0.05);
+      camera.lookAt(cameraTarget);
+
+      // Обновление освещения и открытости 3D-комнат
+      ROOMS_DATA.forEach(rData => {
+        const rm = roomMeshes[rData.id];
+        if (!rm) return;
+        const isExplored = hostState.exploredRooms.includes(rData.id);
+        const targetY = isExplored ? 1 : 0.05;
+        rm.furnitureGroup.scale.y += (targetY - rm.furnitureGroup.scale.y) * 0.08;
+        rm.pLight.intensity = isExplored ? 1.05 : 0.18;
+      });
+
+      // Плавный переход 3D-кошек из комнаты в комнату
+      ['sonya', 'natasha', 'stepan'].forEach(k => {
+        const cm = catMeshes[k];
+        const rId = hostState.cats[k].roomId;
+        cm.targetPos.copy(getCatTargetWorldPos(k, rId));
+        cm.currentPos.lerp(cm.targetPos, 0.06);
+
+        const dist = cm.currentPos.distanceTo(cm.targetPos);
+        const hop = dist > 0.2 ? Math.abs(Math.sin(t * 14)) * 0.65 : Math.sin(t * 3 + cm.bobPhase) * 0.06;
+
+        cm.group.position.set(cm.currentPos.x, cm.currentPos.y + hop, cm.currentPos.z);
+        cm.group.rotation.y = Math.sin(t * 1.5 + cm.bobPhase) * 0.35;
+      });
+
+      renderer.render(scene, camera);
+      updateProjected2DLabels();
+      requestAnimationFrame(animateThreeJS);
+    }
+
+    // Проекция 3D-координат комнат и кошек на 2D-экран для идеальной читаемости
+    function updateProjected2DLabels() {
+      if (mode !== 'HOST') {
+        labelsLayer.innerHTML = '';
+        return;
+      }
+
+      let html = '';
+      const halfW = window.innerWidth / 2;
+      const halfH = window.innerHeight / 2;
+
+      ROOMS_DATA.forEach(rData => {
+        const pos = getRoomWorldCoords(rData.id);
+        pos.y += 2.6;
+        pos.project(camera);
+        if (pos.z > 1) return;
+
+        const sx = (pos.x * halfW) + halfW;
+        const sy = -(pos.y * halfH) + halfH;
+        const explored = hostState.exploredRooms.includes(rData.id);
+        const hasKey = hostState.keyRooms.includes(rData.id);
+
+        html += `
+          <div class="room-3d-label ${explored ? 'explored' : ''}" style="left:${sx}px; top:${sy}px;">
+            ${explored ? '✨ ' + rData.name : '🔒 Закрытая комната: ' + rData.name}
+            ${!explored && hasKey ? ' 🗝️' : ''}
+          </div>
+        `;
+      });
+
+      ['sonya', 'natasha', 'stepan'].forEach(k => {
+        const cat = hostState.cats[k];
+        const pos = catMeshes[k].group.position.clone();
+        pos.y += 1.9;
+        pos.project(camera);
+        if (pos.z > 1) return;
+
+        const sx = (pos.x * halfW) + halfW;
+        const sy = -(pos.y * halfH) + halfH;
+
+        html += `
+          <div class="cat-3d-tag" style="left:${sx}px; top:${sy}px; border-color:${cat.color};">
+            🐱 ${cat.name} ${k === 'natasha' ? '👅' : ''}
+          </div>
+        `;
+      });
+
+      labelsLayer.innerHTML = html;
+    }
+
+    // Наведение 3D-камеры крупным планом на конкретную комнату во время анимации
+    function focusCameraOnRoom(roomId, zoomBackDelay = 2400) {
+      const targetPos = getRoomWorldCoords(roomId);
+      cameraTarget.copy(targetPos);
+      cameraPositionGoal.set(targetPos.x, 14, targetPos.z + 13);
+
+      if (zoomBackDelay > 0) {
+        setTimeout(() => {
+          cameraTarget.set(0, 0, 0);
+          cameraPositionGoal.set(0, 29, 25);
+        }, zoomBackDelay);
+      }
     }
 
     /***************************************************************************
-     * 5. СТАРТОВОЕ МЕНЮ
+     * 5. СТАРТОВОЕ МЕНЮ ВЫБОРА РЕЖИМА
      ***************************************************************************/
     function renderMenu() {
       appEl.innerHTML = `
         <div class="glass-panel center-modal">
           <div>
-            <div class="title-grand">ПОЛУНОЧНЫЙ ОСОБНЯК</div>
+            <div class="title-grand">ТАЙНА 3D ОСОБНЯКА</div>
             <div style="font-weight:800; color:var(--gold); margin:4px 0 8px;">
-              Настольная игра интриг, грабежей и Трёх Кошек для 2–8 игроков
+              История спасения Сони, Наташи и Степана для 2–8 игроков
             </div>
-            <p style="font-size:0.92rem; opacity:0.88; line-height:1.45;">
-              На главном экране оживают персонажи всех игроков и три кошки — <b>Соня, Наташа и Степан</b>.
-              Каждое нападение с ножом, кража из кармана или игра с кошками буквально разыгрывается перед вашими глазами!
+            <p style="font-size:0.9rem; opacity:0.9; line-height:1.45;">
+              Любопытного вислоухого <b>Степана</b> затянуло в мистический 3D-Особняк.
+              Полосатая тихоня <b>Соня</b> и золотистая <b>Наташа</b> с высунутым розовым язычком бросились его выручать,
+              но оказались в разных углах дома. Открывайте реальные 3D-комнаты, соберите 3 Золотых Ключа и помогите всем трём кошкам встретиться в одной комнате!
             </p>
           </div>
 
-          <button class="btn btn-gold" id="btn-start-tv" style="font-size:1.12rem; padding:15px;">
-            1. Открыть Главный Экран на Телевизоре или Мониторе
+          <button class="btn btn-gold" id="btn-launch-tv" style="font-size:1.12rem; padding:15px;">
+            1. Открыть 3D-Особняк на Экране Телевизора или Монитора
           </button>
 
           <div style="border-top: 1px solid rgba(255,255,255,0.16); padding-top:12px; display:flex; flex-direction:column; gap:8px;">
@@ -1144,16 +1138,16 @@
               <input type="text" id="inp-pin" maxlength="4" placeholder="PIN с экрана ТВ" />
               <input type="text" id="inp-name" maxlength="12" placeholder="Ваше Имя" />
             </div>
-            <button class="btn" id="btn-join-phone">Войти в Особняк со Смартфона</button>
+            <button class="btn" id="btn-join-phone">Войти в Игру со Смартфона</button>
             <div id="menu-err" style="color:#fda4af; font-size:0.82rem; min-height:1.1em;"></div>
           </div>
         </div>
       `;
 
-      document.getElementById('btn-start-tv').onclick = initHostMode;
+      document.getElementById('btn-launch-tv').onclick = initHostMode;
       document.getElementById('btn-join-phone').onclick = () => {
         const pin = document.getElementById('inp-pin').value.trim();
-        const name = document.getElementById('inp-name').value.trim() || 'Гость';
+        const name = document.getElementById('inp-name').value.trim() || 'Спасатель';
         if (!/^\d{4}$/.test(pin)) {
           document.getElementById('menu-err').textContent = 'Введите 4 цифры PIN-кода с экрана ТВ!';
           return;
@@ -1163,7 +1157,7 @@
     }
 
     /***************************************************************************
-     * 6. ИГРОВОЙ СЕРВЕР НА ЭКРАНЕ ТВ И БУКВАЛЬНЫЕ СЦЕНЫ ДЕЙСТВИЙ
+     * 6. ЛОГИКА ХОСТА НА ЭКРАНЕ ТВ И 3D-ПЕРЕМЕЩЕНИЯ КОШЕК
      ***************************************************************************/
     function addLog(text) {
       hostState.logs.unshift(text);
@@ -1175,12 +1169,8 @@
       return {
         id,
         name: name.slice(0, 12),
-        color: AVATAR_COLORS[idx % AVATAR_COLORS.length],
-        gold: 4,
-        rubies: 0,
-        hp: 3,
-        shield: false,
-        stealth: false,
+        color: PLAYER_COLORS[idx % PLAYER_COLORS.length],
+        score: 0,
         isBot,
         conn
       };
@@ -1191,7 +1181,7 @@
       hostState.pin = String(Math.floor(1000 + Math.random() * 9000));
       const peerId = ROOM_PREFIX + hostState.pin;
 
-      addLog(`Особняк открыт! PIN-код для телефонов: ${hostState.pin}`);
+      addLog(`3D-Особняк открыт! PIN-код комнаты: ${hostState.pin}`);
       renderHostHUD();
 
       peer = new Peer(peerId);
@@ -1211,474 +1201,217 @@
         if (!p && hostState.players.length < 8) {
           p = createPlayer(conn.peer, data.name, false, conn);
           hostState.players.push(p);
-          SFX.coin();
-          addLog(`✨ В Особняк вошёл игрок «${p.name}»!`);
+          SFX.chime();
+          addLog(`✨ К спасательной экспедиции присоединился игрок «${p.name}»!`);
         }
-        broadcastStateToPhones();
+        broadcastToPhones();
         renderHostHUD();
       }
 
       const active = hostState.players[hostState.activeIndex];
       if (!active || active.id !== conn.peer) return;
 
-      if (data.type === 'PERFORM_ACTION' && hostState.phase === 'PLAYER_TURN') {
-        executeLiteralActionScene(data.actionType, data.targetId);
+      if (data.type === 'CAT_COMMAND' && hostState.phase === 'TURN_SELECT') {
+        execute3DCatCommand(data.catKey, data.actionType, data.targetRoomId);
       }
     }
 
-    function addBotOnHost() {
+    function addBotPlayer() {
       if (hostState.players.length >= 8) return;
-      const botNames = ['Граф Ворон', 'Леди Тень', 'Барон Клинок', 'Маркиз Нуар', 'Доктор Вальс'];
+      const botNames = ['Хранитель Лапок', 'Искатель Ключей', 'Друг Кошек', 'Мастер Дверей'];
       const used = hostState.players.map(p => p.name);
-      const name = botNames.find(n => !used.includes(n)) || `Гость-${hostState.players.length + 1}`;
+      const name = botNames.find(n => !used.includes(n)) || `Помощник-${hostState.players.length + 1}`;
       hostState.players.push(createPlayer('bot-' + Math.random().toString(36).slice(2, 7), name, true, null));
-      addLog(`🤖 В зал вошёл ИИ-соперник «${name}».`);
+      addLog(`🤖 В команду добавлен ИИ-спасатель «${name}».`);
       renderHostHUD();
     }
 
-    // ВТОРОЙ КЛИК НА ТВ — ЗАПУСК ПАРТИИ
-    function startMansionGame() {
+    // ВТОРОЙ КЛИК НА ТВ — ЗАПУСК ИСТОРИИ
+    function start3DMansionAdventure() {
       SFX.init();
       while (hostState.players.length < 2) {
-        addBotOnHost();
+        addBotPlayer();
       }
       hostState.round = 1;
       hostState.activeIndex = 0;
-      startNextPlayerTurn();
+      startPlayerTurn();
     }
 
-    function startNextPlayerTurn() {
+    function startPlayerTurn() {
       const active = hostState.players[hostState.activeIndex];
-      hostState.phase = 'PLAYER_TURN';
-      hostState.scene = null;
+      hostState.phase = 'TURN_SELECT';
+      hostState.headline = `ХОД СПАСАТЕЛЯ: ${active.name.toUpperCase()} — ВЫБЕРИТЕ КОШКУ И КОМНАТУ НА СМАРТФОНЕ`;
+      hostState.subline = `Ключей найдено: ${hostState.keysFound} из 3 🗝️ | Соберите 3 ключа и приведите всех трёх кошек в одну 3D-комнату!`;
 
-      // Пассивный бонус, если Соня спит рядом со своим избранным хозяином
-      if (hostState.cats.sonyaOwnerId === active.id) {
-        active.gold += 1;
-        active.shield = true;
-        const pos = getPlayerHomePos(hostState.activeIndex, hostState.players.length);
-        spawnBannerPopup(pos.x, pos.y - 75, '+1 🪙 и Щит от спящей Сони', '#f472b6');
-      }
-
-      hostState.headline = `ХОД ИГРОКА: ${active.name.toUpperCase()} — ВЫБЕРИТЕ ДЕЙСТВИЕ НА СМАРТФОНЕ`;
-      hostState.subline = `Золото: ${active.gold} 🪙 | Рубины: ${active.rubies} из 3 💎 | Жизни: ${active.hp} ❤️`;
-
-      broadcastStateToPhones();
+      broadcastToPhones();
       renderHostHUD();
 
       if (active.isBot) {
-        setTimeout(() => runBotTurnDecision(active), 1500);
+        setTimeout(() => runBotMove(), 1600);
       }
     }
 
-    function runBotTurnDecision(bot) {
-      if (bot.gold >= 6) {
-        executeLiteralActionScene('BUY_RUBY', null);
-        return;
-      }
-      const others = hostState.players.filter(p => p.id !== bot.id);
-      const richTarget = others.find(p => p.gold >= 4 && !p.stealth);
-      if (richTarget && Math.random() > 0.4) {
-        const act = Math.random() > 0.5 ? 'ATTACK' : 'STEAL';
-        executeLiteralActionScene(act, richTarget.id);
-        return;
-      }
-      const choices = ['VAULT', 'SONYA', 'NATASHA_WATER', 'STEPAN'];
-      const pick = choices[Math.floor(Math.random() * choices.length)];
-      const randVictim = others[Math.floor(Math.random() * others.length)];
-      executeLiteralActionScene(pick, randVictim ? randVictim.id : null);
+    function runBotMove() {
+      // Бот ведёт одну из кошек ближе к Центральному Залу (комната 4) или открывает новую комнату с ключом
+      const catKeys = ['stepan', 'natasha', 'sonya'];
+      const ck = catKeys[hostState.round % 3];
+      const cat = hostState.cats[ck];
+      const adj = getAdjacentRooms(cat.roomId);
+      const unexplored = adj.find(rId => !hostState.exploredRooms.includes(rId));
+      const towardsCenter = adj.find(rId => rId === 4) ?? adj[0];
+      const targetRoom = unexplored !== undefined ? unexplored : towardsCenter;
+      execute3DCatCommand(ck, 'MOVE', targetRoom);
     }
 
-    // БУКВАЛЬНАЯ АНИМАЦИЯ ДЕЙСТВИЯ ПЕРСОНАЖА НА ГЛАВНОМ ЭКРАНЕ
-    function executeLiteralActionScene(actionType, targetId) {
-      const actorIdx = hostState.activeIndex;
-      const actor = hostState.players[actorIdx];
-      const lm = getMansionLandmarks();
+    // ВЫПОЛНЕНИЕ 3D-ПЕРЕХОДА КОШКИ ИЛИ ЕЁ УНИКАЛЬНОЙ СПОСОБНОСТИ
+    function execute3DCatCommand(catKey, actionType, targetRoomId) {
+      const activePlayer = hostState.players[hostState.activeIndex];
+      const cat = hostState.cats[catKey];
+      if (!cat) return;
 
       hostState.phase = 'ANIMATING';
-      const duration = 3100;
 
-      // 1. НАПАДЕНИЕ С КИНЖАЛОМ НА СОПЕРНИКА
-      if (actionType === 'ATTACK') {
-        const victimIdx = hostState.players.findIndex(p => p.id === targetId);
-        const victim = hostState.players[victimIdx];
-        if (!victim) {
-          startNextPlayerTurn();
-          return;
-        }
-        const victimPos = getPlayerHomePos(victimIdx, hostState.players.length);
+      // 1. ОСОБАЯ СПОСОБНОСТЬ ТИХОЙ СОНИ: РЕДКОЕ «МЯУ» (ПРИТЯГИВАЕТ ДРУЗЕЙ К СЕБЕ!)
+      if (actionType === 'SONYA_MEOW' && hostState.sonyaMeowsLeft > 0) {
+        hostState.sonyaMeowsLeft -= 1;
+        SFX.sonyaMeow();
+        focusCameraOnRoom(hostState.cats.sonya.roomId, 2800);
 
-        // Если нападающий был хозяином Сони — Соня пугается резкого движения и убегает на подушку!
-        if (hostState.cats.sonyaOwnerId === actor.id) {
-          hostState.cats.sonyaOwnerId = null;
-          addLog(`🐾 Соня испугалась резкого взмаха ножа ${actor.name} и убежала на подушку!`);
-        }
+        // Степан или Наташа перебегают в комнату к Соне на её тихий зов!
+        hostState.cats.stepan.roomId = hostState.cats.sonya.roomId;
+        activePlayer.score += 3;
 
-        hostState.scene = {
-          type: 'ATTACK',
-          actorIdx,
-          victimIdx,
-          targetPos: { x: victimPos.x - 26, y: victimPos.y },
-          startTime: performance.now(),
-          duration
-        };
+        hostState.headline = `🐱 ТИХАЯ СОНЯ ИЗДАЛА СВОЁ РЕДКОЕ «МЯУ»! СТЕПАН ПРИБЕЖАЛ НА ЕЁ ЗОВ!`;
+        hostState.subline = `Осталось спасительных мяуканий Сони за партию: ${hostState.sonyaMeowsLeft}`;
+        addLog(`🐱 Невероятно! Тихая Соня мяукнула из комнаты «${ROOMS_DATA[cat.roomId].name}», и Степан тут же прибежал к ней!`);
 
-        hostState.headline = `🗡️ ${actor.name.toUpperCase()} ИДЁТ С НОЖОМ К ИГРОКУ ${victim.name.toUpperCase()}!`;
-        hostState.subline = `Все смотрят на центр зала...`;
-        SFX.sneakStep();
-        broadcastStateToPhones();
+        broadcastToPhones();
         renderHostHUD();
+        setTimeout(() => checkReunionAndAdvance(), 2900);
+        return;
+      }
 
-        // Момент удара ножом в середине анимации!
-        setTimeout(() => {
-          // Проверяем, спасёт ли Соня своего любимого хозяина редким «Мяу»!
-          if (hostState.cats.sonyaOwnerId === victim.id && hostState.cats.sonyaMeowsLeft > 0) {
-            hostState.cats.sonyaMeowsLeft -= 1;
-            SFX.sonyaMeow();
-            spawnBannerPopup(victimPos.x, victimPos.y - 75, `🐱 МЯУ! СОНЯ СПАСАЕТ ХОЗЯИНА!`, '#f472b6');
-            hostState.headline = `🐱 СОНЯ ИЗДАЛА СВОЁ РЕДКОЕ «МЯУ» И ЗАЩИТИЛА ${victim.name.toUpperCase()}!`;
-            hostState.subline = `Осталось легендарных мяуканий Сони за партию: ${hostState.cats.sonyaMeowsLeft}`;
-            addLog(`🐱 Невероятно! Тихая Соня мяукнула и спасла своего хозяина ${victim.name} от ножа!`);
-            renderHostHUD();
-            return;
+      // 2. ОСОБАЯ СПОСОБНОСТЬ НАТАШИ: ИГРА С ВОДОЙ ИЛИ КЛЕТЧАТАЯ МИСКА
+      if (actionType === 'NATASHA_SPECIAL') {
+        SFX.waterSplash();
+        focusCameraOnRoom(cat.roomId, 2600);
+        hostState.keysFound = Math.min(3, hostState.keysFound + 1);
+        activePlayer.score += 3;
+
+        hostState.headline = `👅 НАТАША С ВЫСУНУТЫМ ЯЗЫЧКОМ ИГРАЕТ С ВОДОЙ И НАХОДИТ ЗОЛОТОЙ КЛЮЧ!`;
+        hostState.subline = `Капельки воды блестят на носу Наташи! Ключей собрано: ${hostState.keysFound} из 3 🗝️`;
+        addLog(`👅 Наташа поиграла со струйками воды и нашла Золотой Ключ для игрока ${activePlayer.name}!`);
+
+        broadcastToPhones();
+        renderHostHUD();
+        setTimeout(() => checkReunionAndAdvance(), 2700);
+        return;
+      }
+
+      // 3. ОСОБАЯ СПОСОБНОСТЬ СТЕПАНА: ЛЕЧЬ ПОД ДВЕРЬЮ И ОТКРЫТЬ СОСЕДНИЕ КОМНАТЫ
+      if (actionType === 'STEPAN_SPECIAL') {
+        SFX.doorOpen();
+        focusCameraOnRoom(cat.roomId, 2600);
+        const neighbors = getAdjacentRooms(cat.roomId);
+        neighbors.forEach(nId => {
+          if (!hostState.exploredRooms.includes(nId)) {
+            hostState.exploredRooms.push(nId);
           }
-
-          if (victim.shield) {
-            victim.shield = false;
-            SFX.shieldClang();
-            spawnBannerPopup(victimPos.x, victimPos.y - 75, `🛡️ ЩИТ ОТРАЗИЛ УДАР НОЖОМ!`, '#38bdf8');
-            hostState.headline = `🛡️ ${victim.name.toUpperCase()} ОТРАЖАЕТ УДАР НОЖОМ!`;
-            addLog(`🛡️ Щит спас ${victim.name} от кинжала ${actor.name}!`);
-            renderHostHUD();
-            return;
+          if (hostState.keyRooms.includes(nId)) {
+            hostState.keyRooms = hostState.keyRooms.filter(k => k !== nId);
+            hostState.keysFound = Math.min(3, hostState.keysFound + 1);
           }
+        });
+        activePlayer.score += 3;
 
-          // Настоящий удар ножом!
-          SFX.knifeSlash();
-          spawnBloodSplash(victimPos.x, victimPos.y - 10);
-          victim.hp -= 1;
-          const loot = Math.max(1, Math.floor(victim.gold / 2));
-          const actualLoot = Math.min(victim.gold, loot);
-          victim.gold -= actualLoot;
-          actor.gold += actualLoot;
+        hostState.headline = `🔥 СТЕПАН РАЗВАЛИЛСЯ У ДВЕРИ И РАСПАХНУЛ СОСЕДНИЕ 3D-КОМНАТЫ!`;
+        hostState.subline = `Степан в центре внимания! Все соседние комнаты открыты в 3D-пространстве`;
+        addLog(`🔥 Игрок ${activePlayer.name} погладил Степана у двери — авантюрист распахнул все соседние комнаты!`);
 
-          if (victim.hp <= 0) {
-            victim.hp = 3; // Доктор особняка приводит в чувство, но атакующий забирает ещё бонус
-            actor.gold += 2;
-            spawnBannerPopup(victimPos.x, victimPos.y - 80, `💀 НОКАУТ! -${actualLoot} 🪙`, '#ff2a4b');
-            addLog(`🗡️ ${actor.name} поверг ${victim.name} ударом кинжала и забрал ${actualLoot} 🪙 + 2 🪙 трофея!`);
-          } else {
-            spawnBannerPopup(victimPos.x, victimPos.y - 80, `🩸 УДАР НОЖОМ! -1 ❤️ и -${actualLoot} 🪙`, '#ff2a4b');
-            addLog(`🗡️ ${actor.name} ранил ножом ${victim.name} и забрал ${actualLoot} 🪙!`);
-          }
-          renderHostHUD();
-        }, 1150);
-
-        setTimeout(() => finishTurnAndAdvance(), duration);
-        return;
-      }
-
-      // 2. ТИХАЯ КРАЖА ЗОЛОТА ИЗ КАРМАНА
-      if (actionType === 'STEAL') {
-        const victimIdx = hostState.players.findIndex(p => p.id === targetId);
-        const victim = hostState.players[victimIdx];
-        if (!victim) {
-          startNextPlayerTurn();
-          return;
-        }
-        const victimPos = getPlayerHomePos(victimIdx, hostState.players.length);
-
-        hostState.scene = {
-          type: 'STEAL',
-          actorIdx,
-          victimIdx,
-          targetPos: { x: victimPos.x + 24, y: victimPos.y },
-          startTime: performance.now(),
-          duration
-        };
-
-        hostState.headline = `🕵️ ${actor.name.toUpperCase()} КРАДЁТСЯ К КАРМАНАМ ${victim.name.toUpperCase()}...`;
-        hostState.subline = `Персонаж в маске подбирается со спины`;
-        SFX.sneakStep();
-        broadcastStateToPhones();
+        broadcastToPhones();
         renderHostHUD();
-
-        setTimeout(() => {
-          const stolen = Math.min(victim.gold, 3);
-          victim.gold -= stolen;
-          actor.gold += stolen;
-          SFX.coin();
-          spawnBannerPopup(victimPos.x, victimPos.y - 75, `💰 УКРАДЕНО ${stolen} 🪙!`, '#ffd15c');
-          hostState.headline = `💰 ${actor.name.toUpperCase()} ВЫТАЩИЛ ${stolen} 🪙 У ${victim.name.toUpperCase()}!`;
-          addLog(`🕵️ ${actor.name} незаметно вытащил ${stolen} 🪙 из кармана ${victim.name}!`);
-          renderHostHUD();
-        }, 1150);
-
-        setTimeout(() => finishTurnAndAdvance(), duration);
+        setTimeout(() => checkReunionAndAdvance(), 2700);
         return;
       }
 
-      // 3. ПОХОД К ЗОЛОТОМУ СЕЙФУ В ЦЕНТРЕ
-      if (actionType === 'VAULT') {
-        hostState.scene = {
-          type: 'VAULT',
-          actorIdx,
-          victimIdx: -1,
-          targetPos: { x: lm.vault.x, y: lm.vault.y + 22 },
-          startTime: performance.now(),
-          duration
-        };
-
-        const stepanAtDoor = hostState.cats.stepanLocation === 'VAULT';
-        hostState.headline = `🏦 ${actor.name.toUpperCase()} ИДЁТ К ЗОЛОТОМУ СЕЙФУ`;
-        hostState.subline = stepanAtDoor
-          ? `У двери сейфа развалился Степан — придётся погладить его и взять на руки!`
-          : `Персонаж подбирает шифр к замку...`;
-        SFX.sneakStep();
-        broadcastStateToPhones();
-        renderHostHUD();
-
-        setTimeout(() => {
-          const gain = stepanAtDoor ? 5 : 4;
-          actor.gold += gain;
-          SFX.coin();
-          spawnBannerPopup(lm.vault.x, lm.vault.y - 60, `+${gain} 🪙 ИЗ СЕЙФА!`, '#ffd15c');
-          if (stepanAtDoor) {
-            addLog(`🐱 ${actor.name} погладил Степана у двери сейфа и вынес целых +${gain} 🪙!`);
-          } else {
-            addLog(`🏦 ${actor.name} открыл Золотой Сейф и забрал +${gain} 🪙.`);
-          }
-          renderHostHUD();
-        }, 1150);
-
-        setTimeout(() => finishTurnAndAdvance(), duration);
+      // 4. ПЕРЕХОД КОШКИ В ВЫБРАННУЮ 3D-КОМНАТУ
+      const destId = Number(targetRoomId);
+      const destRoom = ROOMS_DATA[destId];
+      if (!destRoom) {
+        startPlayerTurn();
         return;
       }
 
-      // 4. ПОКУПКА КОРОЛЕВСКОГО РУБИНА ДЛЯ ПОБЕДЫ
-      if (actionType === 'BUY_RUBY') {
-        hostState.scene = {
-          type: 'RUBY',
-          actorIdx,
-          victimIdx: -1,
-          targetPos: { x: lm.vault.x, y: lm.vault.y + 18 },
-          startTime: performance.now(),
-          duration
-        };
-
-        hostState.headline = `💎 ${actor.name.toUpperCase()} НАПРАВЛЯЕТСЯ ЗА КОРОЛЕВСКИМ РУБИНОМ!`;
-        SFX.sneakStep();
-        broadcastStateToPhones();
-        renderHostHUD();
-
-        setTimeout(() => {
-          if (actor.gold >= 6) {
-            actor.gold -= 6;
-            actor.rubies += 1;
-            SFX.fanfare();
-            spawnBannerPopup(lm.vault.x, lm.vault.y - 65, `💎 РУБИН ${actor.rubies} ИЗ 3!`, '#ff2a4b');
-            hostState.headline = `👑 ${actor.name.toUpperCase()} ПОЛУЧАЕТ РУБИН ${actor.rubies} ИЗ 3!`;
-            addLog(`💎 ${actor.name} покупает Королевский Рубин! Теперь у него ${actor.rubies} из 3!`);
-            renderHostHUD();
-          }
-        }, 1150);
-
-        setTimeout(() => finishTurnAndAdvance(), duration);
-        return;
+      cat.roomId = destId;
+      const wasUnexplored = !hostState.exploredRooms.includes(destId);
+      if (wasUnexplored) {
+        hostState.exploredRooms.push(destId);
+        activePlayer.score += 2;
+      } else {
+        activePlayer.score += 1;
       }
 
-      // 5. ПОГЛАДИТЬ ТИХУЮ СОНЮ — ОНА ВЫБИРАЕТ ВАС СВОИМ ХОЗЯИНОМ
-      if (actionType === 'SONYA') {
-        const targetPos = { x: lm.cushion.x, y: lm.cushion.y };
-        hostState.scene = {
-          type: 'SONYA',
-          actorIdx,
-          victimIdx: -1,
-          targetPos,
-          startTime: performance.now(),
-          duration
-        };
-
-        hostState.headline = `🐾 ${actor.name.toUpperCase()} ТИХО ПОДХОДИТ ПОГЛАДИТЬ СОНЮ...`;
-        hostState.subline = `Соня обожает спокойствие и ласку своего избранного человека`;
-        broadcastStateToPhones();
-        renderHostHUD();
-
-        setTimeout(() => {
-          hostState.cats.sonyaOwnerId = actor.id;
-          actor.hp = Math.min(3, actor.hp + 1);
-          actor.shield = true;
-          actor.gold += 2;
-          SFX.coin();
-          spawnBannerPopup(targetPos.x, targetPos.y - 50, `💖 СОНЯ ВЫБРАЛА ${actor.name.toUpperCase()} ХОЗЯИНОМ!`, '#f472b6');
-          addLog(`🐾 ${actor.name} ласково погладил Соню! Теперь Соня спит рядом с ним, даёт Щит, +2 🪙 и лечит раны.`);
-          renderHostHUD();
-        }, 1150);
-
-        setTimeout(() => finishTurnAndAdvance(), duration);
-        return;
+      let foundKeyHere = false;
+      if (hostState.keyRooms.includes(destId)) {
+        hostState.keyRooms = hostState.keyRooms.filter(k => k !== destId);
+        hostState.keysFound = Math.min(3, hostState.keysFound + 1);
+        activePlayer.score += 2;
+        foundKeyHere = true;
       }
 
-      // 6. ВКЛЮЧИТЬ ВОДУ В ВАННОЙ ДЛЯ НАТАШИ
-      if (actionType === 'NATASHA_WATER') {
-        const targetPos = { x: lm.bath.x, y: lm.bath.y };
-        hostState.scene = {
-          type: 'NATASHA_WATER',
-          actorIdx,
-          victimIdx: -1,
-          targetPos,
-          startTime: performance.now(),
-          duration
-        };
+      SFX.doorOpen();
+      focusCameraOnRoom(destId, 2700);
 
-        hostState.headline = `💧 ${actor.name.toUpperCase()} ВКЛЮЧАЕТ ВОДУ В ВАННОЙ ДЛЯ НАТАШИ!`;
-        hostState.subline = `Наташа с высунутым язычком бежит играть со струйками воды!`;
-        broadcastStateToPhones();
-        renderHostHUD();
+      hostState.headline = `🐾 ${cat.name.toUpperCase()} ПЕРЕХОДИТ В 3D-КОМНАТУ «${destRoom.name.toUpperCase()}»!`;
+      hostState.subline = foundKeyHere
+        ? `🗝️ В этой комнате найден Золотой Ключ! Всего ключей: ${hostState.keysFound} из 3`
+        : destRoom.desc;
 
-        setTimeout(() => {
-          hostState.cats.natashaWaterActive = true;
-          SFX.waterSplash();
-          spawnWaterSplash(lm.bath.x, lm.bath.y);
-          actor.gold += 3;
-          actor.stealth = true;
-          spawnBannerPopup(lm.bath.x, lm.bath.y - 50, `💧 ИГРА С ВОДОЙ! +3 🪙 И СКРЫТНОСТЬ`, '#38bdf8');
-          addLog(`💧 ${actor.name} включил воду для Наташи! Наташа счастлива и приносит +3 🪙 и Скрытность от воров.`);
-          renderHostHUD();
-        }, 1150);
+      addLog(`🐾 ${activePlayer.name} направил кошку ${cat.name} в комнату «${destRoom.name}»${foundKeyHere ? ' и нашёл Золотой Ключ!' : '.'}`);
 
-        setTimeout(() => finishTurnAndAdvance(), duration);
-        return;
-      }
+      broadcastToPhones();
+      renderHostHUD();
 
-      // 7. ВЗЯТЬ СТЕПАНА НА РУКИ И НАПРАВИТЬ В ЦЕНТР СОБЫТИЙ
-      if (actionType === 'STEPAN') {
-        const victim = hostState.players.find(p => p.id === targetId);
-        const targetPos = { x: lm.vault.x, y: lm.vault.y + 18 };
-        hostState.scene = {
-          type: 'STEPAN',
-          actorIdx,
-          victimIdx: -1,
-          targetPos,
-          startTime: performance.now(),
-          duration
-        };
-
-        hostState.headline = `🔥 ${actor.name.toUpperCase()} БЕРЁТ СТЕПАНА НА РУКИ И НАГЛАЖИВАЕТ!`;
-        hostState.subline = `Степан обожает быть в центре внимания и ложится прямо на чужие вещи!`;
-        broadcastStateToPhones();
-        renderHostHUD();
-
-        setTimeout(() => {
-          actor.gold += 3;
-          if (victim) {
-            hostState.cats.stepanLocation = victim.id;
-            const take = Math.min(victim.gold, 2);
-            victim.gold -= take;
-            actor.gold += take;
-            const vPos = getPlayerHomePos(hostState.players.indexOf(victim), hostState.players.length);
-            spawnBannerPopup(vPos.x, vPos.y - 75, `🐱 СТЕПАН ЛЁГ НА ВЕЩИ! -${take} 🪙`, '#fb923c');
-            addLog(`🔥 Довольный Степан улёгся прямо на вещи ${victim.name} и принёс ${actor.name} в сумме +${3 + take} 🪙!`);
-          } else {
-            hostState.cats.stepanLocation = 'VAULT';
-            addLog(`🔥 ${actor.name} подержал Степана на руках и получил +3 🪙!`);
-          }
-          SFX.coin();
-          renderHostHUD();
-        }, 1150);
-
-        setTimeout(() => finishTurnAndAdvance(), duration);
-        return;
-      }
+      setTimeout(() => checkReunionAndAdvance(), 2800);
     }
 
-    function finishTurnAndAdvance() {
-      const active = hostState.players[hostState.activeIndex];
+    function checkReunionAndAdvance() {
+      const rSonya = hostState.cats.sonya.roomId;
+      const rNatasha = hostState.cats.natasha.roomId;
+      const rStepan = hostState.cats.stepan.roomId;
 
-      // Проверка победы: 3 Королевских Рубина
-      if (active.rubies >= 3) {
-        hostState.winner = active;
+      // УСЛОВИЕ ПОБЕДЫ: Все 3 кошки встретились в одной 3D-комнате и найдены 3 Ключа (или встретились в Центральном Зале после 2 ключей)
+      const allInSameRoom = (rSonya === rNatasha && rNatasha === rStepan);
+      if (allInSameRoom && hostState.keysFound >= 3) {
+        const sorted = [...hostState.players].sort((a, b) => b.score - a.score);
+        hostState.winnerName = sorted[0] ? sorted[0].name : 'Дружба Кошек';
         hostState.phase = 'GAME_OVER';
-        hostState.scene = null;
-        hostState.headline = `👑 ПОБЕДИТЕЛЬ ПАРТИИ: ${active.name.toUpperCase()}!`;
-        hostState.subline = `Собраны все 3 Королевских Рубина Особняка Трёх Кошек!`;
+        focusCameraOnRoom(rSonya, 0);
         SFX.fanfare();
-        broadcastStateToPhones();
+
+        hostState.headline = `🎉 ВОССОЕДИНЕНИЕ! СОНЯ, НАТАША И СТЕПАН НАШЛИ ДРУГ ДРУГА!`;
+        hostState.subline = `Все три кошки снова вместе в комнате «${ROOMS_DATA[rSonya].name}»! Главный Спасатель: ${hostState.winnerName}!`;
+        addLog(`👑 ПОБЕДА! Соня, Наташа и Степан встретились в одной комнате и выбрались из Особняка!`);
+
+        broadcastToPhones();
         renderHostHUD();
         return;
       }
 
       // Переход хода
       hostState.activeIndex = (hostState.activeIndex + 1) % hostState.players.length;
-      const newRoundStarted = hostState.activeIndex === 0;
-      if (newRoundStarted) {
+      if (hostState.activeIndex === 0) {
         hostState.round += 1;
-      }
-
-      // КАЖДЫЕ 2 РАУНДА ПО ЧАСАМ: НАТАША ИДЁТ ПРОСИТЬ ПОЕСТЬ, ПОКУСЫВАЯ И ОБТИРАЯСЬ ОБ ИГРОКА!
-      if (newRoundStarted && hostState.round % 2 === 0) {
-        runNatashaFeedingClockEvent(() => startNextPlayerTurn());
-      } else {
-        startNextPlayerTurn();
-      }
-    }
-
-    // Специальная сценка каждые 2 раунда: Наташа просит есть как по часам!
-    function runNatashaFeedingClockEvent(onDone) {
-      // Наташа выбирает самого богатого игрока
-      const sorted = [...hostState.players].sort((a, b) => b.gold - a.gold);
-      const target = sorted[0];
-      const targetIdx = hostState.players.indexOf(target);
-      const tPos = getPlayerHomePos(targetIdx, hostState.players.length);
-
-      hostState.phase = 'ANIMATING';
-      hostState.scene = {
-        type: 'NATASHA_FEED',
-        actorIdx: -1,
-        victimIdx: targetIdx,
-        targetPos: tPos,
-        startTime: performance.now(),
-        duration: 2800
-      };
-
-      hostState.headline = `⏰ ЧАСЫ КОРМЁЖКИ НАТАШИ! ОНА БЕЖИТ К ИГРОКУ ${target.name.toUpperCase()}!`;
-      hostState.subline = `Наташа с высунутым язычком трётся об ноги и покусывает, требуя вкусняшку!`;
-      broadcastStateToPhones();
-      renderHostHUD();
-
-      setTimeout(() => {
-        if (target.gold >= 1) {
-          target.gold -= 1;
-          target.hp = Math.min(3, target.hp + 1);
-          target.shield = true;
-          SFX.coin();
-          spawnBannerPopup(tPos.x, tPos.y - 75, `🐟 НАТАША ПОКОРМЛЕНА! +1 ❤️ И ЩИТ`, '#38bdf8');
-          addLog(`🐟 Наташа покусала за ногу ${target.name}, выпросила угощение за 1 🪙 и подарила Щит и +1 ❤️!`);
-        } else {
-          spawnBannerPopup(tPos.x, tPos.y - 75, `😼 КУСЬ! НЕТ ЕДЫ!`, '#fb923c');
-          addLog(`😼 У ${target.name} не нашлось монетки на корм — Наташа сделала «кусь» и убежала к воде!`);
+        // Каждые 2 раунда у Наташи срабатывает будильник кормёжки!
+        if (hostState.round % 2 === 0) {
+          addLog(`⏰ Прошло 2 часа! Наташа с высунутым язычком покусывает и трётся, требуя покушать у клетчатой миски!`);
         }
-        renderHostHUD();
-      }, 1200);
-
-      setTimeout(() => {
-        hostState.scene = null;
-        onDone();
-      }, 2800);
+      }
+      startPlayerTurn();
     }
 
-    function broadcastStateToPhones() {
+    function broadcastToPhones() {
       const activePlayer = hostState.players[hostState.activeIndex];
-      const publicPlayers = hostState.players.map(p => ({
-        id: p.id,
-        name: p.name,
-        color: p.color,
-        gold: p.gold,
-        rubies: p.rubies,
-        hp: p.hp,
-        shield: p.shield
-      }));
-
       hostState.players.forEach((p, idx) => {
         if (p.conn && p.conn.open) {
           p.conn.send({
@@ -1689,17 +1422,16 @@
             round: hostState.round,
             isMyTurn: idx === hostState.activeIndex,
             activePlayerName: activePlayer ? activePlayer.name : '',
+            keysFound: hostState.keysFound,
+            sonyaMeowsLeft: hostState.sonyaMeowsLeft,
+            exploredRooms: hostState.exploredRooms,
+            cats: hostState.cats,
             headline: hostState.headline,
-            winner: hostState.winner ? hostState.winner.name : null,
-            players: publicPlayers,
+            winnerName: hostState.winnerName,
             me: {
-              id: p.id,
               name: p.name,
               color: p.color,
-              gold: p.gold,
-              rubies: p.rubies,
-              hp: p.hp,
-              shield: p.shield
+              score: p.score
             }
           });
         }
@@ -1707,14 +1439,13 @@
     }
 
     /***************************************************************************
-     * 7. ОТРИСОВКА ИНТЕРФЕЙСА ЭКРАНА ТВ
+     * 7. ИНТЕРФЕЙС ЭКРАНА ТВ
      ***************************************************************************/
     function renderHostHUD() {
       if (mode !== 'HOST') return;
 
       const playersHtml = hostState.players.map((p, idx) => {
         const isTurn = (hostState.phase !== 'LOBBY' && idx === hostState.activeIndex);
-        const isSonyaOwner = hostState.cats.sonyaOwnerId === p.id;
         return `
           <div class="p-row ${isTurn ? 'active-turn' : ''}">
             <div style="display:flex; justify-content:space-between; align-items:center;">
@@ -1722,56 +1453,54 @@
                 <span style="width:12px; height:12px; border-radius:50%; background:${p.color}; display:inline-block; border:2px solid #fff;"></span>
                 <span>${p.name} ${p.isBot ? '🤖' : ''}</span>
               </div>
-              <span style="color:var(--gold); font-weight:900;">🪙 ${p.gold} | 💎 ${p.rubies}/3</span>
-            </div>
-            <div style="display:flex; justify-content:space-between; font-size:0.76rem; color:var(--text-muted);">
-              <span>Жизни: ${'❤️'.repeat(p.hp)} ${p.shield ? '🛡️ Щит' : ''}</span>
-              <span>${isSonyaOwner ? '🐾 Любимчик Сони' : ''}</span>
+              <span style="color:var(--gold); font-weight:900;">⭐ ${p.score}</span>
             </div>
           </div>
         `;
       }).join('');
-
-      const sonyaOwner = hostState.players.find(p => p.id === hostState.cats.sonyaOwnerId);
-      const stepanTarget = hostState.players.find(p => p.id === hostState.cats.stepanLocation);
 
       const logsHtml = hostState.logs.map(l => `<div class="log-item">${l}</div>`).join('');
 
       let centerModalHtml = '';
       if (hostState.phase === 'LOBBY') {
         centerModalHtml = `
-          <div class="glass-panel interactive" style="padding:22px 28px; text-align:center; max-width:520px; margin:auto;">
-            <div class="title-grand" style="font-size:1.5rem;">ДОБРО ПОЖАЛОВАТЬ В ОСОБНЯК</div>
-            <div style="text-align:left; font-size:0.84rem; line-height:1.45; margin:10px 0 14px; background:rgba(0,0,0,0.4); padding:12px; border-radius:10px;">
-              🗡️ <b>Удар Кинжалом:</b> персонаж подходит к сопернику, ранит его ножом и забирает половину золота.<br/>
-              🕵️ <b>Кража:</b> персонаж в маске крадётся за спину и вытаскивает до 3 монет.<br/>
-              🐱 <b>Три Кошки:</b> тихая <b>Соня</b> спит у хозяина и спасает от ножа, <b>Наташа</b> с высунутым языком играет с водой в ванной и каждые 2 раунда просит поесть, а авантюрист <b>Степан</b> ложится у двери Сейфа и на чужие вещи!<br/>
-              💎 <b>Цель:</b> первым собрать <b>3 Королевских Рубина</b>!
+          <div class="glass-panel interactive" style="padding:20px 26px; text-align:center; max-width:520px; margin:auto;">
+            <div class="title-grand" style="font-size:1.45rem;">СПАСЕНИЕ В 3D-ОСОБНЯКЕ</div>
+            <div style="text-align:left; font-size:0.83rem; line-height:1.45; margin:10px 0 14px; background:rgba(0,0,0,0.45); padding:12px; border-radius:10px;">
+              🐱 <b>Степан</b> забрёл за деревянную дверь Особняка, а <b>Соня</b> и <b>Наташа</b> побежали его выручать и оказались в разных углах 3D-карты.<br/>
+              🏠 <b>Реальные 3D-комнаты:</b> в свой ход выбирайте на смартфоне любую из трёх кошек и ведите её в соседнюю комнату.<br/>
+              🗝️ <b>Цель:</b> найти <b>3 Золотых Ключа</b> в закрытых комнатах и собрать <b>Соню, Наташу и Степана вместе в одной 3D-комнате</b>!
             </div>
             <div style="display:flex; gap:10px; justify-content:center; margin-bottom:10px;">
-              <button class="btn" id="btn-add-bot">+ Добавить ИИ-Гостя</button>
+              <button class="btn" id="btn-add-bot">+ Добавить ИИ-Спасателя</button>
             </div>
-            <button class="btn btn-gold" id="btn-start-match" style="width:100%; font-size:1.12rem; padding:14px;">
-              2. Начать Партию на Экране ТВ ▶
+            <button class="btn btn-gold" id="btn-start-match" style="width:100%; font-size:1.1rem; padding:14px;">
+              2. Начать 3D-Приключение ▶
             </button>
           </div>
         `;
       } else if (hostState.phase === 'GAME_OVER') {
         centerModalHtml = `
           <div class="glass-panel interactive" style="padding:26px 34px; text-align:center; margin:auto;">
-            <div class="title-grand" style="font-size:2rem;">👑 ПОБЕДИТЕЛЬ: ${hostState.winner.name}!</div>
-            <p style="margin:10px 0 18px;">Собраны все 3 Королевских Рубина Полуночного Особняка!</p>
+            <div class="title-grand" style="font-size:1.85rem;">🎉 КОШКИ СНОВА ВМЕСТЕ!</div>
+            <p style="margin:10px 0 16px;">Соня, Наташа и Степан нашли друг друга! Лучший Спасатель: <b>${hostState.winnerName}</b></p>
             <button class="btn btn-gold" onclick="location.reload()">Сыграть Ещё Раз</button>
           </div>
         `;
       }
 
+      const cSonya = ROOMS_DATA[hostState.cats.sonya.roomId];
+      const cNatasha = ROOMS_DATA[hostState.cats.natasha.roomId];
+      const cStepan = ROOMS_DATA[hostState.cats.stepan.roomId];
+
       appEl.innerHTML = `
         <div class="tv-layout">
           <div class="glass-panel tv-header">
             <div style="display:flex; align-items:center; gap:14px;">
-              <span style="font-weight:900; font-size:1.15rem; color:var(--gold);">ПОЛУНОЧНЫЙ ОСОБНЯК</span>
-              <span style="font-size:0.84rem; color:var(--text-muted);">Раунд ${hostState.round} • Цель: 3 Рубина 💎</span>
+              <span style="font-weight:900; font-size:1.1rem; color:var(--gold);">3D-ОСОБНЯК ТРЁХ КОШЕК</span>
+              <span style="font-size:0.84rem; color:var(--text-muted);">
+                Раунд ${hostState.round} • Ключи: ${'🗝️'.repeat(hostState.keysFound)} ${hostState.keysFound}/3
+              </span>
             </div>
             <div style="display:flex; align-items:center; gap:10px;">
               <span style="font-size:0.82rem;">КОД КОМНАТЫ:</span>
@@ -1780,47 +1509,47 @@
           </div>
 
           <div class="glass-panel tv-left">
-            <div style="font-weight:900; font-size:0.86rem; color:var(--gold); border-bottom:1px solid rgba(255,255,255,0.15); padding-bottom:5px;">
-              ПЕРСОНАЖИ В ЗАЛЕ: ${hostState.players.length} из 8
+            <div style="font-weight:900; font-size:0.85rem; color:var(--gold); border-bottom:1px solid rgba(255,255,255,0.15); padding-bottom:5px;">
+              СПАСАТЕЛИ И ОЧКИ ВКЛАДА
             </div>
-            ${playersHtml || '<div style="opacity:0.65; font-size:0.82rem;">Подключитесь со смартфона или нажмите Начать Партию...</div>'}
+            ${playersHtml || '<div style="opacity:0.65; font-size:0.82rem;">Подключитесь со смартфона или нажмите Начать Приключение...</div>'}
           </div>
 
           <div class="tv-stage">
             <div class="cinematic-banner">
-              <div style="font-weight:900; font-size:1.08rem; color:var(--gold);">${hostState.headline}</div>
-              <div style="font-size:0.83rem; margin-top:2px; opacity:0.92;">${hostState.subline}</div>
+              <div style="font-weight:900; font-size:1.04rem; color:var(--gold);">${hostState.headline}</div>
+              <div style="font-size:0.82rem; margin-top:2px; opacity:0.92;">${hostState.subline}</div>
             </div>
             ${centerModalHtml}
             <div></div>
           </div>
 
           <div class="glass-panel tv-right">
-            <div style="font-weight:900; font-size:0.86rem; color:var(--gold); border-bottom:1px solid rgba(255,255,255,0.15); padding-bottom:5px;">
-              ХРОНИКА ПРОИСШЕСТВИЙ
+            <div style="font-weight:900; font-size:0.85rem; color:var(--gold); border-bottom:1px solid rgba(255,255,255,0.15); padding-bottom:5px;">
+              ИСТОРИЯ ПОИСКОВ
             </div>
             <div class="log-feed">${logsHtml}</div>
           </div>
 
           <div class="glass-panel tv-bottom">
-            <div style="font-size:0.75rem; font-weight:800; color:var(--gold);">
-              🐱 ТРИ КОШКИ ОСОБНЯКА И ИХ ПОВЕДЕНИЕ СЕЙЧАС:
+            <div style="font-size:0.74rem; font-weight:800; color:var(--gold);">
+              🐱 ГДЕ СЕЙЧАС НАХОДЯТСЯ СОНЯ, НАТАША И СТЕПАН В 3D-ОСОБНЯКЕ:
             </div>
-            <div class="cats-status-grid">
-              <div class="cat-status-card" style="border-left: 3px solid #f472b6;">
-                <div style="font-weight:900; color:#f472b6;">🐾 СОНЯ — Тихая и Верная</div>
-                <div>Хозяин сейчас: <b>${sonyaOwner ? sonyaOwner.name : 'Спит одна на подушке'}</b></div>
-                <div style="color:var(--gold);">Спасительных «Мяу» осталось: ${hostState.cats.sonyaMeowsLeft} из 2</div>
+            <div class="cats-grid">
+              <div class="cat-card" style="border-left: 3px solid #f472b6;">
+                <div style="font-weight:900; color:#f472b6;">🐾 СОНЯ — Полосатая Тихоня</div>
+                <div>Комната: <b>${cSonya.name}</b></div>
+                <div style="color:var(--gold);">Зов «Мяу» остался: ${hostState.sonyaMeowsLeft} из 2</div>
               </div>
-              <div class="cat-status-card" style="border-left: 3px solid #38bdf8;">
-                <div style="font-weight:900; color:#38bdf8;">👅 НАТАША — Язычок, Вода и Еда</div>
-                <div>Любит струйки воды в ванной и просит есть каждые 2 раунда</div>
-                <div style="color:var(--gold);">Кормёжка через: ${2 - (hostState.round % 2)} р.</div>
+              <div class="cat-card" style="border-left: 3px solid #38bdf8;">
+                <div style="font-weight:900; color:#38bdf8;">👅 НАТАША — Вислоухая с Язычком</div>
+                <div>Комната: <b>${cNatasha.name}</b></div>
+                <div style="color:var(--gold);">Любит воду и просит поесть каждые 2 часа</div>
               </div>
-              <div class="cat-status-card" style="border-left: 3px solid #fb923c;">
-                <div style="font-weight:900; color:#fb923c;">🔥 СТЕПАН — В Центре Внимания</div>
-                <div>Где лежит сейчас: <b>${stepanTarget ? 'На вещах ' + stepanTarget.name : 'Поперёк двери Сейфа'}</b></div>
-                <div style="color:var(--gold);">Любит, когда его гладят и берут на руки</div>
+              <div class="cat-card" style="border-left: 3px solid #fb923c;">
+                <div style="font-weight:900; color:#fb923c;">🔥 СТЕПАН — Серебристый Авантюрист</div>
+                <div>Комната: <b>${cStepan.name}</b></div>
+                <div style="color:var(--gold);">Ложится у дверей и открывает новые залы</div>
               </div>
             </div>
           </div>
@@ -1828,14 +1557,14 @@
       `;
 
       const bBot = document.getElementById('btn-add-bot');
-      if (bBot) bBot.onclick = addBotOnHost;
+      if (bBot) bBot.onclick = addBotPlayer;
 
       const bStart = document.getElementById('btn-start-match');
-      if (bStart) bStart.onclick = startMansionGame;
+      if (bStart) bStart.onclick = start3DMansionAdventure;
     }
 
     /***************************************************************************
-     * 8. МОБИЛЬНЫЙ КОНТРОЛЛЕР НА СМАРТФОНЕ
+     * 8. МОБИЛЬНЫЙ ПУЛЬТ УПРАВЛЕНИЯ ТРЕМЯ КОШКАМИ НА СМАРТФОНЕ
      ***************************************************************************/
     const clientState = {
       pin: '',
@@ -1845,9 +1574,13 @@
       round: 1,
       isMyTurn: false,
       activePlayerName: '',
+      selectedCatKey: 'stepan',
+      keysFound: 0,
+      sonyaMeowsLeft: 2,
+      exploredRooms: [],
+      cats: null,
       headline: '',
-      winner: null,
-      players: [],
+      winnerName: '',
       me: null,
       conn: null
     };
@@ -1856,7 +1589,7 @@
       mode = 'CLIENT';
       clientState.pin = pin;
       clientState.name = name;
-      renderClientPhone('Подключение к Полуночному Особняку...');
+      renderClientPhone('Подключение к 3D-Особняку...');
 
       peer = new Peer();
       peer.on('open', () => {
@@ -1881,7 +1614,7 @@
 
         conn.on('close', () => {
           clientState.connected = false;
-          renderClientPhone('Связь с экраном ТВ прервана.');
+          renderClientPhone('Связь с Главным экраном прервана.');
         });
       });
 
@@ -1893,11 +1626,11 @@
     function renderClientPhone(statusMsg = '') {
       if (mode !== 'CLIENT') return;
 
-      if (!clientState.connected || !clientState.me) {
+      if (!clientState.connected || !clientState.me || !clientState.cats) {
         appEl.innerHTML = `
           <div class="glass-panel center-modal">
-            <div class="title-grand" style="font-size:1.45rem;">ВХОД В ОСОБНЯК</div>
-            <p>${statusMsg || 'Синхронизация с Главным экраном...'}</p>
+            <div class="title-grand" style="font-size:1.45rem;">СВЯЗЬ С ОСОБНЯКОМ</div>
+            <p>${statusMsg || 'Синхронизация с 3D-сценой...'}</p>
             <button class="btn" onclick="location.reload()">Назад</button>
           </div>
         `;
@@ -1905,100 +1638,100 @@
       }
 
       const me = clientState.me;
-      const rivals = clientState.players.filter(p => p.id !== me.id);
       let bodyHtml = '';
 
       if (clientState.phase === 'LOBBY') {
         bodyHtml = `
           <div style="text-align:center; padding:22px 10px;">
-            <div style="font-size:1.25rem; font-weight:900; color:var(--gold);">Ваш персонаж уже в Зале!</div>
-            <p style="margin-top:8px; font-size:0.9rem; opacity:0.88;">
-              Посмотрите на Главный экран ТВ и нажмите там кнопку «Начать Партию»!
+            <div style="font-size:1.2rem; font-weight:900; color:var(--gold);">Вы готовы спасать кошек!</div>
+            <p style="margin-top:8px; font-size:0.9rem;">
+              Посмотрите на 3D-Особняк на экране ТВ и нажмите там кнопку «Начать 3D-Приключение»!
             </p>
           </div>
         `;
-      } else if (clientState.phase === 'PLAYER_TURN' && clientState.isMyTurn) {
-        const attackButtons = rivals.map(r => `
-          <button class="action-btn-phone" data-act="ATTACK" data-target="${r.id}" style="border-left: 4px solid #ff2a4b;">
-            <div style="display:flex; justify-content:space-between; font-weight:900; color:#ff4d6d;">
-              <span>🗡️ Напасть с ножом на «${r.name}»</span>
-              <span>У него 🪙 ${r.gold}</span>
-            </div>
-            <div style="font-size:0.76rem; opacity:0.88;">Подойти и нанести удар кинжалом, забрав половину его золота!</div>
-          </button>
-        `).join('');
+      } else if (clientState.phase === 'TURN_SELECT' && clientState.isMyTurn) {
+        const ck = clientState.selectedCatKey;
+        const activeCat = clientState.cats[ck];
+        const currentRoom = ROOMS_DATA[activeCat.roomId];
+        const neighborIds = getAdjacentRooms(activeCat.roomId);
 
-        const stealButtons = rivals.map(r => `
-          <button class="action-btn-phone" data-act="STEAL" data-target="${r.id}" style="border-left: 4px solid #facc15;">
-            <div style="display:flex; justify-content:space-between; font-weight:900; color:var(--gold);">
-              <span>🕵️ Обокрасть карманы «${r.name}»</span>
-              <span>До +3 🪙</span>
-            </div>
-            <div style="font-size:0.76rem; opacity:0.88;">Подкрасться со спины в маске и вытащить до 3 монет без шума.</div>
-          </button>
-        `).join('');
+        const moveBtns = neighborIds.map(rId => {
+          const r = ROOMS_DATA[rId];
+          const isOpen = clientState.exploredRooms.includes(rId);
+          return `
+            <button class="action-btn-phone" data-cmd="MOVE" data-room="${rId}">
+              <div style="display:flex; justify-content:space-between; font-weight:900; color:var(--gold);">
+                <span>🐾 Повести «${activeCat.name}» в комнату: ${r.name}</span>
+                <span>${isOpen ? 'Открыта' : '🔒 Новая 3D-комната!'}</span>
+              </div>
+              <div style="font-size:0.76rem; opacity:0.88;">${r.desc}</div>
+            </button>
+          `;
+        }).join('');
 
-        const firstRivalId = rivals[0] ? rivals[0].id : '';
+        let specialCatBtn = '';
+        if (ck === 'sonya') {
+          specialCatBtn = `
+            <button class="action-btn-phone" data-cmd="SONYA_MEOW" data-room="0"
+              ${clientState.sonyaMeowsLeft <= 0 ? 'disabled' : ''}
+              style="border: 2px solid #f472b6;">
+              <div style="font-weight:900; color:#f472b6;">🐱 Редкое тихое «Мяу» Сони — Призвать Степана в свою комнату!</div>
+              <div style="font-size:0.76rem;">Соня мяукает всего 2 раза за жизнь! Мгновенно притягивает Степана к Соне.</div>
+            </button>
+          `;
+        } else if (ck === 'natasha') {
+          specialCatBtn = `
+            <button class="action-btn-phone" data-cmd="NATASHA_SPECIAL" data-room="0" style="border: 2px solid #38bdf8;">
+              <div style="font-weight:900; color:#38bdf8;">👅 Поиграть с водой и покормить Наташу — Найти Золотой Ключ 🗝️</div>
+              <div style="font-size:0.76rem;">Наташа с высунутым язычком играет со струйками воды и находит спрятанный ключ!</div>
+            </button>
+          `;
+        } else if (ck === 'stepan') {
+          specialCatBtn = `
+            <button class="action-btn-phone" data-cmd="STEPAN_SPECIAL" data-room="0" style="border: 2px solid #fb923c;">
+              <div style="font-weight:900; color:#fb923c;">🔥 Погладить Степана у двери — Открыть все соседние 3D-комнаты!</div>
+              <div style="font-size:0.76rem;">Степан обожает быть в центре внимания и сразу распахивает двери вокруг себя.</div>
+            </button>
+          `;
+        }
 
         bodyHtml = `
-          <div style="font-weight:900; color:var(--gold); margin-bottom:8px;">
-            ВАШ ХОД! ВЫБЕРИТЕ ДЕЙСТВИЕ ПЕРСОНАЖА:
+          <div style="font-weight:900; color:var(--gold); margin-bottom:6px;">
+            1. ВЫБЕРИТЕ, КАКОЙ КОШКОЙ УПРАВЛЯТЬ В ЭТОТ ХОД:
           </div>
+          <div class="cat-tab-row">
+            <button class="cat-tab-btn ${ck === 'sonya' ? 'selected' : ''}" data-select-cat="sonya">🐾 Соня</button>
+            <button class="cat-tab-btn ${ck === 'natasha' ? 'selected' : ''}" data-select-cat="natasha">👅 Наташа</button>
+            <button class="cat-tab-btn ${ck === 'stepan' ? 'selected' : ''}" data-select-cat="stepan">🔥 Степан</button>
+          </div>
+
+          <div style="font-size:0.8rem; margin:8px 0; color:var(--text-muted);">
+            Сейчас <b>${activeCat.name}</b> находится в 3D-комнате: <b>${currentRoom.name}</b>
+          </div>
+
           <div style="display:flex; flex-direction:column; gap:8px;">
-            <button class="action-btn-phone" data-act="BUY_RUBY" data-target="" ${me.gold < 6 ? 'disabled' : ''}
-              style="border: 2px solid var(--gold); background: rgba(225, 29, 72, 0.28);">
-              <div style="display:flex; justify-content:space-between; font-weight:900; color:var(--gold);">
-                <span>💎 Купить Королевский Рубин Победы</span>
-                <span>Цена: 6 🪙</span>
-              </div>
-              <div style="font-size:0.76rem;">Соберите 3 Рубина для немедленной победы в партии!</div>
-            </button>
-
-            <button class="action-btn-phone" data-act="VAULT" data-target="" style="border-left: 4px solid #34d399;">
-              <div style="font-weight:900; color:#6ee7b7;">🏦 Взломать Золотой Сейф в центре зала — +4 или +5 🪙</div>
-              <div style="font-size:0.76rem; opacity:0.88;">Подойти к Сейфу, погладить Степана у двери и забрать золото.</div>
-            </button>
-
+            ${specialCatBtn}
             <div style="font-size:0.78rem; font-weight:800; color:var(--gold); margin-top:4px;">
-              🐱 ВЗАИМОДЕЙСТВИЕ С КОШКАМИ ОСОБНЯКА:
+              2. ИЛИ ПЕРЕВЕДИТЕ КОШКУ В СОСЕДНЮЮ 3D-КОМНАТУ:
             </div>
-
-            <button class="action-btn-phone" data-act="SONYA" data-target="" style="border-left: 4px solid #f472b6;">
-              <div style="font-weight:900; color:#f472b6;">🐾 Тихо погладить Соню — Стать её хозяином, +2 🪙 и Щит</div>
-              <div style="font-size:0.76rem; opacity:0.88;">Соня перейдёт спать к вашим ногам, вылечит +1 ❤️ и защитит от ножа!</div>
-            </button>
-
-            <button class="action-btn-phone" data-act="NATASHA_WATER" data-target="" style="border-left: 4px solid #38bdf8;">
-              <div style="font-weight:900; color:#38bdf8;">👅 Включить воду в ванной для Наташи — +3 🪙 и Скрытность</div>
-              <div style="font-size:0.76rem; opacity:0.88;">Наташа с высунутым язычком побежит играть с водой и найдёт вам клад.</div>
-            </button>
-
-            <button class="action-btn-phone" data-act="STEPAN" data-target="${firstRivalId}" style="border-left: 4px solid #fb923c;">
-              <div style="font-weight:900; color:#fb923c;">🔥 Взять Степана на руки и нагладить — до +5 🪙</div>
-              <div style="font-size:0.76rem; opacity:0.88;">Степан развалится прямо на вещах соперника и принесёт вам монеты!</div>
-            </button>
-
-            <div style="font-size:0.78rem; font-weight:800; color:#ff4d6d; margin-top:4px;">
-              🗡️ ПРЯМОЕ НАПАДЕНИЕ И ГРАБЁЖ СОПЕРНИКОВ:
-            </div>
-            ${attackButtons}
-            ${stealButtons}
+            ${moveBtns}
           </div>
         `;
       } else if (clientState.phase === 'GAME_OVER') {
         bodyHtml = `
           <div style="text-align:center; padding:24px;">
-            <div class="title-grand" style="font-size:1.5rem;">👑 ПОБЕДИТЕЛЬ: ${clientState.winner}</div>
+            <div class="title-grand" style="font-size:1.5rem;">🎉 КОШКИ СПАСЕНЫ!</div>
+            <p style="margin-top:8px;">Соня, Наташа и Степан снова вместе!</p>
           </div>
         `;
       } else {
         bodyHtml = `
           <div style="text-align:center; padding:24px 10px;">
             <div style="font-size:1.15rem; font-weight:900; color:var(--gold);">
-              👀 СМОТРИТЕ НА ГЛАВНЫЙ ЭКРАН!
+              👀 СМОТРИТЕ НА 3D-ОСОБНЯК НА ЭКРАНЕ ТВ!
             </div>
             <p style="margin-top:8px; font-size:0.9rem;">
-              ${clientState.headline || 'Сейчас разыгрывается ход игрока ' + clientState.activePlayerName}
+              ${clientState.headline}
             </p>
           </div>
         `;
@@ -2010,11 +1743,11 @@
             <div style="display:flex; align-items:center; gap:8px;">
               <span style="width:14px; height:14px; border-radius:50%; background:${me.color}; display:inline-block; border:2px solid #fff;"></span>
               <div>
-                <div style="font-weight:900; font-size:1.05rem;">${me.name}</div>
-                <div style="font-size:0.75rem; color:var(--gold);">Жизни: ${'❤️'.repeat(me.hp)} • Рубины: ${me.rubies}/3 💎</div>
+                <div style="font-weight:900; font-size:1.02rem;">${me.name}</div>
+                <div style="font-size:0.75rem; color:var(--gold);">Ключи: ${clientState.keysFound}/3 🗝️</div>
               </div>
             </div>
-            <div style="font-weight:900; font-size:1.15rem; color:var(--gold);">🪙 ${me.gold}</div>
+            <div style="font-weight:900; font-size:1.1rem; color:var(--gold);">⭐ ${me.score}</div>
           </div>
 
           <div class="glass-panel" style="padding:14px; flex:1; overflow-y:auto;">
@@ -2023,18 +1756,27 @@
         </div>
       `;
 
-      document.querySelectorAll('[data-act]').forEach(btn => {
+      document.querySelectorAll('[data-select-cat]').forEach(btn => {
+        btn.onclick = () => {
+          clientState.selectedCatKey = btn.getAttribute('data-select-cat');
+          renderClientPhone();
+        };
+      });
+
+      document.querySelectorAll('[data-cmd]').forEach(btn => {
         btn.onclick = () => {
           clientState.conn.send({
-            type: 'PERFORM_ACTION',
-            actionType: btn.getAttribute('data-act'),
-            targetId: btn.getAttribute('data-target')
+            type: 'CAT_COMMAND',
+            catKey: clientState.selectedCatKey,
+            actionType: btn.getAttribute('data-cmd'),
+            targetRoomId: Number(btn.getAttribute('data-room'))
           });
         };
       });
     }
 
-    // Запуск стартового экрана
+    // Запуск 3D-движка и стартового меню
+    initThreeJS();
     renderMenu();
   </script>
 </body>
