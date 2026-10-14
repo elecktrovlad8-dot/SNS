@@ -3,21 +3,22 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>Тайна 3D Особняка: Воссоединение Трёх Кошек</title>
+  <title>Королевский Стол: Война Трёх Знамён</title>
   <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
   <style>
     :root {
-      --theme-hue: 350;
-      --theme-sat: 82%;
-      --bg-dark: hsl(350, 75%, 5%);
-      --glass-bg: hsla(350, 65%, 9%, 0.82);
-      --glass-border: hsla(350, 90%, 65%, 0.36);
-      --accent: hsl(350, 95%, 60%);
-      --accent-soft: hsla(350, 95%, 60%, 0.25);
-      --gold: #ffd15c;
-      --text-main: #fff8f9;
-      --text-muted: hsl(350, 80%, 84%);
+      --theme-hue: 18;
+      --theme-sat: 80%;
+      --bg-dark: hsl(18, 70%, 5%);
+      --glass-bg: hsla(18, 60%, 9%, 0.85);
+      --glass-border: hsla(38, 90%, 60%, 0.42);
+      --accent: hsl(18, 92%, 58%);
+      --accent-soft: hsla(18, 92%, 58%, 0.25);
+      --gold: #ffcf54;
+      --gold-dark: #b45309;
+      --text-main: #fffbeb;
+      --text-muted: hsl(38, 75%, 82%);
     }
 
     * {
@@ -26,7 +27,7 @@
       padding: 0;
       user-select: none;
       -webkit-user-select: none;
-      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      font-family: Georgia, 'Times New Roman', serif;
     }
 
     body, html {
@@ -37,7 +38,7 @@
       color: var(--text-main);
     }
 
-    #webgl-container {
+    #webgl-table {
       position: fixed;
       top: 0;
       left: 0;
@@ -46,8 +47,8 @@
       z-index: 0;
     }
 
-    /* Слой 2D-подписей поверх 3D-комнат */
-    #labels-layer {
+    /* Проекционные 2D-знамёна над 3D-замками */
+    #banners-layer {
       position: fixed;
       top: 0;
       left: 0;
@@ -58,49 +59,51 @@
       overflow: hidden;
     }
 
-    .room-3d-label {
-      position: absolute;
-      transform: translate(-50%, -50%);
-      background: rgba(8, 4, 12, 0.85);
-      border: 1.5px solid var(--glass-border);
-      padding: 4px 10px;
-      border-radius: 8px;
-      font-size: 0.74rem;
-      font-weight: 800;
-      color: #fff;
-      white-space: nowrap;
-      box-shadow: 0 4px 14px rgba(0,0,0,0.7);
-      transition: border-color 0.25s ease;
-    }
-
-    .room-3d-label.explored {
-      border-color: var(--gold);
-      color: var(--gold);
-    }
-
-    .cat-3d-tag {
+    .castle-banner {
       position: absolute;
       transform: translate(-50%, -100%);
-      background: rgba(12, 6, 18, 0.92);
+      background: rgba(16, 10, 6, 0.9);
+      border: 2px solid var(--gold);
+      padding: 4px 10px;
+      border-radius: 8px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: #fffbeb;
+      white-space: nowrap;
+      box-shadow: 0 6px 16px rgba(0,0,0,0.85);
+      text-align: center;
+      transition: transform 0.2s ease, border-color 0.2s ease;
+    }
+
+    .castle-banner.targeted {
+      transform: translate(-50%, -112%) scale(1.12);
+      border-color: #ffffff;
+      box-shadow: 0 0 22px var(--gold);
+    }
+
+    .cat-guardian-tag {
+      position: absolute;
+      transform: translate(-50%, -100%);
+      background: rgba(24, 12, 18, 0.94);
       border: 2px solid #fff;
       padding: 3px 9px;
       border-radius: 999px;
-      font-size: 0.76rem;
-      font-weight: 900;
-      color: #fff;
+      font-size: 0.74rem;
+      font-weight: 800;
+      color: var(--gold);
       white-space: nowrap;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.8);
+      box-shadow: 0 4px 14px rgba(0,0,0,0.85);
     }
 
-    .glass-panel {
+    /* Средневековые панели с золотой окантовкой */
+    .medieval-panel {
       background: var(--glass-bg);
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
-      border: 1px solid var(--glass-border);
-      border-radius: 16px;
-      box-shadow: 0 12px 35px rgba(0, 0, 0, 0.7), inset 0 0 24px var(--accent-soft);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border: 2px solid var(--glass-border);
+      border-radius: 14px;
+      box-shadow: 0 12px 36px rgba(0, 0, 0, 0.8), inset 0 0 24px var(--accent-soft);
       color: var(--text-main);
-      transition: background 0.3s ease, border-color 0.3s ease;
     }
 
     #app {
@@ -115,10 +118,10 @@
       pointer-events: auto;
     }
 
-    /* Верхняя панель выбора цвета */
+    /* Верхняя полоса выбора цвета */
     .top-color-bar {
       position: fixed;
-      top: 10px;
+      top: 8px;
       left: 50%;
       transform: translateX(-50%);
       z-index: 60;
@@ -127,19 +130,19 @@
       gap: 7px;
       padding: 5px 14px;
       border-radius: 999px;
-      background: rgba(8, 4, 12, 0.88);
-      border: 1px solid var(--glass-border);
+      background: rgba(14, 8, 5, 0.9);
+      border: 1.5px solid var(--gold);
       pointer-events: auto;
-      box-shadow: 0 6px 20px rgba(0,0,0,0.65);
+      box-shadow: 0 6px 20px rgba(0,0,0,0.75);
     }
 
     .c-dot {
-      width: 22px;
-      height: 22px;
+      width: 21px;
+      height: 21px;
       border-radius: 50%;
-      border: 2px solid rgba(255,255,255,0.5);
+      border: 2px solid rgba(255,255,255,0.6);
       cursor: pointer;
-      transition: transform 0.15s ease, border-color 0.15s ease;
+      transition: transform 0.15s ease;
     }
 
     .c-dot:hover {
@@ -148,8 +151,8 @@
     }
 
     .c-random-btn {
-      background: linear-gradient(90deg, #f43f5e, #8b5cf6, #06b6d4, #eab308);
-      border: 1px solid #fff;
+      background: linear-gradient(90deg, #dc2626, #d97706, #059669, #2563eb, #7c3aed);
+      border: 1px solid var(--gold);
       color: #fff;
       font-size: 0.72rem;
       font-weight: 800;
@@ -159,21 +162,21 @@
     }
 
     .btn {
-      background: linear-gradient(135deg, hsla(var(--theme-hue), 85%, 44%, 0.72), hsla(var(--theme-hue), 85%, 20%, 0.94));
-      border: 1px solid var(--glass-border);
+      background: linear-gradient(180deg, hsla(var(--theme-hue), 75%, 38%, 0.9), hsla(var(--theme-hue), 80%, 18%, 0.96));
+      border: 1.5px solid var(--gold);
       color: var(--text-main);
       padding: 12px 20px;
-      border-radius: 12px;
+      border-radius: 10px;
       font-size: 0.96rem;
       font-weight: 700;
       cursor: pointer;
       transition: all 0.2s ease;
       pointer-events: auto;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.8);
     }
 
     .btn:hover:not(:disabled) {
-      border-color: var(--gold);
-      box-shadow: 0 0 18px var(--accent-soft);
+      box-shadow: 0 0 18px rgba(255, 207, 84, 0.45);
       transform: translateY(-1px);
     }
 
@@ -182,19 +185,19 @@
       cursor: not-allowed;
     }
 
-    .btn-gold {
-      background: linear-gradient(135deg, rgba(245, 158, 11, 0.82), hsla(var(--theme-hue), 85%, 30%, 0.95));
+    .btn-royal {
+      background: linear-gradient(180deg, #d97706, #78350f);
       border: 2px solid var(--gold);
       color: #fffbeb;
-      box-shadow: 0 0 24px rgba(255, 209, 92, 0.3);
+      box-shadow: 0 0 24px rgba(255, 207, 84, 0.35);
     }
 
     input[type="text"] {
-      background: rgba(8, 4, 10, 0.88);
-      border: 1px solid var(--glass-border);
+      background: rgba(12, 7, 4, 0.92);
+      border: 1.5px solid var(--glass-border);
       color: var(--text-main);
       padding: 12px 16px;
-      border-radius: 12px;
+      border-radius: 10px;
       font-size: 1.05rem;
       outline: none;
       width: 100%;
@@ -208,7 +211,7 @@
       left: 50%;
       transform: translate(-50%, -50%);
       padding: 26px 30px;
-      max-width: 590px;
+      max-width: 600px;
       width: 94%;
       text-align: center;
       display: flex;
@@ -217,13 +220,12 @@
       pointer-events: auto;
     }
 
-    .title-grand {
-      font-size: 1.95rem;
+    .title-medieval {
+      font-size: 2rem;
       font-weight: 900;
-      letter-spacing: 1px;
-      background: linear-gradient(90deg, #ffffff, var(--gold), var(--accent));
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
+      letter-spacing: 1.5px;
+      color: var(--gold);
+      text-shadow: 0 3px 12px rgba(0,0,0,0.9);
       text-transform: uppercase;
     }
 
@@ -246,11 +248,11 @@
       padding: 0 18px;
     }
 
-    .pin-display {
-      background: rgba(0, 0, 0, 0.5);
+    .pin-crest {
+      background: rgba(10, 5, 2, 0.75);
       border: 2px solid var(--gold);
       padding: 4px 14px;
-      border-radius: 10px;
+      border-radius: 8px;
       font-size: 1.3rem;
       font-weight: 900;
       letter-spacing: 3px;
@@ -285,7 +287,7 @@
       display: flex;
       flex-direction: column;
       gap: 10px;
-      overflow: hidden;
+      overflow-y: auto;
     }
 
     .tv-bottom {
@@ -297,43 +299,43 @@
       justify-content: space-between;
     }
 
-    .p-row {
-      background: rgba(0, 0, 0, 0.42);
-      border: 1px solid rgba(255, 255, 255, 0.14);
-      border-radius: 12px;
+    .lord-card {
+      background: rgba(10, 6, 4, 0.65);
+      border: 1px solid rgba(255, 207, 84, 0.25);
+      border-radius: 10px;
       padding: 8px 10px;
       display: flex;
       flex-direction: column;
       gap: 4px;
     }
 
-    .p-row.active-turn {
+    .lord-card.active-turn {
       border: 2px solid var(--gold);
-      background: linear-gradient(135deg, hsla(var(--theme-hue), 80%, 26%, 0.88), rgba(12, 8, 14, 0.92));
-      box-shadow: 0 0 18px rgba(255, 209, 92, 0.35);
+      background: linear-gradient(135deg, hsla(var(--theme-hue), 80%, 24%, 0.9), rgba(20, 10, 5, 0.95));
+      box-shadow: 0 0 18px rgba(255, 207, 84, 0.35);
     }
 
-    .cinematic-banner {
-      background: rgba(8, 4, 12, 0.9);
+    .chronicle-banner {
+      background: rgba(14, 8, 5, 0.92);
       border: 2px solid var(--gold);
-      border-radius: 14px;
+      border-radius: 12px;
       padding: 8px 22px;
       text-align: center;
       box-shadow: 0 10px 30px rgba(0,0,0,0.85);
       max-width: 96%;
     }
 
-    .cats-grid {
+    .guardians-row {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
       gap: 10px;
       height: 100%;
     }
 
-    .cat-card {
-      background: rgba(0, 0, 0, 0.48);
-      border: 1px solid rgba(255, 255, 255, 0.16);
-      border-radius: 10px;
+    .guardian-box {
+      background: rgba(8, 4, 2, 0.6);
+      border: 1px solid rgba(255, 207, 84, 0.28);
+      border-radius: 9px;
       padding: 6px 10px;
       display: flex;
       flex-direction: column;
@@ -341,7 +343,7 @@
       font-size: 0.73rem;
     }
 
-    .log-feed {
+    .log-scroll {
       flex: 1;
       overflow-y: auto;
       display: flex;
@@ -351,21 +353,21 @@
       padding-right: 4px;
     }
 
-    .log-item {
-      background: rgba(0, 0, 0, 0.4);
-      border-left: 3px solid var(--accent);
+    .log-entry {
+      background: rgba(0, 0, 0, 0.42);
+      border-left: 3px solid var(--gold);
       padding: 6px 9px;
       border-radius: 0 8px 8px 0;
       line-height: 1.32;
     }
 
-    /* Мобильный контроллер */
-    .phone-wrap {
+    /* СМАРТФОН КАК СРЕДНЕВЕКОВЫЙ ГЕЙМПАД */
+    .gamepad-wrap {
       width: 100%;
       max-width: 480px;
       height: 100vh;
       margin: 0 auto;
-      padding: 46px 12px 12px 12px;
+      padding: 44px 12px 12px 12px;
       display: flex;
       flex-direction: column;
       gap: 10px;
@@ -373,49 +375,54 @@
       pointer-events: auto;
     }
 
-    .cat-tab-row {
+    .province-dpad {
       display: grid;
-      grid-template-columns: repeat(3, 1fr);
+      grid-template-columns: repeat(2, 1fr);
       gap: 6px;
     }
 
-    .cat-tab-btn {
-      padding: 10px 6px;
+    .dpad-btn {
+      padding: 10px 8px;
       border-radius: 10px;
-      background: rgba(0,0,0,0.5);
-      border: 1.5px solid rgba(255,255,255,0.2);
-      color: #fff;
-      font-weight: 800;
-      font-size: 0.82rem;
+      background: rgba(15, 9, 5, 0.88);
+      border: 1.5px solid rgba(255, 207, 84, 0.3);
+      color: #fffbeb;
+      font-weight: 700;
+      font-size: 0.8rem;
       cursor: pointer;
-      text-align: center;
-    }
-
-    .cat-tab-btn.selected {
-      border-color: var(--gold);
-      background: hsla(var(--theme-hue), 80%, 32%, 0.9);
-      box-shadow: 0 0 14px var(--accent-soft);
-    }
-
-    .action-btn-phone {
-      width: 100%;
       text-align: left;
-      padding: 12px 14px;
+    }
+
+    .dpad-btn.selected {
+      border: 2px solid var(--gold);
+      background: hsla(var(--theme-hue), 80%, 28%, 0.95);
+      box-shadow: 0 0 14px rgba(255, 207, 84, 0.4);
+    }
+
+    .gamepad-action-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .gp-action-btn {
+      padding: 12px 10px;
       border-radius: 12px;
-      background: rgba(14, 7, 16, 0.92);
-      border: 1px solid var(--glass-border);
+      background: rgba(18, 10, 6, 0.94);
+      border: 2px solid var(--glass-border);
       color: var(--text-main);
       cursor: pointer;
       display: flex;
       flex-direction: column;
-      gap: 3px;
+      gap: 4px;
+      text-align: left;
     }
 
-    .action-btn-phone:active:not(:disabled) {
-      transform: scale(0.98);
+    .gp-action-btn:active:not(:disabled) {
+      transform: scale(0.97);
     }
 
-    .action-btn-phone:disabled {
+    .gp-action-btn:disabled {
       opacity: 0.35;
       cursor: not-allowed;
     }
@@ -423,33 +430,33 @@
 </head>
 <body>
 
-  <!-- Верхняя панель выбора цвета -->
+  <!-- Верхняя панель смены цвета -->
   <div class="top-color-bar">
     <span style="font-size:0.74rem; font-weight:800; color:var(--gold); margin-right:4px;">ЦВЕТ:</span>
-    <div class="c-dot" style="background:hsl(350, 82%, 45%);" data-hue="350" data-sat="82"></div>
-    <div class="c-dot" style="background:hsl(160, 78%, 40%);" data-hue="160" data-sat="78"></div>
-    <div class="c-dot" style="background:hsl(215, 84%, 48%);" data-hue="215" data-sat="84"></div>
-    <div class="c-dot" style="background:hsl(275, 78%, 48%);" data-hue="275" data-sat="78"></div>
-    <div class="c-dot" style="background:hsl(24, 88%, 46%);" data-hue="24" data-sat="88"></div>
+    <div class="c-dot" style="background:hsl(18, 80%, 42%);" data-hue="18" data-sat="80"></div>
+    <div class="c-dot" style="background:hsl(350, 82%, 44%);" data-hue="350" data-sat="82"></div>
+    <div class="c-dot" style="background:hsl(155, 76%, 38%);" data-hue="155" data-sat="76"></div>
+    <div class="c-dot" style="background:hsl(215, 82%, 46%);" data-hue="215" data-sat="82"></div>
+    <div class="c-dot" style="background:hsl(272, 76%, 46%);" data-hue="272" data-sat="76"></div>
     <button class="c-random-btn" id="btn-top-random">🎲 Рандом</button>
   </div>
 
-  <!-- 3D-сцена Three.js -->
-  <div id="webgl-container"></div>
+  <!-- 3D-сцена Средневекового Королевского Стола -->
+  <div id="webgl-table"></div>
 
-  <!-- Проекционные 2D-названия поверх 3D-комнат и кошек -->
-  <div id="labels-layer"></div>
+  <!-- 2D-знамёна поверх 3D-замков -->
+  <div id="banners-layer"></div>
 
-  <!-- Основной интерфейс -->
+  <!-- Слой интерфейса -->
   <div id="app"></div>
 
   <script>
     /***************************************************************************
-     * 1. ЦВЕТОВАЯ ТЕМА И СИНХРОНИЗАЦИЯ С ТЕЛЕФОНАМИ
+     * 1. УПРАВЛЕНИЕ ЦВЕТОВОЙ ТЕМОЙ И СИНХРОНИЗАЦИЯ С ГЕЙМПАДАМИ
      ***************************************************************************/
-    const themeState = { hue: 350, sat: 82 };
+    const themeState = { hue: 18, sat: 80 };
 
-    function setGlobalTheme(hue, sat = 82) {
+    function setGlobalTheme(hue, sat = 80) {
       themeState.hue = ((hue % 360) + 360) % 360;
       themeState.sat = sat;
       const h = themeState.hue;
@@ -458,31 +465,31 @@
 
       r.style.setProperty('--theme-hue', h);
       r.style.setProperty('--theme-sat', `${s}%`);
-      r.style.setProperty('--bg-dark', `hsl(${h}, 75%, 5%)`);
-      r.style.setProperty('--glass-bg', `hsla(${h}, 65%, 9%, 0.82)`);
-      r.style.setProperty('--glass-border', `hsla(${h}, 90%, 65%, 0.36)`);
-      r.style.setProperty('--accent', `hsl(${h}, 95%, 60%)`);
-      r.style.setProperty('--accent-soft', `hsla(${h}, 95%, 60%, 0.25)`);
-      r.style.setProperty('--text-muted', `hsl(${h}, 80%, 84%)`);
+      r.style.setProperty('--bg-dark', `hsl(${h}, 70%, 5%)`);
+      r.style.setProperty('--glass-bg', `hsla(${h}, 60%, 9%, 0.85)`);
+      r.style.setProperty('--glass-border', `hsla(${h}, 85%, 62%, 0.42)`);
+      r.style.setProperty('--accent', `hsl(${h}, 92%, 58%)`);
+      r.style.setProperty('--accent-soft', `hsla(${h}, 92%, 58%, 0.25)`);
+      r.style.setProperty('--text-muted', `hsl(${h}, 75%, 84%)`);
 
-      update3DThemeLighting();
-      if (mode === 'HOST') broadcastToPhones();
+      update3DTableAtmosphere();
+      if (mode === 'HOST') broadcastStateToGamepads();
     }
 
     document.querySelectorAll('.c-dot').forEach(dot => {
       dot.onclick = () => {
         setGlobalTheme(Number(dot.getAttribute('data-hue')), Number(dot.getAttribute('data-sat')));
-        SFX.chime();
+        SFX.horn();
       };
     });
 
     document.getElementById('btn-top-random').onclick = () => {
-      setGlobalTheme(Math.floor(Math.random() * 360), 72 + Math.floor(Math.random() * 22));
-      SFX.chime();
+      setGlobalTheme(Math.floor(Math.random() * 360), 70 + Math.floor(Math.random() * 25));
+      SFX.horn();
     };
 
     /***************************************************************************
-     * 2. ЗВУКОВОЙ СИНТЕЗАТОР WEB AUDIO API
+     * 2. СРЕДНЕВЕКОВЫЙ ЗВУКОВОЙ СИНТЕЗАТОР (МЕЧИ, ГОРН, КАТАПУЛЬТА, МЯУКАНЬЕ)
      ***************************************************************************/
     const SFX = {
       ctx: null,
@@ -493,7 +500,7 @@
         }
         if (this.ctx && this.ctx.state === 'suspended') this.ctx.resume();
       },
-      tone(freq, type = 'sine', dur = 0.16, vol = 0.11, slide = null) {
+      tone(freq, type = 'sine', dur = 0.18, vol = 0.12, slide = null) {
         if (!this.ctx) return;
         try {
           const o = this.ctx.createOscillator();
@@ -509,195 +516,227 @@
           o.stop(this.ctx.currentTime + dur);
         } catch (e) {}
       },
-      chime() {
-        this.tone(880, 'sine', 0.12, 0.1);
-        setTimeout(() => this.tone(1318, 'triangle', 0.22, 0.12), 70);
+      horn() {
+        this.tone(220, 'sawtooth', 0.35, 0.11, 330);
+        setTimeout(() => this.tone(330, 'triangle', 0.4, 0.12), 180);
       },
-      doorOpen() {
-        this.tone(180, 'sawtooth', 0.25, 0.09, 320);
-        setTimeout(() => this.tone(523, 'triangle', 0.25, 0.12), 200);
+      swords() {
+        for (let i = 0; i < 4; i++) {
+          setTimeout(() => this.tone(720 + i * 110, 'sawtooth', 0.09, 0.12, 240), i * 120);
+        }
+      },
+      coin() {
+        this.tone(987, 'sine', 0.1, 0.1);
+        setTimeout(() => this.tone(1318, 'triangle', 0.2, 0.12), 65);
       },
       sonyaMeow() {
-        this.tone(580, 'sine', 0.35, 0.14, 760);
-        setTimeout(() => this.tone(760, 'sine', 0.42, 0.12, 510), 230);
+        this.tone(560, 'sine', 0.35, 0.14, 750);
+        setTimeout(() => this.tone(750, 'sine', 0.4, 0.12, 490), 220);
       },
-      waterSplash() {
-        for (let i = 0; i < 5; i++) {
-          setTimeout(() => this.tone(420 + Math.random() * 480, 'sine', 0.08, 0.08), i * 60);
+      waterWave() {
+        for (let i = 0; i < 6; i++) {
+          setTimeout(() => this.tone(350 + Math.random() * 450, 'sine', 0.09, 0.09), i * 55);
         }
       },
       fanfare() {
         [261, 329, 392, 523, 659].forEach((f, i) => {
-          setTimeout(() => this.tone(f, 'triangle', 0.26, 0.15), i * 95);
+          setTimeout(() => this.tone(f, 'triangle', 0.28, 0.15), i * 100);
         });
       }
     };
 
     /***************************************************************************
-     * 3. АРХИТЕКТУРА 9 КОМНАТ 3D-ОСОБНЯКА И СЮЖЕТ ТРЁХ КОШЕК
+     * 3. 7 ЗЕМЕЛЬ СРЕДНЕВЕКОВОГО КОРОЛЕВСТВА И ТРИ КОШКИ-ХРАНИТЕЛЬНИЦЫ
      ***************************************************************************/
-    const ROOMS_DATA = [
+    const PROVINCES_DATA = [
       {
-        id: 0, row: 0, col: 0,
-        name: 'Шалаш из Тёплого Пледа',
-        furnType: 'blanket_tent',
-        floorColor: 0x4a1d2c,
-        desc: 'Уютная кровать с тёмно-бордовым одеялом шалашом, где тихая Соня чувствует себя в безопасности'
+        id: 0, x: 0, z: 0,
+        name: 'Тронная Цитадель',
+        terrainColor: 0x6b1d2f,
+        specialType: 'throne',
+        income: 4,
+        desc: 'Сердце королевства. Захват Цитадели дарит Королевскую Корону'
       },
       {
-        id: 1, row: 0, col: 1,
-        name: 'Зеркальная Галерея',
-        furnType: 'gallery',
-        floorColor: 0x2e1a36,
-        desc: 'Высокий коридор со старинными портретами и свечами'
+        id: 1, x: -9.5, z: -6.2,
+        name: 'Тёмный Шатёр Сони',
+        terrainColor: 0x3b1d2e,
+        specialType: 'sonya_tent',
+        income: 2,
+        desc: 'Бархатный шатёр-плед, где спит тихая полосатая Соня и дарит защиту'
       },
       {
-        id: 2, row: 0, col: 2,
-        name: 'Кухня с Клетчатой Миской',
-        furnType: 'natasha_kitchen',
-        floorColor: 0x3b281e,
-        desc: 'Стол с красно-чёрной клетчатой миской и зелёным цветком в белом горшке, любимое место Наташи'
+        id: 2, x: 9.5, z: -6.2,
+        name: 'Водяная Мельница Наташи',
+        terrainColor: 0x164e63,
+        specialType: 'natasha_mill',
+        income: 3,
+        desc: 'Речная плотина и пиршественный стол с клетчатой чашей для Наташи'
       },
       {
-        id: 3, row: 1, col: 0,
-        name: 'Тайная Библиотека',
-        furnType: 'library',
-        floorColor: 0x2c1d18,
-        desc: 'Книжные шкафы до потолка и парящие золотые страницы'
+        id: 3, x: 9.8, z: 6.2,
+        name: 'Пурпурный Мост Степана',
+        terrainColor: 0x581c87,
+        specialType: 'stepan_gate',
+        income: 3,
+        desc: 'Крепостные врата с фиолетовой плиткой, где поперёк дороги лежит Степан'
       },
       {
-        id: 4, row: 1, col: 1,
-        name: 'Центральный Зал Встречи',
-        furnType: 'grand_hall',
-        floorColor: 0x591224,
-        desc: 'Сердце Особняка с золотым порталом, где все три кошки должны встретиться вместе'
+        id: 4, x: -9.8, z: 6.2,
+        name: 'Золотые Рудники',
+        terrainColor: 0x713f12,
+        specialType: 'gold_mine',
+        income: 4,
+        desc: 'Богатые копи, приносящие своему владельцу по 4 золотых червонца'
       },
       {
-        id: 5, row: 1, col: 2,
-        name: 'Мраморная Купальня',
-        furnType: 'bathtub',
-        floorColor: 0x12354a,
-        desc: 'Ванная с включённой водой и поилкой, где Наташа играет со струйками воды'
+        id: 5, x: 0, z: -9.2,
+        name: 'Осадная Кузница',
+        terrainColor: 0x334155,
+        specialType: 'forge',
+        income: 2,
+        desc: 'Королевская оружейная, усиливающая рыцарские полки в битвах'
       },
       {
-        id: 6, row: 2, col: 0,
-        name: 'Каминный Зал Теней',
-        furnType: 'fireplace',
-        floorColor: 0x3d1919,
-        desc: 'Каменный камин с живым пламенем и бархатным креслом'
-      },
-      {
-        id: 7, row: 2, col: 1,
-        name: 'Часовая Оранжерея',
-        furnType: 'clock_garden',
-        floorColor: 0x193829,
-        desc: 'Старинные напольные часы, отсчитывающие каждые два часа до кормёжки Наташи'
-      },
-      {
-        id: 8, row: 2, col: 2,
-        name: 'Прихожая с Фиолетовой Плиткой',
-        furnType: 'stepan_door',
-        floorColor: 0x6b3fa0,
-        desc: 'Фиолетовый кафельный пол и светлая деревянная дверь, под которой развалился Степан'
+        id: 6, x: 0, z: 9.2,
+        name: 'Аббатство Заката',
+        terrainColor: 0x14532d,
+        specialType: 'abbey',
+        income: 3,
+        desc: 'Древний монастырь на холме с высокой сторожевой башней'
       }
     ];
 
-    // Функция проверки соседства комнат по сетке 3x3
-    function getAdjacentRooms(roomId) {
-      const r = ROOMS_DATA[roomId];
-      return ROOMS_DATA.filter(other => {
-        const dist = Math.abs(other.row - r.row) + Math.abs(other.col - r.col);
-        return dist === 1;
-      }).map(o => o.id);
-    }
-
-    const PLAYER_COLORS = ['#ff3b5c', '#38bdf8', '#a3e635', '#fb923c', '#c084fc', '#2dd4bf', '#facc15', '#f472b6'];
-    const ROOM_PREFIX = 'mansion-3d-cats-';
+    const HERALDIC_COLORS = ['#ef4444', '#3b82f6', '#10b981', '#f97316', '#a855f7', '#14b8a6', '#eab308', '#ec4899'];
+    const ROOM_PREFIX = 'royal-table-war-';
     const appEl = document.getElementById('app');
-    const labelsLayer = document.getElementById('labels-layer');
+    const bannersLayer = document.getElementById('banners-layer');
 
     let mode = 'MENU'; // MENU | HOST | CLIENT
     let peer = null;
 
     const hostState = {
       pin: '',
-      phase: 'LOBBY', // LOBBY | TURN_SELECT | ANIMATING | GAME_OVER
+      phase: 'LOBBY', // LOBBY | TURN_GAMEPAD | ANIMATING | GAME_OVER
       round: 1,
       activeIndex: 0,
-      keysFound: 0,
-      keysNeeded: 3,
+      targetedProvinceId: 0,
       sonyaMeowsLeft: 2,
-      headline: 'ОЖИДАНИЕ СПАСАТЕЛЕЙ У ВОРОТ ОСОБНЯКА',
-      subline: 'Степана затянуло в Особняк, а Соня и Наташа бросились за ним и потерялись в разных крыльях',
+      sonyaProtectedLordId: null,
+      stepanBlockedProvinceId: 3,
+      headline: 'СОВЕТ ЛОРДОВ У КОРОЛЕВСКОГО СТОЛА',
+      subline: 'Подключите смартфоны как геймпады и начните борьбу за 3 Королевские Короны',
       winnerName: '',
-      players: [], // { id, name, color, score, isBot, conn }
-      exploredRooms: [0, 2, 8], // На старте открыты только 3 угловые комнаты, где оказались кошки!
-      keyRooms: [1, 3, 5, 6, 7], // Комнаты, где спрятаны Золотые Ключи
-      cats: {
-        sonya: { id: 'sonya', name: 'Соня', roomId: 0, color: '#f472b6', desc: 'Полосатая тихоня с прямыми ушками' },
-        natasha: { id: 'natasha', name: 'Наташа', roomId: 2, color: '#38bdf8', desc: 'Золотистая вислоухая с розовым язычком' },
-        stepan: { id: 'stepan', name: 'Степан', roomId: 8, color: '#fb923c', desc: 'Серебристый мраморный вислоухий авантюрист' }
-      },
+      players: [], // { id, name, color, gold, crowns, isBot, conn }
+      provinces: [], // { id, ownerId, knights, fortLevel }
       logs: []
     };
 
-    /***************************************************************************
-     * 4. НАСТОЯЩИЙ 3D-ДВИЖОК THREE.JS: 3D-КОМНАТЫ, МЕБЕЛЬ И 3D-МОДЕЛИ КОШЕК
-     ***************************************************************************/
-    let scene, camera, renderer, ambientLight, mainSpotLight;
-    const roomMeshes = {};  // roomId -> { group, furnitureGroup, targetScaleY, pointLight }
-    const catMeshes = {};   // catKey -> { group, targetPos, currentPos, bobPhase }
-    const cameraTarget = new THREE.Vector3(0, 0, 0);
-    const cameraPositionGoal = new THREE.Vector3(0, 29, 25);
-
-    const ROOM_SPACING = 8.4;
-
-    function getRoomWorldCoords(roomId) {
-      const r = ROOMS_DATA[roomId];
-      const x = (r.col - 1) * ROOM_SPACING;
-      const z = (r.row - 1) * ROOM_SPACING;
-      return new THREE.Vector3(x, 0, z);
+    // Инициализация провинций
+    function resetProvincesState() {
+      hostState.provinces = PROVINCES_DATA.map(p => ({
+        id: p.id,
+        ownerId: null,
+        knights: p.id === 0 ? 4 : 2,
+        fortLevel: 1
+      }));
     }
+    resetProvincesState();
 
-    function initThreeJS() {
-      const container = document.getElementById('webgl-container');
+    /***************************************************************************
+     * 4. 3D-ДВИЖОК THREE.JS: СРЕДНЕВЕКОВЫЕ ЗАМКИ, РЫЦАРИ, КАТАПУЛЬТЫ И 3 КОШКИ
+     ***************************************************************************/
+    let scene, camera, renderer, ambientLight, torchLight1, torchLight2;
+    const province3DGroups = {}; // id -> { group, castleMat, bannerMesh, knightsGroup }
+    const cat3DModels = {};      // sonya, natasha, stepan
+    const marchingSquad = {
+      active: false,
+      group: null,
+      fromPos: new THREE.Vector3(),
+      toPos: new THREE.Vector3(),
+      progress: 0,
+      fireball: null
+    };
+
+    const cameraTarget = new THREE.Vector3(0, 0, 0);
+    const cameraPosGoal = new THREE.Vector3(0, 25, 24);
+
+    function initMedieval3DWorld() {
+      const container = document.getElementById('webgl-table');
       scene = new THREE.Scene();
-      scene.fog = new THREE.FogExp2(0x120308, 0.018);
+      scene.fog = new THREE.FogExp2(0x140804, 0.016);
 
       camera = new THREE.PerspectiveCamera(42, window.innerWidth / window.innerHeight, 0.1, 200);
-      camera.position.copy(cameraPositionGoal);
+      camera.position.copy(cameraPosGoal);
       camera.lookAt(cameraTarget);
 
-      renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
+      renderer = new THREE.WebGLRenderer({ antialias: true });
       renderer.setSize(window.innerWidth, window.innerHeight);
       renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
       renderer.shadowMap.enabled = true;
       container.appendChild(renderer.domElement);
 
-      ambientLight = new THREE.AmbientLight(0xffd1dc, 0.65);
+      ambientLight = new THREE.AmbientLight(0xffe4b5, 0.65);
       scene.add(ambientLight);
 
-      mainSpotLight = new THREE.DirectionalLight(0xffeedd, 0.95);
-      mainSpotLight.position.set(14, 32, 18);
-      mainSpotLight.castShadow = true;
-      scene.add(mainSpotLight);
+      torchLight1 = new THREE.PointLight(0xff9933, 1.2, 55);
+      torchLight1.position.set(-16, 18, 12);
+      scene.add(torchLight1);
 
-      // Строим все 9 комнат в 3D-пространстве
-      ROOMS_DATA.forEach(rData => {
-        build3DRoom(rData);
+      torchLight2 = new THREE.PointLight(0xffaa44, 1.1, 55);
+      torchLight2.position.set(16, 18, -12);
+      scene.add(torchLight2);
+
+      const dirLight = new THREE.DirectionalLight(0xfffbeb, 0.85);
+      dirLight.position.set(10, 30, 16);
+      dirLight.castShadow = true;
+      scene.add(dirLight);
+
+      // 1. Поверхность резного дубового Королевского Стола и средневекового моря
+      const tableBoard = new THREE.Mesh(
+        new THREE.CylinderGeometry(18.5, 19.5, 1.2, 48),
+        new THREE.MeshStandardMaterial({ color: 0x1e293b, roughness: 0.4, metalness: 0.2 })
+      );
+      tableBoard.position.y = -0.8;
+      scene.add(tableBoard);
+
+      const goldRim = new THREE.Mesh(
+        new THREE.TorusGeometry(19.0, 0.45, 12, 64),
+        new THREE.MeshStandardMaterial({ color: 0xd97706, metalness: 0.7, roughness: 0.3 })
+      );
+      goldRim.rotation.x = Math.PI / 2;
+      goldRim.position.y = -0.3;
+      scene.add(goldRim);
+
+      // 2. Каменные средневековые мосты от всех земель к Тронной Цитадели
+      const bridgeMat = new THREE.MeshStandardMaterial({ color: 0x64748b, roughness: 0.8 });
+      PROVINCES_DATA.slice(1).forEach(p => {
+        const vec = new THREE.Vector3(p.x, 0, p.z);
+        const len = vec.length();
+        const bridge = new THREE.Mesh(new THREE.BoxGeometry(1.3, 0.35, len), bridgeMat);
+        bridge.position.set(p.x / 2, -0.05, p.z / 2);
+        bridge.lookAt(0, -0.05, 0);
+        scene.add(bridge);
       });
 
-      // Создаём точные 3D-фигурки Сони, Наташи и Степана по фотографиям!
-      catMeshes.sonya = create3DCatModel('sonya');
-      catMeshes.natasha = create3DCatModel('natasha');
-      catMeshes.stepan = create3DCatModel('stepan');
+      // 3. Строим 7 средневековых провинций с 3D-замками и деталями по фото кошек
+      PROVINCES_DATA.forEach(pData => {
+        build3DProvince(pData);
+      });
 
-      scene.add(catMeshes.sonya.group);
-      scene.add(catMeshes.natasha.group);
-      scene.add(catMeshes.stepan.group);
+      // 4. Создаём 3D-фигурки Хранителей: Сони, Наташи и Степана
+      cat3DModels.sonya = createGuardianCat3D('sonya');
+      cat3DModels.natasha = createGuardianCat3D('natasha');
+      cat3DModels.stepan = createGuardianCat3D('stepan');
 
-      update3DCatsPositionsImmediate();
-      update3DThemeLighting();
+      scene.add(cat3DModels.sonya);
+      scene.add(cat3DModels.natasha);
+      scene.add(cat3DModels.stepan);
+
+      // 5. Создаём 3D-отряд марширующих рыцарей и огненный снаряд катапульты для анимаций штурма
+      createMarchingBattleActors();
+
+      update3DTableAtmosphere();
 
       window.addEventListener('resize', () => {
         camera.aspect = window.innerWidth / window.innerHeight;
@@ -705,349 +744,289 @@
         renderer.setSize(window.innerWidth, window.innerHeight);
       });
 
-      requestAnimationFrame(animateThreeJS);
+      requestAnimationFrame(animateMedieval3D);
     }
 
-    function update3DThemeLighting() {
+    function update3DTableAtmosphere() {
       if (!scene) return;
-      const color = new THREE.Color(`hsl(${themeState.hue}, 75%, 6%)`);
-      scene.background = color;
-      scene.fog.color.copy(color);
-      if (ambientLight) {
-        ambientLight.color.setStyle(`hsl(${themeState.hue}, 80%, 82%)`);
-      }
+      const bgCol = new THREE.Color(`hsl(${themeState.hue}, 70%, 5%)`);
+      scene.background = bgCol;
+      scene.fog.color.copy(bgCol);
     }
 
-    // Построение отдельной 3D-комнаты в разрезе с мебелью внутри
-    function build3DRoom(rData) {
+    function build3DProvince(pData) {
       const group = new THREE.Group();
-      const pos = getRoomWorldCoords(rData.id);
-      group.position.copy(pos);
+      group.position.set(pData.x, 0, pData.z);
 
-      const roomW = 7.4;
-      const roomD = 7.4;
-      const wallH = 2.6;
+      // Каменное плато провинции
+      const islandGeo = new THREE.CylinderGeometry(3.6, 4.1, 0.9, 8);
+      const islandMat = new THREE.MeshStandardMaterial({ color: pData.terrainColor, roughness: 0.75 });
+      const island = new THREE.Mesh(islandGeo, islandMat);
+      island.position.y = 0.2;
+      group.add(island);
 
-      // Пол комнаты
-      const floorGeo = new THREE.BoxGeometry(roomW, 0.35, roomD);
-      const floorMat = new THREE.MeshStandardMaterial({
-        color: rData.floorColor,
-        roughness: 0.6,
-        metalness: 0.15
+      // 3D-Замок с башнями и зубцами, меняющий цвет под знамя владельца
+      const castleMat = new THREE.MeshStandardMaterial({ color: 0x94a3b8, roughness: 0.55 });
+      const keep = new THREE.Mesh(new THREE.BoxGeometry(2.1, 2.0, 2.1), castleMat);
+      keep.position.set(0, 1.4, -0.5);
+      group.add(keep);
+
+      // 4 угловые средневековые башни с остроконечными крышами
+      const roofMat = new THREE.MeshStandardMaterial({ color: 0xb45309, roughness: 0.5 });
+      [[-1.1, -1.5], [1.1, -1.5], [-1.1, 0.5], [1.1, 0.5]].forEach(([tx, tz]) => {
+        const tower = new THREE.Mesh(new THREE.CylinderGeometry(0.45, 0.5, 2.6, 12), castleMat);
+        tower.position.set(tx, 1.7, tz);
+        group.add(tower);
+
+        const roof = new THREE.Mesh(new THREE.ConeGeometry(0.62, 0.9, 12), roofMat);
+        roof.position.set(tx, 3.4, tz);
+        group.add(roof);
       });
-      const floorMesh = new THREE.Mesh(floorGeo, floorMat);
-      floorMesh.receiveShadow = true;
-      group.add(floorMesh);
 
-      // Золотая рамка периметра комнаты
-      const edgesGeo = new THREE.EdgesGeometry(floorGeo);
-      const edgesMat = new THREE.LineBasicMaterial({ color: 0xffd15c });
-      const edgesMesh = new THREE.LineSegments(edgesGeo, edgesMat);
-      group.add(edgesMesh);
+      // Уникальные декорации провинций по вашим фотографиям!
+      if (pData.specialType === 'sonya_tent') {
+        // Тёмно-бордовый рыцарский шатёр-плед Сони (по фото 1)
+        const tent = new THREE.Mesh(
+          new THREE.ConeGeometry(1.5, 1.8, 4),
+          new THREE.MeshStandardMaterial({ color: 0x4a1d2c, roughness: 0.85 })
+        );
+        tent.position.set(-1.6, 1.4, 1.2);
+        tent.rotation.y = Math.PI / 4;
+        group.add(tent);
+      } else if (pData.specialType === 'natasha_mill') {
+        // Водяное колесо, красно-чёрная клетчатая чаша и цветок в белом горшке (по фото 2)
+        const bowl = new THREE.Mesh(
+          new THREE.CylinderGeometry(0.55, 0.42, 0.25, 16),
+          new THREE.MeshStandardMaterial({ color: 0xdc2626 })
+        );
+        bowl.position.set(1.5, 0.8, 1.4);
+        group.add(bowl);
 
-      // Задняя и боковая 3D-стены в разрезе (Cutaway Dollhouse style)
-      const wallMat = new THREE.MeshStandardMaterial({
-        color: 0x24101c,
-        roughness: 0.75
-      });
-      const backWall = new THREE.Mesh(new THREE.BoxGeometry(roomW, wallH, 0.3), wallMat);
-      backWall.position.set(0, wallH / 2, -roomD / 2 + 0.15);
-      group.add(backWall);
+        const whitePot = new THREE.Mesh(
+          new THREE.CylinderGeometry(0.38, 0.3, 0.65, 14),
+          new THREE.MeshStandardMaterial({ color: 0xffffff })
+        );
+        whitePot.position.set(2.3, 0.9, 0.8);
+        group.add(whitePot);
 
-      const leftWall = new THREE.Mesh(new THREE.BoxGeometry(0.3, wallH, roomD), wallMat);
-      leftWall.position.set(-roomW / 2 + 0.15, wallH / 2, 0);
-      group.add(leftWall);
+        const plant = new THREE.Mesh(
+          new THREE.SphereGeometry(0.6, 10, 10),
+          new THREE.MeshStandardMaterial({ color: 0x15803d })
+        );
+        plant.position.set(2.3, 1.65, 0.8);
+        group.add(plant);
+      } else if (pData.specialType === 'stepan_gate') {
+        // Светлые дубовые ворота и фиолетовая плитка Степана (по фото 3)
+        const gateDoor = new THREE.Mesh(
+          new THREE.BoxGeometry(1.8, 2.2, 0.3),
+          new THREE.MeshStandardMaterial({ color: 0xd6c3a5 })
+        );
+        gateDoor.position.set(0, 1.5, 1.4);
+        group.add(gateDoor);
+      } else if (pData.specialType === 'throne') {
+        // Большая золотая Корона над Центральной Цитаделью
+        const crown = new THREE.Mesh(
+          new THREE.CylinderGeometry(0.85, 0.65, 0.6, 8),
+          new THREE.MeshStandardMaterial({ color: 0xffcf54, metalness: 0.8, roughness: 0.2 })
+        );
+        crown.position.set(0, 3.8, -0.5);
+        group.add(crown);
+      }
 
-      // Группа реальной 3D-мебели внутри комнаты
-      const furnitureGroup = new THREE.Group();
-      populateRoom3DFurniture(furnitureGroup, rData.furnType);
-      group.add(furnitureGroup);
-
-      // Тёплый точечный свет внутри комнаты
-      const pLight = new THREE.PointLight(0xffcf66, 0.9, 9);
-      pLight.position.set(0, 3.2, 0);
-      group.add(pLight);
+      // Группа 3D-фигурок рыцарей, стоящих на защите провинции
+      const knightsGroup = new THREE.Group();
+      group.add(knightsGroup);
 
       scene.add(group);
-      roomMeshes[rData.id] = {
+      province3DGroups[pData.id] = {
         group,
-        furnitureGroup,
-        floorMat,
-        pLight,
-        baseFloorColor: rData.floorColor
+        castleMat,
+        knightsGroup
       };
     }
 
-    // Наполнение каждой 3D-комнаты узнаваемыми 3D-предметами из истории и фотографий!
-    function populateRoom3DFurniture(fGroup, furnType) {
-      if (furnType === 'blanket_tent') {
-        // Кровать и бордовый плед-шалаш Сони (по фото 1)
-        const bedBase = new THREE.Mesh(
-          new THREE.BoxGeometry(3.2, 0.5, 2.4),
-          new THREE.MeshStandardMaterial({ color: 0xfce7f3 })
-        );
-        bedBase.position.set(-1.2, 0.4, -1.5);
-        fGroup.add(bedBase);
+    // Отрисовка 3D-фигурок рыцарей в каждой провинции по их реальному числу
+    function refreshProvince3DKnights() {
+      hostState.provinces.forEach(prov => {
+        const p3d = province3DGroups[prov.id];
+        if (!p3d) return;
 
-        const tentGeo = new THREE.ConeGeometry(1.7, 1.5, 4);
-        const tentMat = new THREE.MeshStandardMaterial({ color: 0x3b1d2e, roughness: 0.85 });
-        const tent = new THREE.Mesh(tentGeo, tentMat);
-        tent.position.set(-1.2, 1.35, -1.5);
-        tent.rotation.y = Math.PI / 4;
-        fGroup.add(tent);
-      } else if (furnType === 'natasha_kitchen') {
-        // Стол с красно-чёрной клетчатой миской и белым горшком с фикусом (по фото 2)
-        const table = new THREE.Mesh(
-          new THREE.BoxGeometry(2.8, 0.8, 2.0),
-          new THREE.MeshStandardMaterial({ color: 0xd6c7b2 })
-        );
-        table.position.set(-1.0, 0.55, -1.6);
-        fGroup.add(table);
+        const owner = hostState.players.find(pl => pl.id === prov.ownerId);
+        const colorHex = owner ? owner.color : '#94a3b8';
+        p3d.castleMat.color.setStyle(colorHex);
 
-        // Красно-чёрная миска Наташи
-        const bowlOuter = new THREE.Mesh(
-          new THREE.CylinderGeometry(0.55, 0.45, 0.22, 18),
-          new THREE.MeshStandardMaterial({ color: 0xdc2626 })
-        );
-        bowlOuter.position.set(-0.8, 1.05, -1.4);
-        fGroup.add(bowlOuter);
+        // Очищаем и заново расставляем 3D-рыцарей
+        while (p3d.knightsGroup.children.length > 0) {
+          p3d.knightsGroup.remove(p3d.knightsGroup.children[0]);
+        }
 
-        const bowlInner = new THREE.Mesh(
-          new THREE.CylinderGeometry(0.42, 0.38, 0.24, 18),
-          new THREE.MeshStandardMaterial({ color: 0xffffff })
-        );
-        bowlInner.position.set(-0.8, 1.06, -1.4);
-        fGroup.add(bowlInner);
-
-        // Белый цветочный горшок с зелёным деревцем (по фото 2)
-        const pot = new THREE.Mesh(
-          new THREE.CylinderGeometry(0.42, 0.32, 0.7, 16),
-          new THREE.MeshStandardMaterial({ color: 0xf8fafc })
-        );
-        pot.position.set(1.4, 0.5, -2.0);
-        fGroup.add(pot);
-
-        const leaves = new THREE.Mesh(
-          new THREE.SphereGeometry(0.75, 12, 12),
-          new THREE.MeshStandardMaterial({ color: 0x15803d })
-        );
-        leaves.position.set(1.4, 1.45, -2.0);
-        fGroup.add(leaves);
-      } else if (furnType === 'stepan_door') {
-        // Светлая деревянная дверь и фиолетовая плитка, где лежит Степан (по фото 3)
-        const doorFrame = new THREE.Mesh(
-          new THREE.BoxGeometry(2.2, 2.5, 0.28),
-          new THREE.MeshStandardMaterial({ color: 0xd6c3a5 })
-        );
-        doorFrame.position.set(0.5, 1.4, -3.4);
-        fGroup.add(doorFrame);
-
-        const handle = new THREE.Mesh(
-          new THREE.SphereGeometry(0.12, 8, 8),
-          new THREE.MeshStandardMaterial({ color: 0xffd15c, metalness: 0.8 })
-        );
-        handle.position.set(1.2, 1.3, -3.2);
-        fGroup.add(handle);
-      } else if (furnType === 'bathtub') {
-        // Мраморная ванная с голубой водой для Наташи
-        const tub = new THREE.Mesh(
-          new THREE.BoxGeometry(2.8, 0.85, 1.6),
-          new THREE.MeshStandardMaterial({ color: 0xf1f5f9 })
-        );
-        tub.position.set(-1.1, 0.6, -1.7);
-        fGroup.add(tub);
-
-        const water = new THREE.Mesh(
-          new THREE.BoxGeometry(2.5, 0.7, 1.3),
-          new THREE.MeshStandardMaterial({ color: 0x38bdf8, emissive: 0x0284c7, emissiveIntensity: 0.35 })
-        );
-        water.position.set(-1.1, 0.75, -1.7);
-        fGroup.add(water);
-      } else if (furnType === 'fireplace') {
-        // Камин с живым огнём
-        const hearth = new THREE.Mesh(
-          new THREE.BoxGeometry(2.4, 2.2, 1.0),
-          new THREE.MeshStandardMaterial({ color: 0x475569 })
-        );
-        hearth.position.set(0, 1.2, -2.9);
-        fGroup.add(hearth);
-
-        const fire = new THREE.Mesh(
-          new THREE.ConeGeometry(0.55, 1.0, 8),
-          new THREE.MeshStandardMaterial({ color: 0xff5500, emissive: 0xff3300, emissiveIntensity: 0.8 })
-        );
-        fire.position.set(0, 0.7, -2.6);
-        fGroup.add(fire);
-      } else if (furnType === 'grand_hall') {
-        // Центральный золотой пьедестал Воссоединения
-        const pedestal = new THREE.Mesh(
-          new THREE.CylinderGeometry(1.8, 2.1, 0.35, 24),
-          new THREE.MeshStandardMaterial({ color: 0xffd15c, metalness: 0.6, roughness: 0.3 })
-        );
-        pedestal.position.set(0, 0.35, 0);
-        fGroup.add(pedestal);
-      } else {
-        // Книжные шкафы и колонны для остальных комнат
-        const shelf = new THREE.Mesh(
-          new THREE.BoxGeometry(2.6, 2.2, 0.7),
-          new THREE.MeshStandardMaterial({ color: 0x5c341d })
-        );
-        shelf.position.set(-1.2, 1.2, -2.8);
-        fGroup.add(shelf);
-      }
+        const count = Math.min(8, prov.knights);
+        for (let i = 0; i < count; i++) {
+          const kMesh = createSingle3DKnight(colorHex);
+          const angle = (i / Math.max(1, count)) * Math.PI - Math.PI * 0.1;
+          kMesh.position.set(Math.cos(angle) * 2.1, 0.65, Math.sin(angle) * 1.4 + 1.1);
+          p3d.knightsGroup.add(kMesh);
+        }
+      });
     }
 
-    // Создание 3D-фигурок Сони, Наташи и Степана с их реальными чертами по фото!
-    function create3DCatModel(catType) {
-      const group = new THREE.Group();
+    function createSingle3DKnight(coatColor) {
+      const k = new THREE.Group();
+      const armorMat = new THREE.MeshStandardMaterial({ color: 0xcbd5e1, metalness: 0.7, roughness: 0.3 });
+      const tunicMat = new THREE.MeshStandardMaterial({ color: coatColor, roughness: 0.5 });
 
-      // Цвета шерсти по фотографиям:
-      // Соня — тёплый золотисто-бурый табби с прямыми ушками
-      // Наташа — золотисто-персиковая вислоухая с высунутым розовым язычком
-      // Степан — серебристо-белый мраморный вислоухий с полосатым хвостом
-      let coatHex = 0xa6754b;
-      if (catType === 'natasha') coatHex = 0xd99b52;
-      if (catType === 'stepan') coatHex = 0xdbe2e9;
+      // Торс в рыцарском плаще
+      const body = new THREE.Mesh(new THREE.CylinderGeometry(0.22, 0.26, 0.65, 8), tunicMat);
+      body.position.y = 0.32;
+      k.add(body);
+
+      // Стальной шлем
+      const helm = new THREE.Mesh(new THREE.SphereGeometry(0.2, 10, 10), armorMat);
+      helm.position.y = 0.78;
+      k.add(helm);
+
+      // Поднятый меч
+      const sword = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.65, 0.08), armorMat);
+      sword.position.set(0.28, 0.65, 0.1);
+      sword.rotation.z = -0.25;
+      k.add(sword);
+
+      // Геральдический щит
+      const shield = new THREE.Mesh(new THREE.BoxGeometry(0.32, 0.42, 0.08), tunicMat);
+      shield.position.set(-0.24, 0.42, 0.18);
+      k.add(shield);
+
+      return k;
+    }
+
+    // 3D-модели Сони, Наташи и Степана с деталями с ваших фотографий
+    function createGuardianCat3D(catType) {
+      const group = new THREE.Group();
+      let coatHex = 0xa6754b; // Соня
+      if (catType === 'natasha') coatHex = 0xd99b52; // Наташа
+      if (catType === 'stepan') coatHex = 0xdbe2e9;  // Степан
 
       const coatMat = new THREE.MeshStandardMaterial({ color: coatHex, roughness: 0.55 });
       const stripeMat = new THREE.MeshStandardMaterial({ color: 0x334155, roughness: 0.6 });
 
-      // Туловище
-      const body = new THREE.Mesh(new THREE.SphereGeometry(0.62, 16, 14), coatMat);
-      body.scale.set(1.25, 0.9, 0.95);
+      const body = new THREE.Mesh(new THREE.SphereGeometry(0.65, 16, 14), coatMat);
+      body.scale.set(1.3, 0.9, 0.95);
       body.position.set(0, 0.65, 0);
       group.add(body);
 
-      // Мраморные полоски на спине у Степана и Сони
-      if (catType === 'stepan' || catType === 'sonya') {
-        const stripe = new THREE.Mesh(new THREE.BoxGeometry(0.7, 0.62, 0.8), stripeMat);
-        stripe.position.set(-0.05, 0.72, 0);
-        group.add(stripe);
-      }
-
-      // Голова
-      const head = new THREE.Mesh(new THREE.SphereGeometry(0.52, 16, 16), coatMat);
-      head.position.set(0.55, 1.15, 0);
+      const head = new THREE.Mesh(new THREE.SphereGeometry(0.54, 16, 16), coatMat);
+      head.position.set(0.55, 1.18, 0);
       group.add(head);
 
-      // Изумрудные глаза
       const eyeMat = new THREE.MeshStandardMaterial({ color: 0x65a30d, emissive: 0x365314, emissiveIntensity: 0.4 });
-      const leftEye = new THREE.Mesh(new THREE.SphereGeometry(0.09, 8, 8), eyeMat);
-      leftEye.position.set(0.98, 1.24, 0.2);
-      const rightEye = new THREE.Mesh(new THREE.SphereGeometry(0.09, 8, 8), eyeMat);
-      rightEye.position.set(0.98, 1.24, -0.2);
-      group.add(leftEye, rightEye);
+      const eyeL = new THREE.Mesh(new THREE.SphereGeometry(0.09, 8, 8), eyeMat);
+      eyeL.position.set(0.98, 1.26, 0.2);
+      const eyeR = new THREE.Mesh(new THREE.SphereGeometry(0.09, 8, 8), eyeMat);
+      eyeR.position.set(0.98, 1.26, -0.2);
+      group.add(eyeL, eyeR);
 
-      // Ушки: у Сони прямые стоячие (фото 1), у Наташи и Степана — сложенные вислоухие (фото 2 и 3)
       if (catType === 'sonya') {
         const earGeo = new THREE.ConeGeometry(0.18, 0.42, 6);
         const earL = new THREE.Mesh(earGeo, coatMat);
-        earL.position.set(0.52, 1.68, 0.25);
+        earL.position.set(0.52, 1.72, 0.25);
         const earR = new THREE.Mesh(earGeo, coatMat);
-        earR.position.set(0.52, 1.68, -0.25);
+        earR.position.set(0.52, 1.72, -0.25);
         group.add(earL, earR);
       } else {
-        const foldEarGeo = new THREE.BoxGeometry(0.22, 0.12, 0.24);
-        const earL = new THREE.Mesh(foldEarGeo, coatMat);
-        earL.position.set(0.52, 1.54, 0.34);
-        earL.rotation.x = 0.4;
-        const earR = new THREE.Mesh(foldEarGeo, coatMat);
-        earR.position.set(0.52, 1.54, -0.34);
-        earR.rotation.x = -0.4;
+        const foldGeo = new THREE.BoxGeometry(0.22, 0.12, 0.24);
+        const earL = new THREE.Mesh(foldGeo, coatMat);
+        earL.position.set(0.52, 1.56, 0.34);
+        const earR = new THREE.Mesh(foldGeo, coatMat);
+        earR.position.set(0.52, 1.56, -0.34);
         group.add(earL, earR);
       }
 
-      // ВЫСУНУТЫЙ РОЗОВЫЙ ЯЗЫЧОК НАТАШИ И КАПЕЛЬКИ ВОДЫ НА НОСУ (ТОЧНО ПО ФОТО 2!)
+      // Розовый язычок Наташи и капельки воды на носу (по фото 2)
       if (catType === 'natasha') {
-        const tongueMat = new THREE.MeshStandardMaterial({ color: 0xff4d88, emissive: 0xbe185d, emissiveIntensity: 0.3 });
-        const tongue = new THREE.Mesh(new THREE.BoxGeometry(0.24, 0.08, 0.32), tongueMat);
-        tongue.position.set(1.04, 0.96, 0.12);
+        const tongue = new THREE.Mesh(
+          new THREE.BoxGeometry(0.26, 0.08, 0.34),
+          new THREE.MeshStandardMaterial({ color: 0xff4d88, emissive: 0xbe185d, emissiveIntensity: 0.35 })
+        );
+        tongue.position.set(1.06, 0.98, 0.12);
         tongue.rotation.z = -0.25;
         group.add(tongue);
-
-        // Блестящие капельки воды на носике
-        const dropMat = new THREE.MeshStandardMaterial({ color: 0xffffff, emissive: 0x38bdf8, emissiveIntensity: 0.6 });
-        const drop = new THREE.Mesh(new THREE.SphereGeometry(0.055, 8, 8), dropMat);
-        drop.position.set(1.06, 1.15, 0);
-        group.add(drop);
       }
 
-      // Пушистый полосатый хвост
-      const tail = new THREE.Mesh(new THREE.CylinderGeometry(0.13, 0.16, 1.1, 10), stripeMat);
-      tail.position.set(-0.85, 0.75, 0);
+      const tail = new THREE.Mesh(new THREE.CylinderGeometry(0.14, 0.17, 1.15, 10), stripeMat);
+      tail.position.set(-0.88, 0.78, 0);
       tail.rotation.z = 0.85;
       group.add(tail);
 
-      return {
-        group,
-        currentPos: new THREE.Vector3(),
-        targetPos: new THREE.Vector3(),
-        bobPhase: Math.random() * Math.PI * 2
-      };
+      return group;
     }
 
-    // Вычисление позиции кошки внутри комнаты
-    function getCatTargetWorldPos(catKey, roomId) {
-      const base = getRoomWorldCoords(roomId);
-      const offsets = {
-        sonya: new THREE.Vector3(-1.3, 0.2, 0.9),
-        natasha: new THREE.Vector3(0.0, 0.2, 1.2),
-        stepan: new THREE.Vector3(1.3, 0.2, 0.9)
-      };
-      return base.add(offsets[catKey]);
+    function createMarchingBattleActors() {
+      const grp = new THREE.Group();
+      for (let i = 0; i < 3; i++) {
+        const kn = createSingle3DKnight('#ffcf54');
+        kn.position.set((i - 1) * 0.75, 0, 0);
+        grp.add(kn);
+      }
+      grp.visible = false;
+      scene.add(grp);
+      marchingSquad.group = grp;
+
+      const fb = new THREE.Mesh(
+        new THREE.SphereGeometry(0.45, 12, 12),
+        new THREE.MeshStandardMaterial({ color: 0xff5500, emissive: 0xff2200, emissiveIntensity: 0.9 })
+      );
+      fb.visible = false;
+      scene.add(fb);
+      marchingSquad.fireball = fb;
     }
 
-    function update3DCatsPositionsImmediate() {
-      ['sonya', 'natasha', 'stepan'].forEach(k => {
-        const rId = hostState.cats[k].roomId;
-        const tPos = getCatTargetWorldPos(k, rId);
-        catMeshes[k].currentPos.copy(tPos);
-        catMeshes[k].targetPos.copy(tPos);
-        catMeshes[k].group.position.copy(tPos);
-      });
-    }
-
-    // Главный цикл рендеринга 3D-Особняка и проекции 2D-подписей
-    function animateThreeJS(time) {
+    function animateMedieval3D(time) {
       const t = time * 0.001;
 
-      // Плавное движение 3D-камеры
-      camera.position.lerp(cameraPositionGoal, 0.05);
+      camera.position.lerp(cameraPosGoal, 0.05);
       camera.lookAt(cameraTarget);
 
-      // Обновление освещения и открытости 3D-комнат
-      ROOMS_DATA.forEach(rData => {
-        const rm = roomMeshes[rData.id];
-        if (!rm) return;
-        const isExplored = hostState.exploredRooms.includes(rData.id);
-        const targetY = isExplored ? 1 : 0.05;
-        rm.furnitureGroup.scale.y += (targetY - rm.furnitureGroup.scale.y) * 0.08;
-        rm.pLight.intensity = isExplored ? 1.05 : 0.18;
-      });
+      // Позиционирование 3D-фигурок Сони, Наташи и Степана на карте
+      if (cat3DModels.sonya) {
+        let sonyaProv = PROVINCES_DATA[1];
+        if (hostState.sonyaProtectedLordId) {
+          const ownedProv = hostState.provinces.find(pr => pr.ownerId === hostState.sonyaProtectedLordId);
+          if (ownedProv) sonyaProv = PROVINCES_DATA[ownedProv.id];
+        }
+        cat3DModels.sonya.position.set(sonyaProv.x - 1.8, 0.8 + Math.sin(t * 2.5) * 0.08, sonyaProv.z + 1.5);
+      }
 
-      // Плавный переход 3D-кошек из комнаты в комнату
-      ['sonya', 'natasha', 'stepan'].forEach(k => {
-        const cm = catMeshes[k];
-        const rId = hostState.cats[k].roomId;
-        cm.targetPos.copy(getCatTargetWorldPos(k, rId));
-        cm.currentPos.lerp(cm.targetPos, 0.06);
+      if (cat3DModels.natasha) {
+        const natProv = PROVINCES_DATA[2];
+        cat3DModels.natasha.position.set(natProv.x + 1.8, 0.8 + Math.sin(t * 3.2) * 0.1, natProv.z + 1.5);
+      }
 
-        const dist = cm.currentPos.distanceTo(cm.targetPos);
-        const hop = dist > 0.2 ? Math.abs(Math.sin(t * 14)) * 0.65 : Math.sin(t * 3 + cm.bobPhase) * 0.06;
+      if (cat3DModels.stepan) {
+        const stProv = PROVINCES_DATA[hostState.stepanBlockedProvinceId ?? 3];
+        cat3DModels.stepan.position.set(stProv.x, 0.85 + Math.sin(t * 2.0) * 0.06, stProv.z + 2.2);
+      }
 
-        cm.group.position.set(cm.currentPos.x, cm.currentPos.y + hop, cm.currentPos.z);
-        cm.group.rotation.y = Math.sin(t * 1.5 + cm.bobPhase) * 0.35;
-      });
+      // Анимация марширующего войска и огненного снаряда катапульты во время штурма!
+      if (marchingSquad.active) {
+        marchingSquad.progress = Math.min(1, marchingSquad.progress + 0.016);
+        const p = marchingSquad.progress;
+        marchingSquad.group.position.lerpVectors(marchingSquad.fromPos, marchingSquad.toPos, p);
+        marchingSquad.group.position.y = 0.7 + Math.abs(Math.sin(t * 18)) * 0.35;
+        marchingSquad.group.lookAt(marchingSquad.toPos.x, 0.7, marchingSquad.toPos.z);
+
+        // Парабола полёта огненного ядра катапульты
+        marchingSquad.fireball.position.lerpVectors(marchingSquad.fromPos, marchingSquad.toPos, p);
+        marchingSquad.fireball.position.y = 1.5 + Math.sin(p * Math.PI) * 6.5;
+      }
 
       renderer.render(scene, camera);
-      updateProjected2DLabels();
-      requestAnimationFrame(animateThreeJS);
+      update2DBannersOverlay();
+      requestAnimationFrame(animateMedieval3D);
     }
 
-    // Проекция 3D-координат комнат и кошек на 2D-экран для идеальной читаемости
-    function updateProjected2DLabels() {
+    function update2DBannersOverlay() {
       if (mode !== 'HOST') {
-        labelsLayer.innerHTML = '';
+        bannersLayer.innerHTML = '';
         return;
       }
 
@@ -1055,56 +1034,46 @@
       const halfW = window.innerWidth / 2;
       const halfH = window.innerHeight / 2;
 
-      ROOMS_DATA.forEach(rData => {
-        const pos = getRoomWorldCoords(rData.id);
-        pos.y += 2.6;
+      PROVINCES_DATA.forEach(pData => {
+        const provState = hostState.provinces[pData.id];
+        const owner = hostState.players.find(pl => pl.id === provState.ownerId);
+        const pos = new THREE.Vector3(pData.x, 4.3, pData.z);
         pos.project(camera);
         if (pos.z > 1) return;
 
         const sx = (pos.x * halfW) + halfW;
         const sy = -(pos.y * halfH) + halfH;
-        const explored = hostState.exploredRooms.includes(rData.id);
-        const hasKey = hostState.keyRooms.includes(rData.id);
+        const isTargeted = hostState.targetedProvinceId === pData.id;
+        const stepanHere = hostState.stepanBlockedProvinceId === pData.id;
 
         html += `
-          <div class="room-3d-label ${explored ? 'explored' : ''}" style="left:${sx}px; top:${sy}px;">
-            ${explored ? '✨ ' + rData.name : '🔒 Закрытая комната: ' + rData.name}
-            ${!explored && hasKey ? ' 🗝️' : ''}
+          <div class="castle-banner ${isTargeted ? 'targeted' : ''}"
+            style="left:${sx}px; top:${sy}px; border-color:${owner ? owner.color : '#ffcf54'};">
+            <div style="color:${owner ? owner.color : '#ffcf54'}; font-size:0.8rem;">
+              🏰 ${pData.name}
+            </div>
+            <div>
+              ${owner ? 'Лорд: ' + owner.name : 'Свободная земля'} • ⚔️ ${provState.knights} • +${pData.income}🪙
+            </div>
+            ${stepanHere ? '<div style="color:#fb923c;">🔥 У ворот лежит Степан!</div>' : ''}
           </div>
         `;
       });
 
-      ['sonya', 'natasha', 'stepan'].forEach(k => {
-        const cat = hostState.cats[k];
-        const pos = catMeshes[k].group.position.clone();
-        pos.y += 1.9;
-        pos.project(camera);
-        if (pos.z > 1) return;
-
-        const sx = (pos.x * halfW) + halfW;
-        const sy = -(pos.y * halfH) + halfH;
-
-        html += `
-          <div class="cat-3d-tag" style="left:${sx}px; top:${sy}px; border-color:${cat.color};">
-            🐱 ${cat.name} ${k === 'natasha' ? '👅' : ''}
-          </div>
-        `;
-      });
-
-      labelsLayer.innerHTML = html;
+      bannersLayer.innerHTML = html;
     }
 
-    // Наведение 3D-камеры крупным планом на конкретную комнату во время анимации
-    function focusCameraOnRoom(roomId, zoomBackDelay = 2400) {
-      const targetPos = getRoomWorldCoords(roomId);
-      cameraTarget.copy(targetPos);
-      cameraPositionGoal.set(targetPos.x, 14, targetPos.z + 13);
+    function zoomCameraToProvince(provId, duration = 2600) {
+      const p = PROVINCES_DATA[provId];
+      if (!p) return;
+      cameraTarget.set(p.x, 0.8, p.z);
+      cameraPosGoal.set(p.x, 13.5, p.z + 12.5);
 
-      if (zoomBackDelay > 0) {
+      if (duration > 0) {
         setTimeout(() => {
           cameraTarget.set(0, 0, 0);
-          cameraPositionGoal.set(0, 29, 25);
-        }, zoomBackDelay);
+          cameraPosGoal.set(0, 25, 24);
+        }, duration);
       }
     }
 
@@ -1113,32 +1082,31 @@
      ***************************************************************************/
     function renderMenu() {
       appEl.innerHTML = `
-        <div class="glass-panel center-modal">
+        <div class="medieval-panel center-modal">
           <div>
-            <div class="title-grand">ТАЙНА 3D ОСОБНЯКА</div>
+            <div class="title-medieval">КОРОЛЕВСКИЙ СТОЛ</div>
             <div style="font-weight:800; color:var(--gold); margin:4px 0 8px;">
-              История спасения Сони, Наташи и Степана для 2–8 игроков
+              Средневековая 3D-стратегия с телефонами-геймпадами для 2–8 игроков
             </div>
-            <p style="font-size:0.9rem; opacity:0.9; line-height:1.45;">
-              Любопытного вислоухого <b>Степана</b> затянуло в мистический 3D-Особняк.
-              Полосатая тихоня <b>Соня</b> и золотистая <b>Наташа</b> с высунутым розовым язычком бросились его выручать,
-              но оказались в разных углах дома. Открывайте реальные 3D-комнаты, соберите 3 Золотых Ключа и помогите всем трём кошкам встретиться в одной комнате!
+            <p style="font-size:0.92rem; opacity:0.9; line-height:1.45;">
+              На главном экране раскинулась 3D-карта средневекового королевства с замками, рыцарскими полками и тремя Кошками-Хранителями:
+              <b>Соней, Наташей и Степаном</b>. Управляйте походами, осадами и кошками со смартфона и первым завоюйте <b>3 Королевские Короны</b>!
             </p>
           </div>
 
-          <button class="btn btn-gold" id="btn-launch-tv" style="font-size:1.12rem; padding:15px;">
-            1. Открыть 3D-Особняк на Экране Телевизора или Монитора
+          <button class="btn btn-royal" id="btn-launch-tv" style="font-size:1.12rem; padding:15px;">
+            1. Открыть Королевский Стол на Экране ТВ или Монитора
           </button>
 
-          <div style="border-top: 1px solid rgba(255,255,255,0.16); padding-top:12px; display:flex; flex-direction:column; gap:8px;">
+          <div style="border-top: 1px solid rgba(255,207,84,0.25); padding-top:12px; display:flex; flex-direction:column; gap:8px;">
             <div style="font-weight:700; font-size:0.9rem; color:var(--text-muted);">
-              Подключение со смартфона как Игрок:
+              Подключить смартфон как Тактический Геймпад Лорда:
             </div>
             <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px;">
               <input type="text" id="inp-pin" maxlength="4" placeholder="PIN с экрана ТВ" />
-              <input type="text" id="inp-name" maxlength="12" placeholder="Ваше Имя" />
+              <input type="text" id="inp-name" maxlength="12" placeholder="Имя Лорда" />
             </div>
-            <button class="btn" id="btn-join-phone">Войти в Игру со Смартфона</button>
+            <button class="btn" id="btn-join-phone">Войти в Битву со Смартфона</button>
             <div id="menu-err" style="color:#fda4af; font-size:0.82rem; min-height:1.1em;"></div>
           </div>
         </div>
@@ -1147,7 +1115,7 @@
       document.getElementById('btn-launch-tv').onclick = initHostMode;
       document.getElementById('btn-join-phone').onclick = () => {
         const pin = document.getElementById('inp-pin').value.trim();
-        const name = document.getElementById('inp-name').value.trim() || 'Спасатель';
+        const name = document.getElementById('inp-name').value.trim() || 'Лорд';
         if (!/^\d{4}$/.test(pin)) {
           document.getElementById('menu-err').textContent = 'Введите 4 цифры PIN-кода с экрана ТВ!';
           return;
@@ -1157,20 +1125,31 @@
     }
 
     /***************************************************************************
-     * 6. ЛОГИКА ХОСТА НА ЭКРАНЕ ТВ И 3D-ПЕРЕМЕЩЕНИЯ КОШЕК
+     * 6. СЕРВЕРНАЯ ЛОГИКА НА ЭКРАНЕ ТВ И 3D-БИТВЫ РЫЦАРЕЙ
      ***************************************************************************/
     function addLog(text) {
       hostState.logs.unshift(text);
       if (hostState.logs.length > 30) hostState.logs.pop();
     }
 
-    function createPlayer(id, name, isBot = false, conn = null) {
+    function createLordPlayer(id, name, isBot = false, conn = null) {
       const idx = hostState.players.length;
+      const color = HERALDIC_COLORS[idx % HERALDIC_COLORS.length];
+
+      // Выдаём каждому новому лорду собственную стартовую крепость на карте
+      const freeProv = hostState.provinces.find(pr => pr.id !== 0 && pr.ownerId === null);
+      if (freeProv) {
+        freeProv.ownerId = id;
+        freeProv.knights = 3;
+      }
+
+      refreshProvince3DKnights();
       return {
         id,
         name: name.slice(0, 12),
-        color: PLAYER_COLORS[idx % PLAYER_COLORS.length],
-        score: 0,
+        color,
+        gold: 5,
+        crowns: 0,
         isBot,
         conn
       };
@@ -1181,7 +1160,7 @@
       hostState.pin = String(Math.floor(1000 + Math.random() * 9000));
       const peerId = ROOM_PREFIX + hostState.pin;
 
-      addLog(`3D-Особняк открыт! PIN-код комнаты: ${hostState.pin}`);
+      addLog(`Королевский Стол открыт! PIN для геймпадов: ${hostState.pin}`);
       renderHostHUD();
 
       peer = new Peer(peerId);
@@ -1198,219 +1177,272 @@
     function handleHostPacket(conn, data) {
       if (data.type === 'JOIN') {
         let p = hostState.players.find(x => x.id === conn.peer);
-        if (!p && hostState.players.length < 8) {
-          p = createPlayer(conn.peer, data.name, false, conn);
+        if (!p && hostState.players.length < 6) {
+          p = createLordPlayer(conn.peer, data.name, false, conn);
           hostState.players.push(p);
-          SFX.chime();
-          addLog(`✨ К спасательной экспедиции присоединился игрок «${p.name}»!`);
+          SFX.horn();
+          addLog(`⚔️ Лорд «${p.name}» поднял своё знамя над замком!`);
         }
-        broadcastToPhones();
+        broadcastStateToGamepads();
         renderHostHUD();
       }
 
       const active = hostState.players[hostState.activeIndex];
       if (!active || active.id !== conn.peer) return;
 
-      if (data.type === 'CAT_COMMAND' && hostState.phase === 'TURN_SELECT') {
-        execute3DCatCommand(data.catKey, data.actionType, data.targetRoomId);
+      if (data.type === 'AIM_PROVINCE') {
+        hostState.targetedProvinceId = Number(data.provId);
+        zoomCameraToProvince(hostState.targetedProvinceId, 1800);
+        renderHostHUD();
+      }
+
+      if (data.type === 'GAMEPAD_COMMAND' && hostState.phase === 'TURN_GAMEPAD') {
+        executeMedievalAction(data.cmd, Number(data.provId));
       }
     }
 
-    function addBotPlayer() {
-      if (hostState.players.length >= 8) return;
-      const botNames = ['Хранитель Лапок', 'Искатель Ключей', 'Друг Кошек', 'Мастер Дверей'];
+    function addBotLord() {
+      if (hostState.players.length >= 6) return;
+      const names = ['Король Артур', 'Барон Роланд', 'Герцог Ричард', 'Леди Жанна', 'Лорд Годфри'];
       const used = hostState.players.map(p => p.name);
-      const name = botNames.find(n => !used.includes(n)) || `Помощник-${hostState.players.length + 1}`;
-      hostState.players.push(createPlayer('bot-' + Math.random().toString(36).slice(2, 7), name, true, null));
-      addLog(`🤖 В команду добавлен ИИ-спасатель «${name}».`);
+      const name = names.find(n => !used.includes(n)) || `Лорд-${hostState.players.length + 1}`;
+      hostState.players.push(createLordPlayer('bot-' + Math.random().toString(36).slice(2, 7), name, true, null));
+      addLog(`🤖 К столу присоединился ИИ-полководец «${name}».`);
       renderHostHUD();
     }
 
-    // ВТОРОЙ КЛИК НА ТВ — ЗАПУСК ИСТОРИИ
-    function start3DMansionAdventure() {
+    // ВТОРОЙ КЛИК НА ТВ — ЗАПУСК КАМПАНИИ
+    function startRoyalCampaign() {
       SFX.init();
       while (hostState.players.length < 2) {
-        addBotPlayer();
+        addBotLord();
       }
       hostState.round = 1;
       hostState.activeIndex = 0;
-      startPlayerTurn();
+      startLordTurn();
     }
 
-    function startPlayerTurn() {
+    function startLordTurn() {
       const active = hostState.players[hostState.activeIndex];
-      hostState.phase = 'TURN_SELECT';
-      hostState.headline = `ХОД СПАСАТЕЛЯ: ${active.name.toUpperCase()} — ВЫБЕРИТЕ КОШКУ И КОМНАТУ НА СМАРТФОНЕ`;
-      hostState.subline = `Ключей найдено: ${hostState.keysFound} из 3 🗝️ | Соберите 3 ключа и приведите всех трёх кошек в одну 3D-комнату!`;
+      hostState.phase = 'TURN_GAMEPAD';
 
-      broadcastToPhones();
+      // Начисление налогов со всех замков активного лорда в начале его хода
+      let taxIncome = 1;
+      hostState.provinces.forEach(pr => {
+        if (pr.ownerId === active.id) {
+          taxIncome += PROVINCES_DATA[pr.id].income;
+        }
+      });
+      active.gold += taxIncome;
+      SFX.coin();
+
+      hostState.headline = `ХОД ЛОРДА: ${active.name.toUpperCase()} — НАЛОГ С ЗЕМЕЛЬ ПРИНЁС +${taxIncome} 🪙`;
+      hostState.subline = `Казна: ${active.gold} 🪙 | Короны: ${active.crowns} из 3 👑 | Отдайте приказ на геймпаде смартфона`;
+
+      broadcastStateToGamepads();
       renderHostHUD();
 
       if (active.isBot) {
-        setTimeout(() => runBotMove(), 1600);
+        setTimeout(() => runBotGamepadTurn(active), 1600);
       }
     }
 
-    function runBotMove() {
-      // Бот ведёт одну из кошек ближе к Центральному Залу (комната 4) или открывает новую комнату с ключом
-      const catKeys = ['stepan', 'natasha', 'sonya'];
-      const ck = catKeys[hostState.round % 3];
-      const cat = hostState.cats[ck];
-      const adj = getAdjacentRooms(cat.roomId);
-      const unexplored = adj.find(rId => !hostState.exploredRooms.includes(rId));
-      const towardsCenter = adj.find(rId => rId === 4) ?? adj[0];
-      const targetRoom = unexplored !== undefined ? unexplored : towardsCenter;
-      execute3DCatCommand(ck, 'MOVE', targetRoom);
+    function runBotGamepadTurn(bot) {
+      if (bot.gold >= 6) {
+        executeMedievalAction('FORGE_CROWN', 0);
+        return;
+      }
+      const targetProv = hostState.provinces.find(pr => pr.ownerId !== bot.id);
+      if (targetProv && Math.random() > 0.35) {
+        executeMedievalAction('MARCH_ATTACK', targetProv.id);
+      } else {
+        const myProv = hostState.provinces.find(pr => pr.ownerId === bot.id) || hostState.provinces[0];
+        executeMedievalAction('RECRUIT_KNIGHTS', myProv.id);
+      }
     }
 
-    // ВЫПОЛНЕНИЕ 3D-ПЕРЕХОДА КОШКИ ИЛИ ЕЁ УНИКАЛЬНОЙ СПОСОБНОСТИ
-    function execute3DCatCommand(catKey, actionType, targetRoomId) {
-      const activePlayer = hostState.players[hostState.activeIndex];
-      const cat = hostState.cats[catKey];
-      if (!cat) return;
+    // ВЫПОЛНЕНИЕ ТАКТИЧЕСКИХ ПРИКАЗОВ С 3D-АНИМАЦИЕЙ НА ВОЕННОМ СТОЛЕ
+    function executeMedievalAction(cmd, targetProvId) {
+      const activeLord = hostState.players[hostState.activeIndex];
+      const myHomeProv = hostState.provinces.find(pr => pr.ownerId === activeLord.id) || hostState.provinces[0];
+      const targetProv = hostState.provinces[targetProvId] || hostState.provinces[0];
+      const targetData = PROVINCES_DATA[targetProv.id];
 
       hostState.phase = 'ANIMATING';
+      hostState.targetedProvinceId = targetProv.id;
 
-      // 1. ОСОБАЯ СПОСОБНОСТЬ ТИХОЙ СОНИ: РЕДКОЕ «МЯУ» (ПРИТЯГИВАЕТ ДРУЗЕЙ К СЕБЕ!)
-      if (actionType === 'SONYA_MEOW' && hostState.sonyaMeowsLeft > 0) {
-        hostState.sonyaMeowsLeft -= 1;
-        SFX.sonyaMeow();
-        focusCameraOnRoom(hostState.cats.sonya.roomId, 2800);
+      // 1. МАРШ РЫЦАРЕЙ И ШТУРМ ЗАМКА С КАТАПУЛЬТОЙ
+      if (cmd === 'MARCH_ATTACK') {
+        // Если атакующий лорд был под защитой тихой Сони — она пугается лязга мечей и уходит в шатёр!
+        if (hostState.sonyaProtectedLordId === activeLord.id) {
+          hostState.sonyaProtectedLordId = null;
+          addLog(`🐾 Тихая Соня испугалась резкого боевого клича ${activeLord.name} и вернулась под свой тёмный шатёр!`);
+        }
 
-        // Степан или Наташа перебегают в комнату к Соне на её тихий зов!
-        hostState.cats.stepan.roomId = hostState.cats.sonya.roomId;
-        activePlayer.score += 3;
+        const fromData = PROVINCES_DATA[myHomeProv.id];
+        marchingSquad.active = true;
+        marchingSquad.progress = 0;
+        marchingSquad.fromPos.set(fromData.x, 0.7, fromData.z);
+        marchingSquad.toPos.set(targetData.x, 0.7, targetData.z);
+        marchingSquad.group.visible = true;
+        marchingSquad.fireball.visible = true;
 
-        hostState.headline = `🐱 ТИХАЯ СОНЯ ИЗДАЛА СВОЁ РЕДКОЕ «МЯУ»! СТЕПАН ПРИБЕЖАЛ НА ЕЁ ЗОВ!`;
-        hostState.subline = `Осталось спасительных мяуканий Сони за партию: ${hostState.sonyaMeowsLeft}`;
-        addLog(`🐱 Невероятно! Тихая Соня мяукнула из комнаты «${ROOMS_DATA[cat.roomId].name}», и Степан тут же прибежал к ней!`);
+        zoomCameraToProvince(targetProv.id, 3000);
+        SFX.horn();
 
-        broadcastToPhones();
+        hostState.headline = `⚔️ ПОЛКИ ЛОРДА ${activeLord.name.toUpperCase()} ИДУТ НА ШТУРМ ЗЕМЛИ «${targetData.name.toUpperCase()}»!`;
+        hostState.subline = `Рыцари маршируют по мосту под прикрытием огненной катапульты...`;
+        broadcastStateToGamepads();
         renderHostHUD();
-        setTimeout(() => checkReunionAndAdvance(), 2900);
-        return;
-      }
 
-      // 2. ОСОБАЯ СПОСОБНОСТЬ НАТАШИ: ИГРА С ВОДОЙ ИЛИ КЛЕТЧАТАЯ МИСКА
-      if (actionType === 'NATASHA_SPECIAL') {
-        SFX.waterSplash();
-        focusCameraOnRoom(cat.roomId, 2600);
-        hostState.keysFound = Math.min(3, hostState.keysFound + 1);
-        activePlayer.score += 3;
+        setTimeout(() => {
+          marchingSquad.active = false;
+          marchingSquad.group.visible = false;
+          marchingSquad.fireball.visible = false;
 
-        hostState.headline = `👅 НАТАША С ВЫСУНУТЫМ ЯЗЫЧКОМ ИГРАЕТ С ВОДОЙ И НАХОДИТ ЗОЛОТОЙ КЛЮЧ!`;
-        hostState.subline = `Капельки воды блестят на носу Наташи! Ключей собрано: ${hostState.keysFound} из 3 🗝️`;
-        addLog(`👅 Наташа поиграла со струйками воды и нашла Золотой Ключ для игрока ${activePlayer.name}!`);
+          const defender = hostState.players.find(pl => pl.id === targetProv.ownerId);
 
-        broadcastToPhones();
-        renderHostHUD();
-        setTimeout(() => checkReunionAndAdvance(), 2700);
-        return;
-      }
-
-      // 3. ОСОБАЯ СПОСОБНОСТЬ СТЕПАНА: ЛЕЧЬ ПОД ДВЕРЬЮ И ОТКРЫТЬ СОСЕДНИЕ КОМНАТЫ
-      if (actionType === 'STEPAN_SPECIAL') {
-        SFX.doorOpen();
-        focusCameraOnRoom(cat.roomId, 2600);
-        const neighbors = getAdjacentRooms(cat.roomId);
-        neighbors.forEach(nId => {
-          if (!hostState.exploredRooms.includes(nId)) {
-            hostState.exploredRooms.push(nId);
+          // Проверка: защищает ли этот замок тихая Соня своим редким «Мяу»!
+          if (defender && hostState.sonyaProtectedLordId === defender.id && hostState.sonyaMeowsLeft > 0) {
+            hostState.sonyaMeowsLeft -= 1;
+            SFX.sonyaMeow();
+            hostState.headline = `🐱 ТИХАЯ СОНЯ ИЗДАЛА СВОЁ РЕДКОЕ «МЯУ» И ОСТАНОВИЛА ШТУРМ ${activeLord.name.toUpperCase()}!`;
+            hostState.subline = `Рыцари в изумлении отступили! Осталось мяуканий Сони за партию: ${hostState.sonyaMeowsLeft}`;
+            addLog(`🐱 Чудо! Тихая Соня мяукнула со стены замка и спасла владения ${defender.name} от штурма!`);
+            renderHostHUD();
+            setTimeout(() => advanceTurn(), 2200);
+            return;
           }
-          if (hostState.keyRooms.includes(nId)) {
-            hostState.keyRooms = hostState.keyRooms.filter(k => k !== nId);
-            hostState.keysFound = Math.min(3, hostState.keysFound + 1);
+
+          // Проверка: лежит ли авантюрист Степан поперёк ворот этой провинции!
+          if (hostState.stepanBlockedProvinceId === targetProv.id && targetProv.ownerId !== activeLord.id) {
+            if (activeLord.gold >= 2) {
+              activeLord.gold -= 2;
+              addLog(`🔥 Чтобы пройти через ворота «${targetData.name}», лорд ${activeLord.name} сначала погладил Степана и дал ему 2 🪙!`);
+            }
           }
-        });
-        activePlayer.score += 3;
 
-        hostState.headline = `🔥 СТЕПАН РАЗВАЛИЛСЯ У ДВЕРИ И РАСПАХНУЛ СОСЕДНИЕ 3D-КОМНАТЫ!`;
-        hostState.subline = `Степан в центре внимания! Все соседние комнаты открыты в 3D-пространстве`;
-        addLog(`🔥 Игрок ${activePlayer.name} погладил Степана у двери — авантюрист распахнул все соседние комнаты!`);
+          SFX.swords();
+          targetProv.ownerId = activeLord.id;
+          targetProv.knights = Math.max(2, myHomeProv.knights);
+          activeLord.gold += 2;
 
-        broadcastToPhones();
+          if (targetProv.id === 0) {
+            activeLord.crowns += 1;
+            SFX.fanfare();
+            hostState.headline = `👑 ${activeLord.name.toUpperCase()} ЗАХВАТИЛ ТРОННУЮ ЦИТАДЕЛЬ И ПОЛУЧИЛ КОРОНУ!`;
+            addLog(`👑 ${activeLord.name} взял штурмом Тронную Цитадель и завоевал Королевскую Корону!`);
+          } else {
+            hostState.headline = `🏰 ЗЕМЛЯ «${targetData.name.toUpperCase()}» ПЕРЕШЛА ПОД ЗНАМЯ ЛОРДА ${activeLord.name.toUpperCase()}!`;
+            addLog(`⚔️ Рыцари ${activeLord.name} взяли штурмом «${targetData.name}» и добыли 2 🪙 трофеев!`);
+          }
+
+          refreshProvince3DKnights();
+          renderHostHUD();
+          setTimeout(() => advanceTurn(), 2000);
+        }, 1600);
+        return;
+      }
+
+      // 2. НАБОР РЫЦАРЕЙ И УКРЕПЛЕНИЕ ЗАМКА
+      if (cmd === 'RECRUIT_KNIGHTS') {
+        zoomCameraToProvince(myHomeProv.id, 2400);
+        SFX.horn();
+        myHomeProv.knights = Math.min(8, myHomeProv.knights + 2);
+        activeLord.gold += 2;
+        refreshProvince3DKnights();
+
+        hostState.headline = `🛡️ ЛОРД ${activeLord.name.toUpperCase()} УКРЕПЛЯЕТ ЗАМОК И ПРИЗЫВАЕТ +2 РЫЦАРЕЙ!`;
+        hostState.subline = `Гарнизон крепости вырос до ${myHomeProv.knights} полков, а казна пополнилась на +2 🪙`;
+        addLog(`🛡️ ${activeLord.name} укрепил гарнизон в земле «${PROVINCES_DATA[myHomeProv.id].name}» и собрал +2 🪙.`);
+
+        broadcastStateToGamepads();
         renderHostHUD();
-        setTimeout(() => checkReunionAndAdvance(), 2700);
+        setTimeout(() => advanceTurn(), 2300);
         return;
       }
 
-      // 4. ПЕРЕХОД КОШКИ В ВЫБРАННУЮ 3D-КОМНАТУ
-      const destId = Number(targetRoomId);
-      const destRoom = ROOMS_DATA[destId];
-      if (!destRoom) {
-        startPlayerTurn();
+      // 3. ПРИЗОВ ТРЁХ КОШЕК-ХРАНИТЕЛЬНИЦ: СОНИ, НАТАШИ ИЛИ СТЕПАНА
+      if (cmd === 'CALL_CAT_GUARDIAN') {
+        // Выбор кошки зависит от выбранной провинции или цикла:
+        // Если выбрана провинция 1 -> Соня; провинция 2 -> Наташа; иначе -> Степан у ворот выбранной провинции!
+        if (targetProv.id === 1) {
+          hostState.sonyaProtectedLordId = activeLord.id;
+          activeLord.gold += 3;
+          zoomCameraToProvince(1, 2500);
+          SFX.coin();
+          hostState.headline = `🐾 ЛОРД ${activeLord.name.toUpperCase()} ПОГЛАДИЛ ТИХУЮ СОНЮ ПОД ТЁМНЫМ ШАТРОМ!`;
+          hostState.subline = `Соня перешла охранять замок ${activeLord.name} от штурмов и подарила +3 🪙`;
+          addLog(`🐾 Тихая полосатая Соня выбрала своим хозяином лорда ${activeLord.name} и охраняет его стены!`);
+        } else if (targetProv.id === 2) {
+          SFX.waterWave();
+          zoomCameraToProvince(2, 2500);
+          activeLord.gold += 4;
+          hostState.headline = `👅 НАТАША С ВЫСУНУТЫМ ЯЗЫЧКОМ ОТКРЫЛА ВОДНЫЙ ШЛЮЗ МЕЛЬНИЦЫ!`;
+          hostState.subline = `Бурный поток воды принёс лорду ${activeLord.name} сокровища на +4 🪙`;
+          addLog(`👅 Наташа поиграла с потоком воды у мельницы и принесла лорду ${activeLord.name} +4 🪙!`);
+        } else {
+          hostState.stepanBlockedProvinceId = targetProv.id;
+          activeLord.gold += 3;
+          zoomCameraToProvince(targetProv.id, 2500);
+          SFX.coin();
+          hostState.headline = `🔥 АРХИ-КОТ СТЕПАН РАЗВАЛИЛСЯ У ВОРОТ ЗЕМЛИ «${targetData.name.toUpperCase()}»!`;
+          hostState.subline = `Лорд ${activeLord.name} подержал Степана на руках, получил +3 🪙 и перекрыл дорогу соперникам`;
+          addLog(`🔥 Серебристый вислоухий Степан в кайф улёгся прямо перед воротами «${targetData.name}»!`);
+        }
+
+        broadcastStateToGamepads();
+        renderHostHUD();
+        setTimeout(() => advanceTurn(), 2500);
         return;
       }
 
-      cat.roomId = destId;
-      const wasUnexplored = !hostState.exploredRooms.includes(destId);
-      if (wasUnexplored) {
-        hostState.exploredRooms.push(destId);
-        activePlayer.score += 2;
-      } else {
-        activePlayer.score += 1;
+      // 4. ОТЛИТЬ КОРОЛЕВСКУЮ КОРОНУ ПОБЕДЫ ЗА 6 ЗОЛОТЫХ
+      if (cmd === 'FORGE_CROWN') {
+        if (activeLord.gold >= 6) {
+          activeLord.gold -= 6;
+          activeLord.crowns += 1;
+          zoomCameraToProvince(0, 2600);
+          SFX.fanfare();
+          hostState.headline = `👑 ЛОРД ${activeLord.name.toUpperCase()} ВЫКОВАЛ КОРОЛЕВСКУЮ КОРОНУ ${activeLord.crowns} ИЗ 3!`;
+          hostState.subline = `Торжественный звон колоколов разносится над Королевским Столом!`;
+          addLog(`👑 Лорд ${activeLord.name} заплатил 6 🪙 золотых дел мастерам и получил Корону ${activeLord.crowns} из 3!`);
+        }
+        broadcastStateToGamepads();
+        renderHostHUD();
+        setTimeout(() => advanceTurn(), 2500);
       }
-
-      let foundKeyHere = false;
-      if (hostState.keyRooms.includes(destId)) {
-        hostState.keyRooms = hostState.keyRooms.filter(k => k !== destId);
-        hostState.keysFound = Math.min(3, hostState.keysFound + 1);
-        activePlayer.score += 2;
-        foundKeyHere = true;
-      }
-
-      SFX.doorOpen();
-      focusCameraOnRoom(destId, 2700);
-
-      hostState.headline = `🐾 ${cat.name.toUpperCase()} ПЕРЕХОДИТ В 3D-КОМНАТУ «${destRoom.name.toUpperCase()}»!`;
-      hostState.subline = foundKeyHere
-        ? `🗝️ В этой комнате найден Золотой Ключ! Всего ключей: ${hostState.keysFound} из 3`
-        : destRoom.desc;
-
-      addLog(`🐾 ${activePlayer.name} направил кошку ${cat.name} в комнату «${destRoom.name}»${foundKeyHere ? ' и нашёл Золотой Ключ!' : '.'}`);
-
-      broadcastToPhones();
-      renderHostHUD();
-
-      setTimeout(() => checkReunionAndAdvance(), 2800);
     }
 
-    function checkReunionAndAdvance() {
-      const rSonya = hostState.cats.sonya.roomId;
-      const rNatasha = hostState.cats.natasha.roomId;
-      const rStepan = hostState.cats.stepan.roomId;
-
-      // УСЛОВИЕ ПОБЕДЫ: Все 3 кошки встретились в одной 3D-комнате и найдены 3 Ключа (или встретились в Центральном Зале после 2 ключей)
-      const allInSameRoom = (rSonya === rNatasha && rNatasha === rStepan);
-      if (allInSameRoom && hostState.keysFound >= 3) {
-        const sorted = [...hostState.players].sort((a, b) => b.score - a.score);
-        hostState.winnerName = sorted[0] ? sorted[0].name : 'Дружба Кошек';
+    function advanceTurn() {
+      const active = hostState.players[hostState.activeIndex];
+      if (active.crowns >= 3) {
+        hostState.winnerName = active.name;
         hostState.phase = 'GAME_OVER';
-        focusCameraOnRoom(rSonya, 0);
         SFX.fanfare();
-
-        hostState.headline = `🎉 ВОССОЕДИНЕНИЕ! СОНЯ, НАТАША И СТЕПАН НАШЛИ ДРУГ ДРУГА!`;
-        hostState.subline = `Все три кошки снова вместе в комнате «${ROOMS_DATA[rSonya].name}»! Главный Спасатель: ${hostState.winnerName}!`;
-        addLog(`👑 ПОБЕДА! Соня, Наташа и Степан встретились в одной комнате и выбрались из Особняка!`);
-
-        broadcastToPhones();
+        hostState.headline = `👑 ВЕЛИКИЙ КОРОЛЬ: ЛОРД ${active.name.toUpperCase()} ПОБЕЖДАЕТ В КАМПАНИИ!`;
+        hostState.subline = `Собраны все 3 Королевские Короны Войны Трёх Знамён!`;
+        broadcastStateToGamepads();
         renderHostHUD();
         return;
       }
 
-      // Переход хода
       hostState.activeIndex = (hostState.activeIndex + 1) % hostState.players.length;
       if (hostState.activeIndex === 0) {
         hostState.round += 1;
-        // Каждые 2 раунда у Наташи срабатывает будильник кормёжки!
+        // Каждые 2 раунда как по часам: Наташа требует пир у клетчатой чаши!
         if (hostState.round % 2 === 0) {
-          addLog(`⏰ Прошло 2 часа! Наташа с высунутым язычком покусывает и трётся, требуя покушать у клетчатой миски!`);
+          const richest = [...hostState.players].sort((a, b) => b.gold - a.gold)[0];
+          if (richest && richest.gold > 0) {
+            richest.gold -= 1;
+            addLog(`⏰ Колокол трапезы! Наташа с высунутым язычком покусала за сапог лорда ${richest.name} и скушала угощение за 1 🪙!`);
+          }
         }
       }
-      startPlayerTurn();
+      startLordTurn();
     }
 
-    function broadcastToPhones() {
+    function broadcastStateToGamepads() {
       const activePlayer = hostState.players[hostState.activeIndex];
       hostState.players.forEach((p, idx) => {
         if (p.conn && p.conn.open) {
@@ -1422,16 +1454,16 @@
             round: hostState.round,
             isMyTurn: idx === hostState.activeIndex,
             activePlayerName: activePlayer ? activePlayer.name : '',
-            keysFound: hostState.keysFound,
-            sonyaMeowsLeft: hostState.sonyaMeowsLeft,
-            exploredRooms: hostState.exploredRooms,
-            cats: hostState.cats,
+            targetedProvinceId: hostState.targetedProvinceId,
+            provinces: hostState.provinces,
             headline: hostState.headline,
             winnerName: hostState.winnerName,
             me: {
+              id: p.id,
               name: p.name,
               color: p.color,
-              score: p.score
+              gold: p.gold,
+              crowns: p.crowns
             }
           });
         }
@@ -1439,84 +1471,87 @@
     }
 
     /***************************************************************************
-     * 7. ИНТЕРФЕЙС ЭКРАНА ТВ
+     * 7. ОТРИСОВКА ИНТЕРФЕЙСА ЭКРАНА ТВ
      ***************************************************************************/
     function renderHostHUD() {
       if (mode !== 'HOST') return;
 
-      const playersHtml = hostState.players.map((p, idx) => {
+      const lordsHtml = hostState.players.map((p, idx) => {
         const isTurn = (hostState.phase !== 'LOBBY' && idx === hostState.activeIndex);
+        const landsCount = hostState.provinces.filter(pr => pr.ownerId === p.id).length;
+        const hasSonya = hostState.sonyaProtectedLordId === p.id;
         return `
-          <div class="p-row ${isTurn ? 'active-turn' : ''}">
+          <div class="lord-card ${isTurn ? 'active-turn' : ''}">
             <div style="display:flex; justify-content:space-between; align-items:center;">
               <div style="display:flex; align-items:center; gap:7px; font-weight:900;">
                 <span style="width:12px; height:12px; border-radius:50%; background:${p.color}; display:inline-block; border:2px solid #fff;"></span>
                 <span>${p.name} ${p.isBot ? '🤖' : ''}</span>
               </div>
-              <span style="color:var(--gold); font-weight:900;">⭐ ${p.score}</span>
+              <span style="color:var(--gold); font-weight:900;">🪙 ${p.gold} | 👑 ${p.crowns}/3</span>
+            </div>
+            <div style="display:flex; justify-content:space-between; font-size:0.75rem; color:var(--text-muted);">
+              <span>Замков под властью: ${landsCount}</span>
+              <span>${hasSonya ? '🐾 Хранима Соней' : ''}</span>
             </div>
           </div>
         `;
       }).join('');
 
-      const logsHtml = hostState.logs.map(l => `<div class="log-item">${l}</div>`).join('');
+      const logsHtml = hostState.logs.map(l => `<div class="log-entry">${l}</div>`).join('');
 
       let centerModalHtml = '';
       if (hostState.phase === 'LOBBY') {
         centerModalHtml = `
-          <div class="glass-panel interactive" style="padding:20px 26px; text-align:center; max-width:520px; margin:auto;">
-            <div class="title-grand" style="font-size:1.45rem;">СПАСЕНИЕ В 3D-ОСОБНЯКЕ</div>
+          <div class="medieval-panel interactive" style="padding:20px 26px; text-align:center; max-width:530px; margin:auto;">
+            <div class="title-medieval" style="font-size:1.45rem;">ЗАЛ ВОЕННОГО СОВЕТА</div>
             <div style="text-align:left; font-size:0.83rem; line-height:1.45; margin:10px 0 14px; background:rgba(0,0,0,0.45); padding:12px; border-radius:10px;">
-              🐱 <b>Степан</b> забрёл за деревянную дверь Особняка, а <b>Соня</b> и <b>Наташа</b> побежали его выручать и оказались в разных углах 3D-карты.<br/>
-              🏠 <b>Реальные 3D-комнаты:</b> в свой ход выбирайте на смартфоне любую из трёх кошек и ведите её в соседнюю комнату.<br/>
-              🗝️ <b>Цель:</b> найти <b>3 Золотых Ключа</b> в закрытых комнатах и собрать <b>Соню, Наташу и Степана вместе в одной 3D-комнате</b>!
+              ⚔️ <b>Штурм Замков:</b> выбирайте на геймпаде смартфона провинцию и отправляйте 3D-полки рыцарей и катапульты на захват!<br/>
+              🐱 <b>Три Кошки-Хранительницы:</b> полосатая тихоня <b>Соня</b> под бордовым шатром защищает ваш замок редким «Мяу», золотистая <b>Наташа</b> с высунутым язычком пускает поток воды с мельницы, а вислоухий <b>Степан</b> ложится поперёк ворот замка!<br/>
+              👑 <b>Цель:</b> первым собрать <b>3 Королевские Короны</b>!
             </div>
             <div style="display:flex; gap:10px; justify-content:center; margin-bottom:10px;">
-              <button class="btn" id="btn-add-bot">+ Добавить ИИ-Спасателя</button>
+              <button class="btn" id="btn-add-bot">+ Добавить ИИ-Лорда</button>
             </div>
-            <button class="btn btn-gold" id="btn-start-match" style="width:100%; font-size:1.1rem; padding:14px;">
-              2. Начать 3D-Приключение ▶
+            <button class="btn btn-royal" id="btn-start-match" style="width:100%; font-size:1.1rem; padding:14px;">
+              2. Начать Королевскую Кампанию ▶
             </button>
           </div>
         `;
       } else if (hostState.phase === 'GAME_OVER') {
         centerModalHtml = `
-          <div class="glass-panel interactive" style="padding:26px 34px; text-align:center; margin:auto;">
-            <div class="title-grand" style="font-size:1.85rem;">🎉 КОШКИ СНОВА ВМЕСТЕ!</div>
-            <p style="margin:10px 0 16px;">Соня, Наташа и Степан нашли друг друга! Лучший Спасатель: <b>${hostState.winnerName}</b></p>
-            <button class="btn btn-gold" onclick="location.reload()">Сыграть Ещё Раз</button>
+          <div class="medieval-panel interactive" style="padding:26px 34px; text-align:center; margin:auto;">
+            <div class="title-medieval" style="font-size:1.85rem;">👑 ПОБЕДИТЕЛЬ: ${hostState.winnerName}!</div>
+            <p style="margin:10px 0 16px;">Все три Королевские Короны завоёваны!</p>
+            <button class="btn btn-royal" onclick="location.reload()">Новая Кампания</button>
           </div>
         `;
       }
 
-      const cSonya = ROOMS_DATA[hostState.cats.sonya.roomId];
-      const cNatasha = ROOMS_DATA[hostState.cats.natasha.roomId];
-      const cStepan = ROOMS_DATA[hostState.cats.stepan.roomId];
+      const sonyaLord = hostState.players.find(p => p.id === hostState.sonyaProtectedLordId);
+      const stepanProv = PROVINCES_DATA[hostState.stepanBlockedProvinceId ?? 3];
 
       appEl.innerHTML = `
         <div class="tv-layout">
-          <div class="glass-panel tv-header">
+          <div class="medieval-panel tv-header">
             <div style="display:flex; align-items:center; gap:14px;">
-              <span style="font-weight:900; font-size:1.1rem; color:var(--gold);">3D-ОСОБНЯК ТРЁХ КОШЕК</span>
-              <span style="font-size:0.84rem; color:var(--text-muted);">
-                Раунд ${hostState.round} • Ключи: ${'🗝️'.repeat(hostState.keysFound)} ${hostState.keysFound}/3
-              </span>
+              <span style="font-weight:900; font-size:1.15rem; color:var(--gold);">КОРОЛЕВСКИЙ СТОЛ</span>
+              <span style="font-size:0.84rem; color:var(--text-muted);">Раунд ${hostState.round} • Цель: 3 Короны 👑</span>
             </div>
             <div style="display:flex; align-items:center; gap:10px;">
-              <span style="font-size:0.82rem;">КОД КОМНАТЫ:</span>
-              <span class="pin-display">${hostState.pin}</span>
+              <span style="font-size:0.82rem;">КОД ДЛЯ ГЕЙМПАДОВ:</span>
+              <span class="pin-crest">${hostState.pin}</span>
             </div>
           </div>
 
-          <div class="glass-panel tv-left">
-            <div style="font-weight:900; font-size:0.85rem; color:var(--gold); border-bottom:1px solid rgba(255,255,255,0.15); padding-bottom:5px;">
-              СПАСАТЕЛИ И ОЧКИ ВКЛАДА
+          <div class="medieval-panel tv-left">
+            <div style="font-weight:900; font-size:0.85rem; color:var(--gold); border-bottom:1px solid rgba(255,207,84,0.25); padding-bottom:5px;">
+              ЛОРДЫ И ИХ КОРОНЫ
             </div>
-            ${playersHtml || '<div style="opacity:0.65; font-size:0.82rem;">Подключитесь со смартфона или нажмите Начать Приключение...</div>'}
+            ${lordsHtml || '<div style="opacity:0.65; font-size:0.82rem;">Подключитесь со смартфона или нажмите Начать Кампанию...</div>'}
           </div>
 
           <div class="tv-stage">
-            <div class="cinematic-banner">
+            <div class="chronicle-banner">
               <div style="font-weight:900; font-size:1.04rem; color:var(--gold);">${hostState.headline}</div>
               <div style="font-size:0.82rem; margin-top:2px; opacity:0.92;">${hostState.subline}</div>
             </div>
@@ -1524,32 +1559,32 @@
             <div></div>
           </div>
 
-          <div class="glass-panel tv-right">
-            <div style="font-weight:900; font-size:0.85rem; color:var(--gold); border-bottom:1px solid rgba(255,255,255,0.15); padding-bottom:5px;">
-              ИСТОРИЯ ПОИСКОВ
+          <div class="medieval-panel tv-right">
+            <div style="font-weight:900; font-size:0.85rem; color:var(--gold); border-bottom:1px solid rgba(255,207,84,0.25); padding-bottom:5px;">
+              ЛЕТОПИСЬ ПОХОДОВ
             </div>
-            <div class="log-feed">${logsHtml}</div>
+            <div class="log-scroll">${logsHtml}</div>
           </div>
 
-          <div class="glass-panel tv-bottom">
+          <div class="medieval-panel tv-bottom">
             <div style="font-size:0.74rem; font-weight:800; color:var(--gold);">
-              🐱 ГДЕ СЕЙЧАС НАХОДЯТСЯ СОНЯ, НАТАША И СТЕПАН В 3D-ОСОБНЯКЕ:
+              🐱 ТРИ КОШКИ-ХРАНИТЕЛЬНИЦЫ НА ВОЕННОМ СТОЛЕ:
             </div>
-            <div class="cats-grid">
-              <div class="cat-card" style="border-left: 3px solid #f472b6;">
-                <div style="font-weight:900; color:#f472b6;">🐾 СОНЯ — Полосатая Тихоня</div>
-                <div>Комната: <b>${cSonya.name}</b></div>
-                <div style="color:var(--gold);">Зов «Мяу» остался: ${hostState.sonyaMeowsLeft} из 2</div>
+            <div class="guardians-row">
+              <div class="guardian-box" style="border-left: 3px solid #f472b6;">
+                <div style="font-weight:900; color:#f472b6;">🐾 СОНЯ — Шатёр Тишины</div>
+                <div>Охраняет замок: <b>${sonyaLord ? sonyaLord.name : 'Спит под тёмным шатром'}</b></div>
+                <div style="color:var(--gold);">Спасительных «Мяу» осталось: ${hostState.sonyaMeowsLeft} из 2</div>
               </div>
-              <div class="cat-card" style="border-left: 3px solid #38bdf8;">
-                <div style="font-weight:900; color:#38bdf8;">👅 НАТАША — Вислоухая с Язычком</div>
-                <div>Комната: <b>${cNatasha.name}</b></div>
-                <div style="color:var(--gold);">Любит воду и просит поесть каждые 2 часа</div>
+              <div class="guardian-box" style="border-left: 3px solid #38bdf8;">
+                <div style="font-weight:900; color:#38bdf8;">👅 НАТАША — Речная Мельница</div>
+                <div>Пускает поток воды и каждые 2 раунда просит пир у чаши</div>
+                <div style="color:var(--gold);">Дарит +4 🪙 за игру с водой</div>
               </div>
-              <div class="cat-card" style="border-left: 3px solid #fb923c;">
-                <div style="font-weight:900; color:#fb923c;">🔥 СТЕПАН — Серебристый Авантюрист</div>
-                <div>Комната: <b>${cStepan.name}</b></div>
-                <div style="color:var(--gold);">Ложится у дверей и открывает новые залы</div>
+              <div class="guardian-box" style="border-left: 3px solid #fb923c;">
+                <div style="font-weight:900; color:#fb923c;">🔥 СТЕПАН — Страж Врат</div>
+                <div>Лежит у ворот: <b>${stepanProv.name}</b></div>
+                <div style="color:var(--gold);">Берёт дань со штурмующих полков</div>
               </div>
             </div>
           </div>
@@ -1557,14 +1592,14 @@
       `;
 
       const bBot = document.getElementById('btn-add-bot');
-      if (bBot) bBot.onclick = addBotPlayer;
+      if (bBot) bBot.onclick = addBotLord;
 
       const bStart = document.getElementById('btn-start-match');
-      if (bStart) bStart.onclick = start3DMansionAdventure;
+      if (bStart) bStart.onclick = startRoyalCampaign;
     }
 
     /***************************************************************************
-     * 8. МОБИЛЬНЫЙ ПУЛЬТ УПРАВЛЕНИЯ ТРЕМЯ КОШКАМИ НА СМАРТФОНЕ
+     * 8. СМАРТФОН КАК СРЕДНЕВЕКОВЫЙ ГЕЙМПАД ЛОРДА
      ***************************************************************************/
     const clientState = {
       pin: '',
@@ -1574,11 +1609,8 @@
       round: 1,
       isMyTurn: false,
       activePlayerName: '',
-      selectedCatKey: 'stepan',
-      keysFound: 0,
-      sonyaMeowsLeft: 2,
-      exploredRooms: [],
-      cats: null,
+      selectedProvinceId: 0,
+      provinces: [],
       headline: '',
       winnerName: '',
       me: null,
@@ -1589,7 +1621,7 @@
       mode = 'CLIENT';
       clientState.pin = pin;
       clientState.name = name;
-      renderClientPhone('Подключение к 3D-Особняку...');
+      renderClientGamepad('Подключение геймпада к Королевскому Столу...');
 
       peer = new Peer();
       peer.on('open', () => {
@@ -1599,38 +1631,38 @@
         conn.on('open', () => {
           clientState.connected = true;
           conn.send({ type: 'JOIN', name: clientState.name });
-          renderClientPhone();
+          renderClientGamepad();
         });
 
         conn.on('data', (data) => {
           if (data.type === 'SYNC') {
             if (typeof data.themeHue === 'number') {
-              setGlobalTheme(data.themeHue, data.themeSat || 82);
+              setGlobalTheme(data.themeHue, data.themeSat || 80);
             }
             Object.assign(clientState, data);
-            renderClientPhone();
+            renderClientGamepad();
           }
         });
 
         conn.on('close', () => {
           clientState.connected = false;
-          renderClientPhone('Связь с Главным экраном прервана.');
+          renderClientGamepad('Связь с экраном ТВ прервана.');
         });
       });
 
       peer.on('error', () => {
-        renderClientPhone('Не найдена комната с PIN ' + pin);
+        renderClientGamepad('Не найдена комната с PIN ' + pin);
       });
     }
 
-    function renderClientPhone(statusMsg = '') {
+    function renderClientGamepad(statusMsg = '') {
       if (mode !== 'CLIENT') return;
 
-      if (!clientState.connected || !clientState.me || !clientState.cats) {
+      if (!clientState.connected || !clientState.me) {
         appEl.innerHTML = `
-          <div class="glass-panel center-modal">
-            <div class="title-grand" style="font-size:1.45rem;">СВЯЗЬ С ОСОБНЯКОМ</div>
-            <p>${statusMsg || 'Синхронизация с 3D-сценой...'}</p>
+          <div class="medieval-panel center-modal">
+            <div class="title-medieval" style="font-size:1.45rem;">ГЕЙМПАД ЛОРДА</div>
+            <p>${statusMsg || 'Синхронизация с Королевским Столом...'}</p>
             <button class="btn" onclick="location.reload()">Назад</button>
           </div>
         `;
@@ -1638,97 +1670,72 @@
       }
 
       const me = clientState.me;
-      let bodyHtml = '';
+      let padBody = '';
 
       if (clientState.phase === 'LOBBY') {
-        bodyHtml = `
+        padBody = `
           <div style="text-align:center; padding:22px 10px;">
-            <div style="font-size:1.2rem; font-weight:900; color:var(--gold);">Вы готовы спасать кошек!</div>
+            <div style="font-size:1.2rem; font-weight:900; color:var(--gold);">Ваш 3D-замок уже на столе!</div>
             <p style="margin-top:8px; font-size:0.9rem;">
-              Посмотрите на 3D-Особняк на экране ТВ и нажмите там кнопку «Начать 3D-Приключение»!
+              Посмотрите на экран ТВ и нажмите там кнопку «Начать Королевскую Кампанию»!
             </p>
           </div>
         `;
-      } else if (clientState.phase === 'TURN_SELECT' && clientState.isMyTurn) {
-        const ck = clientState.selectedCatKey;
-        const activeCat = clientState.cats[ck];
-        const currentRoom = ROOMS_DATA[activeCat.roomId];
-        const neighborIds = getAdjacentRooms(activeCat.roomId);
+      } else if (clientState.phase === 'TURN_GAMEPAD' && clientState.isMyTurn) {
+        const selId = clientState.selectedProvinceId;
+        const selData = PROVINCES_DATA[selId];
 
-        const moveBtns = neighborIds.map(rId => {
-          const r = ROOMS_DATA[rId];
-          const isOpen = clientState.exploredRooms.includes(rId);
-          return `
-            <button class="action-btn-phone" data-cmd="MOVE" data-room="${rId}">
-              <div style="display:flex; justify-content:space-between; font-weight:900; color:var(--gold);">
-                <span>🐾 Повести «${activeCat.name}» в комнату: ${r.name}</span>
-                <span>${isOpen ? 'Открыта' : '🔒 Новая 3D-комната!'}</span>
-              </div>
-              <div style="font-size:0.76rem; opacity:0.88;">${r.desc}</div>
-            </button>
-          `;
-        }).join('');
+        const dpadButtons = PROVINCES_DATA.map(p => `
+          <button class="dpad-btn ${selId === p.id ? 'selected' : ''}" data-aim="${p.id}">
+            <div style="color:var(--gold);">🏰 ${p.name}</div>
+            <div style="font-size:0.7rem; opacity:0.85;">Доход: +${p.income} 🪙</div>
+          </button>
+        `).join('');
 
-        let specialCatBtn = '';
-        if (ck === 'sonya') {
-          specialCatBtn = `
-            <button class="action-btn-phone" data-cmd="SONYA_MEOW" data-room="0"
-              ${clientState.sonyaMeowsLeft <= 0 ? 'disabled' : ''}
-              style="border: 2px solid #f472b6;">
-              <div style="font-weight:900; color:#f472b6;">🐱 Редкое тихое «Мяу» Сони — Призвать Степана в свою комнату!</div>
-              <div style="font-size:0.76rem;">Соня мяукает всего 2 раза за жизнь! Мгновенно притягивает Степана к Соне.</div>
-            </button>
-          `;
-        } else if (ck === 'natasha') {
-          specialCatBtn = `
-            <button class="action-btn-phone" data-cmd="NATASHA_SPECIAL" data-room="0" style="border: 2px solid #38bdf8;">
-              <div style="font-weight:900; color:#38bdf8;">👅 Поиграть с водой и покормить Наташу — Найти Золотой Ключ 🗝️</div>
-              <div style="font-size:0.76rem;">Наташа с высунутым язычком играет со струйками воды и находит спрятанный ключ!</div>
-            </button>
-          `;
-        } else if (ck === 'stepan') {
-          specialCatBtn = `
-            <button class="action-btn-phone" data-cmd="STEPAN_SPECIAL" data-room="0" style="border: 2px solid #fb923c;">
-              <div style="font-weight:900; color:#fb923c;">🔥 Погладить Степана у двери — Открыть все соседние 3D-комнаты!</div>
-              <div style="font-size:0.76rem;">Степан обожает быть в центре внимания и сразу распахивает двери вокруг себя.</div>
-            </button>
-          `;
-        }
-
-        bodyHtml = `
-          <div style="font-weight:900; color:var(--gold); margin-bottom:6px;">
-            1. ВЫБЕРИТЕ, КАКОЙ КОШКОЙ УПРАВЛЯТЬ В ЭТОТ ХОД:
+        padBody = `
+          <div style="font-weight:900; color:var(--gold); font-size:0.86rem; margin-bottom:6px;">
+            1. ПРИЦЕЛ КАМЕРЫ НА 3D-КАРТЕ: «${selData.name.toUpperCase()}»
           </div>
-          <div class="cat-tab-row">
-            <button class="cat-tab-btn ${ck === 'sonya' ? 'selected' : ''}" data-select-cat="sonya">🐾 Соня</button>
-            <button class="cat-tab-btn ${ck === 'natasha' ? 'selected' : ''}" data-select-cat="natasha">👅 Наташа</button>
-            <button class="cat-tab-btn ${ck === 'stepan' ? 'selected' : ''}" data-select-cat="stepan">🔥 Степан</button>
+          <div class="province-dpad">
+            ${dpadButtons}
           </div>
 
-          <div style="font-size:0.8rem; margin:8px 0; color:var(--text-muted);">
-            Сейчас <b>${activeCat.name}</b> находится в 3D-комнате: <b>${currentRoom.name}</b>
+          <div style="font-weight:900; color:var(--gold); font-size:0.86rem; margin:10px 0 6px;">
+            2. ТАКТИЧЕСКИЕ КНОПКИ ГЕЙМПАДА:
           </div>
+          <div class="gamepad-action-grid">
+            <button class="gp-action-btn" data-cmd="MARCH_ATTACK" style="border-color:#ef4444;">
+              <div style="font-weight:900; color:#f87171; font-size:0.95rem;">⚔️ КНОПКА А — Штурм</div>
+              <div style="font-size:0.74rem; opacity:0.9;">Отправить 3D-полки рыцарей и катапульты на захват «${selData.name}»!</div>
+            </button>
 
-          <div style="display:flex; flex-direction:column; gap:8px;">
-            ${specialCatBtn}
-            <div style="font-size:0.78rem; font-weight:800; color:var(--gold); margin-top:4px;">
-              2. ИЛИ ПЕРЕВЕДИТЕ КОШКУ В СОСЕДНЮЮ 3D-КОМНАТУ:
-            </div>
-            ${moveBtns}
+            <button class="gp-action-btn" data-cmd="RECRUIT_KNIGHTS" style="border-color:#38bdf8;">
+              <div style="font-weight:900; color:#7dd3fc; font-size:0.95rem;">🛡️ КНОПКА B — Гарнизон</div>
+              <div style="font-size:0.74rem; opacity:0.9;">Укрепить свой замок, нанять +2 рыцарей и собрать +2 🪙.</div>
+            </button>
+
+            <button class="gp-action-btn" data-cmd="CALL_CAT_GUARDIAN" style="border-color:#f472b6;">
+              <div style="font-weight:900; color:#f472b6; font-size:0.95rem;">🐱 КНОПКА X — Кошки</div>
+              <div style="font-size:0.74rem; opacity:0.9;">Призвать Соню, Наташу или положить Степана у ворот выбранной земли!</div>
+            </button>
+
+            <button class="gp-action-btn" data-cmd="FORGE_CROWN" ${me.gold < 6 ? 'disabled' : ''} style="border-color:var(--gold);">
+              <div style="font-weight:900; color:var(--gold); font-size:0.95rem;">👑 КНОПКА Y — Корона</div>
+              <div style="font-size:0.74rem; opacity:0.9;">Выковать Королевскую Корону за 6 🪙 для победы в партии!</div>
+            </button>
           </div>
         `;
       } else if (clientState.phase === 'GAME_OVER') {
-        bodyHtml = `
+        padBody = `
           <div style="text-align:center; padding:24px;">
-            <div class="title-grand" style="font-size:1.5rem;">🎉 КОШКИ СПАСЕНЫ!</div>
-            <p style="margin-top:8px;">Соня, Наташа и Степан снова вместе!</p>
+            <div class="title-medieval" style="font-size:1.5rem;">👑 ПОБЕДИТЕЛЬ: ${clientState.winnerName}</div>
           </div>
         `;
       } else {
-        bodyHtml = `
+        padBody = `
           <div style="text-align:center; padding:24px 10px;">
             <div style="font-size:1.15rem; font-weight:900; color:var(--gold);">
-              👀 СМОТРИТЕ НА 3D-ОСОБНЯК НА ЭКРАНЕ ТВ!
+              👀 СМОТРИТЕ НА КОРОЛЕВСКИЙ СТОЛ НА ТВ!
             </div>
             <p style="margin-top:8px; font-size:0.9rem;">
               ${clientState.headline}
@@ -1738,45 +1745,46 @@
       }
 
       appEl.innerHTML = `
-        <div class="phone-wrap">
-          <div class="glass-panel" style="padding:12px 14px; display:flex; justify-content:space-between; align-items:center;">
+        <div class="gamepad-wrap">
+          <div class="medieval-panel" style="padding:12px 14px; display:flex; justify-content:space-between; align-items:center;">
             <div style="display:flex; align-items:center; gap:8px;">
               <span style="width:14px; height:14px; border-radius:50%; background:${me.color}; display:inline-block; border:2px solid #fff;"></span>
               <div>
                 <div style="font-weight:900; font-size:1.02rem;">${me.name}</div>
-                <div style="font-size:0.75rem; color:var(--gold);">Ключи: ${clientState.keysFound}/3 🗝️</div>
+                <div style="font-size:0.75rem; color:var(--gold);">Короны: ${me.crowns}/3 👑</div>
               </div>
             </div>
-            <div style="font-weight:900; font-size:1.1rem; color:var(--gold);">⭐ ${me.score}</div>
+            <div style="font-weight:900; font-size:1.15rem; color:var(--gold);">🪙 ${me.gold}</div>
           </div>
 
-          <div class="glass-panel" style="padding:14px; flex:1; overflow-y:auto;">
-            ${bodyHtml}
+          <div class="medieval-panel" style="padding:14px; flex:1; overflow-y:auto;">
+            ${padBody}
           </div>
         </div>
       `;
 
-      document.querySelectorAll('[data-select-cat]').forEach(btn => {
+      document.querySelectorAll('[data-aim]').forEach(btn => {
         btn.onclick = () => {
-          clientState.selectedCatKey = btn.getAttribute('data-select-cat');
-          renderClientPhone();
+          const pId = Number(btn.getAttribute('data-aim'));
+          clientState.selectedProvinceId = pId;
+          clientState.conn.send({ type: 'AIM_PROVINCE', provId: pId });
+          renderClientGamepad();
         };
       });
 
       document.querySelectorAll('[data-cmd]').forEach(btn => {
         btn.onclick = () => {
           clientState.conn.send({
-            type: 'CAT_COMMAND',
-            catKey: clientState.selectedCatKey,
-            actionType: btn.getAttribute('data-cmd'),
-            targetRoomId: Number(btn.getAttribute('data-room'))
+            type: 'GAMEPAD_COMMAND',
+            cmd: btn.getAttribute('data-cmd'),
+            provId: clientState.selectedProvinceId
           });
         };
       });
     }
 
-    // Запуск 3D-движка и стартового меню
-    initThreeJS();
+    // Запуск 3D-мира и стартового меню
+    initMedieval3DWorld();
     renderMenu();
   </script>
 </body>
